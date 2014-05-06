@@ -65,4 +65,4 @@ var idx = lunr(function () {
 I've created this project by compiling and wrapping stemmers toghether with stop words from various sources so they can be directly used with Lunr.
 
 *   <https://github.com/fortnightlabs/snowball-js> (the stemmers for all languages, ported from snowball-js)
-*   <https://github.com/brez/stopwords> (the stop words list for the other languages)
+*   <https://github.com/brenes/stopwords-filter> (the stop words list for the other languages)
