@@ -1,6 +1,6 @@
-global.lunr = require('./lib/lunr.js');
-require('../lunr.stemmer.support.js');
-require('../lunr.de.js');
+var lunr = require('./lib/lunr.js');
+require('../lunr.stemmer.support.js')(lunr);
+require('../lunr.de.js')(lunr);
 
 /* init lunr */
 var idx = lunr(function () {

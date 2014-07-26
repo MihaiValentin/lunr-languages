@@ -19,6 +19,9 @@ The following languages are available:
 * Norwegian
 
 # How to use
+
+Lunr-languages supports AMD and CommonJS. Check out the examples below:
+
 ## In a web browser
 
 The following example is for the German language (de).
@@ -43,6 +46,33 @@ var idx = lunr(function () {
 ```
 
 That's it. Just add the documents and you're done. When searching, the language stemmer and stopwords list will be the one you used.
+
+## In a web browser, with RequireJS
+
+Add `require.js` to the page:
+
+```html
+<script src="lib/require.js"></script>
+```
+
+then, use the language in when initializing lunr:
+
+```javascript
+require(['lib/lunr.js', '../lunr.stemmer.support.js', '../lunr.de.js'], function(lunr, stemmerSupport, de) {
+    // since the stemmerSupport and de add keys on the lunr object, we'll pass it as reference to them
+    // in the end, we will only need lunr.
+    stemmerSupport(lunr); // adds lunr.stemmerSupport
+    de(lunr); // adds lunr.de key
+    // at this point, lunr can be used
+    var idx = lunr(function () {
+        // use the language (de)
+        this.use(lunr.de);
+        // then, the normal lunr index initialization
+        this.field('title', { boost: 10 })
+        this.field('body')
+    });
+});
+```
 
 # With node.js
 
