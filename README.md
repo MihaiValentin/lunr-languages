@@ -63,6 +63,7 @@ require(['lib/lunr.js', '../lunr.stemmer.support.js', '../lunr.de.js'], function
     // in the end, we will only need lunr.
     stemmerSupport(lunr); // adds lunr.stemmerSupport
     de(lunr); // adds lunr.de key
+
     // at this point, lunr can be used
     var idx = lunr(function () {
         // use the language (de)
@@ -89,6 +90,17 @@ var idx = lunr(function () {
     this.field('body')
 });
 ```
+
+# Building your own files
+
+The `lunr.<locale>.js` files are the result of a build process that concatenates a stemmer and a stop word list and add functionality to become lunr.js-compatible.
+Should you decide to make mass-modifications (add stopwords, change stemming rules, reorganize the code) and build a new set of files, you should do follow these steps:
+
+* `git clone --recursive git://github.com/MihaiValentin/lunr-languages.git` (make sure you use the `--recursive` flag to also clone the repos needed to build `lunr-languages`)
+* `cd path/to/lunr-languages`
+* `npm instal` to install the dependencies needed for building
+* change the `build/*.template` files
+* run `node build/build.js` to generate the `lunr.<locale>.js` files (and the minified versions as well) and the `lunr.stemmer.support.js` file
 
 # Technical details & Credits
 

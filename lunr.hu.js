@@ -68,10 +68,10 @@
         SnowballProgram = lunr.stemmerSupport.SnowballProgram,
         st = new function HungarianStemmer() {
           var a_0 = [new Among("cs", -1, -1), new Among("dzs", -1, -1),
-            new Among("gy", -1, -1), new Among("ly", -1, -1),
-            new Among("ny", -1, -1), new Among("sz", -1, -1),
-            new Among("ty", -1, -1), new Among("zs", -1, -1)
-          ],
+              new Among("gy", -1, -1), new Among("ly", -1, -1),
+              new Among("ny", -1, -1), new Among("sz", -1, -1),
+              new Among("ty", -1, -1), new Among("zs", -1, -1)
+            ],
             a_1 = [
               new Among("\u00E1", -1, 1), new Among("\u00E9", -1, 2)
             ],

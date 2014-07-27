@@ -68,14 +68,14 @@
         SnowballProgram = lunr.stemmerSupport.SnowballProgram,
         st = new function RussianStemmer() {
           var a_0 = [new Among("\u0432", -1, 1), new Among("\u0438\u0432", 0, 2),
-            new Among("\u044B\u0432", 0, 2),
-            new Among("\u0432\u0448\u0438", -1, 1),
-            new Among("\u0438\u0432\u0448\u0438", 3, 2),
-            new Among("\u044B\u0432\u0448\u0438", 3, 2),
-            new Among("\u0432\u0448\u0438\u0441\u044C", -1, 1),
-            new Among("\u0438\u0432\u0448\u0438\u0441\u044C", 6, 2),
-            new Among("\u044B\u0432\u0448\u0438\u0441\u044C", 6, 2)
-          ],
+              new Among("\u044B\u0432", 0, 2),
+              new Among("\u0432\u0448\u0438", -1, 1),
+              new Among("\u0438\u0432\u0448\u0438", 3, 2),
+              new Among("\u044B\u0432\u0448\u0438", 3, 2),
+              new Among("\u0432\u0448\u0438\u0441\u044C", -1, 1),
+              new Among("\u0438\u0432\u0448\u0438\u0441\u044C", 6, 2),
+              new Among("\u044B\u0432\u0448\u0438\u0441\u044C", 6, 2)
+            ],
             a_1 = [
               new Among("\u0435\u0435", -1, 1), new Among("\u0438\u0435", -1, 1),
               new Among("\u043E\u0435", -1, 1), new Among("\u044B\u0435", -1, 1),

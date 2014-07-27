@@ -68,8 +68,8 @@
         SnowballProgram = lunr.stemmerSupport.SnowballProgram,
         st = new function FrenchStemmer() {
           var a_0 = [new Among("col", -1, -1), new Among("par", -1, -1),
-            new Among("tap", -1, -1)
-          ],
+              new Among("tap", -1, -1)
+            ],
             a_1 = [new Among("", -1, 4),
               new Among("I", 0, 1), new Among("U", 0, 2), new Among("Y", 0, 3)
             ],

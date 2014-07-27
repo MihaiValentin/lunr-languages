@@ -68,10 +68,10 @@
         SnowballProgram = lunr.stemmerSupport.SnowballProgram,
         st = new function ItalianStemmer() {
           var a_0 = [new Among("", -1, 7), new Among("qu", 0, 6),
-            new Among("\u00E1", 0, 1), new Among("\u00E9", 0, 2),
-            new Among("\u00ED", 0, 3), new Among("\u00F3", 0, 4),
-            new Among("\u00FA", 0, 5)
-          ],
+              new Among("\u00E1", 0, 1), new Among("\u00E9", 0, 2),
+              new Among("\u00ED", 0, 3), new Among("\u00F3", 0, 4),
+              new Among("\u00FA", 0, 5)
+            ],
             a_1 = [new Among("", -1, 3),
               new Among("I", 0, 1), new Among("U", 0, 2)
             ],

@@ -68,11 +68,11 @@
         SnowballProgram = lunr.stemmerSupport.SnowballProgram,
         st = new function TurkishStemmer() {
           var a_0 = [new Among("m", -1, -1), new Among("n", -1, -1),
-            new Among("miz", -1, -1), new Among("niz", -1, -1),
-            new Among("muz", -1, -1), new Among("nuz", -1, -1),
-            new Among("m\u00FCz", -1, -1), new Among("n\u00FCz", -1, -1),
-            new Among("m\u0131z", -1, -1), new Among("n\u0131z", -1, -1)
-          ],
+              new Among("miz", -1, -1), new Among("niz", -1, -1),
+              new Among("muz", -1, -1), new Among("nuz", -1, -1),
+              new Among("m\u00FCz", -1, -1), new Among("n\u00FCz", -1, -1),
+              new Among("m\u0131z", -1, -1), new Among("n\u0131z", -1, -1)
+            ],
             a_1 = [
               new Among("leri", -1, -1), new Among("lar\u0131", -1, -1)
             ],

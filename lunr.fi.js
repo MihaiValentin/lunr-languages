@@ -68,11 +68,11 @@
         SnowballProgram = lunr.stemmerSupport.SnowballProgram,
         st = new function FinnishStemmer() {
           var a_0 = [new Among("pa", -1, 1), new Among("sti", -1, 2),
-            new Among("kaan", -1, 1), new Among("han", -1, 1),
-            new Among("kin", -1, 1), new Among("h\u00E4n", -1, 1),
-            new Among("k\u00E4\u00E4n", -1, 1), new Among("ko", -1, 1),
-            new Among("p\u00E4", -1, 1), new Among("k\u00F6", -1, 1)
-          ],
+              new Among("kaan", -1, 1), new Among("han", -1, 1),
+              new Among("kin", -1, 1), new Among("h\u00E4n", -1, 1),
+              new Among("k\u00E4\u00E4n", -1, 1), new Among("ko", -1, 1),
+              new Among("p\u00E4", -1, 1), new Among("k\u00F6", -1, 1)
+            ],
             a_1 = [
               new Among("lla", -1, -1), new Among("na", -1, -1),
               new Among("ssa", -1, -1), new Among("ta", -1, -1),

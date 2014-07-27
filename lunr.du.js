@@ -68,12 +68,12 @@
         SnowballProgram = lunr.stemmerSupport.SnowballProgram,
         st = new function DutchStemmer() {
           var a_0 = [new Among("", -1, 6), new Among("\u00E1", 0, 1),
-            new Among("\u00E4", 0, 1), new Among("\u00E9", 0, 2),
-            new Among("\u00EB", 0, 2), new Among("\u00ED", 0, 3),
-            new Among("\u00EF", 0, 3), new Among("\u00F3", 0, 4),
-            new Among("\u00F6", 0, 4), new Among("\u00FA", 0, 5),
-            new Among("\u00FC", 0, 5)
-          ],
+              new Among("\u00E4", 0, 1), new Among("\u00E9", 0, 2),
+              new Among("\u00EB", 0, 2), new Among("\u00ED", 0, 3),
+              new Among("\u00EF", 0, 3), new Among("\u00F3", 0, 4),
+              new Among("\u00F6", 0, 4), new Among("\u00FA", 0, 5),
+              new Among("\u00FC", 0, 5)
+            ],
             a_1 = [new Among("", -1, 3),
               new Among("I", 0, 2), new Among("Y", 0, 1)
             ],

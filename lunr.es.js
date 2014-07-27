@@ -68,9 +68,9 @@
         SnowballProgram = lunr.stemmerSupport.SnowballProgram,
         st = new function SpanishStemmer() {
           var a_0 = [new Among("", -1, 6), new Among("\u00E1", 0, 1),
-            new Among("\u00E9", 0, 2), new Among("\u00ED", 0, 3),
-            new Among("\u00F3", 0, 4), new Among("\u00FA", 0, 5)
-          ],
+              new Among("\u00E9", 0, 2), new Among("\u00ED", 0, 3),
+              new Among("\u00F3", 0, 4), new Among("\u00FA", 0, 5)
+            ],
             a_1 = [
               new Among("la", -1, -1), new Among("sela", 0, -1),
               new Among("le", -1, -1), new Among("me", -1, -1),
