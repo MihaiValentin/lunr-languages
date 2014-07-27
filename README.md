@@ -98,7 +98,7 @@ Should you decide to make mass-modifications (add stopwords, change stemming rul
 
 * `git clone --recursive git://github.com/MihaiValentin/lunr-languages.git` (make sure you use the `--recursive` flag to also clone the repos needed to build `lunr-languages`)
 * `cd path/to/lunr-languages`
-* `npm instal` to install the dependencies needed for building
+* `npm install` to install the dependencies needed for building
 * change the `build/*.template` files
 * run `node build/build.js` to generate the `lunr.<locale>.js` files (and the minified versions as well) and the `lunr.stemmer.support.js` file
 
