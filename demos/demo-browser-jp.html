@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <script src="lib/lunr.js"></script>
+    <script src="../tinyseg.js" charset="UTF-8"></script>
+    <script src="../lunr.jp.js" charset="UTF-8"></script>
+</head>
+<body>
+    <p>Open developer tools and observe the results in the Console tab. View source for code.</p>
+    <script>
+        /* init lunr */
+        var idx = lunr(function () {
+            // use the language (de)
+            this.use(lunr.jp);
+            // then, the normal lunr index initialization
+            this.field('title', { boost: 10 })
+            this.field('body')
+        });
+
+        /* add documents to index */
+        idx.add({
+            "title": "名前",
+            "body": "私の名前は中野です",
+            "id": 1
+        });
+        idx.add({
+            "title": "Tourismus in Deutschland",
+            "body": "Deutschland als Urlaubsziel verfügt über günstige Voraussetzungen: Gebirgslandschaften (Alpen und Mittelgebirge), See- und Flusslandschaften, die Küsten und Inseln der Nord- und Ostsee, zahlreiche Kulturdenkmäler und eine Vielzahl geschichtsträchtiger Städte sowie gut ausgebaute Infrastruktur. Vorteilhaft ist die zentrale Lage in Europa.",
+            "id": 2
+        });
+
+        console.log('Search for `中野`: ', idx.search('中野'));
+    </script>
+</body>
+</html>
