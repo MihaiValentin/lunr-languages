@@ -9,6 +9,7 @@ The following languages are available:
 * French
 * Spanish
 * Italian
+* Japanese
 * Dutch
 * Danish
 * Portuguese
