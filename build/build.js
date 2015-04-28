@@ -93,7 +93,7 @@ for(var i = 0; i < list.length; i++) {
     f = cm + f;
     f = f.replace(/\{\{locale\}\}/g, list[i].locale);
     f = f.replace(/\{\{stemmerFunction\}\}/g, data.substring(data.indexOf('function')));
-    f = f.replace(/\{\{stopWords\}\}/g, stopWords.replace(/,/g, ' '));
+    f = f.replace(/\{\{stopWords\}\}/g, stopWords.split(',').sort().join(' '));
     f = f.replace(/\{\{stopWordsLength\}\}/g, stopWords.split(',').length + 1);
     f = f.replace(/\{\{languageName\}\}/g, list[i].file.replace(/Stemmer\.js/g, ''));
 

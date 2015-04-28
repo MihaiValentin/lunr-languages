@@ -266,7 +266,7 @@
     // The space at the beginning is crucial: It marks the empty string
     // as a stop word. lunr.js crashes during search when documents
     // processed by the pipeline still contain the empty string.
-    lunr.da.stopWordFilter.stopWords.elements = ' og i jeg det at en den til er som på de med han af for ikke der var mig sig men et har om vi min havde ham hun nu over da fra du ud sin dem os op man hans hvor eller hvad skal selv her alle vil blev kunne ind når være dog noget ville jo deres efter ned skulle denne end dette mit også under have dig anden hende mine alt meget sit sine vor mod disse hvis din nogle hos blive mange ad bliver hendes været thi jer sådan'.split(' ');
+    lunr.da.stopWordFilter.stopWords.elements = ' ad af alle alt anden at blev blive bliver da de dem den denne der deres det dette dig din disse dog du efter eller en end er et for fra ham han hans har havde have hende hendes her hos hun hvad hvis hvor i ikke ind jeg jer jo kunne man mange med meget men mig min mine mit mod ned noget nogle nu når og også om op os over på selv sig sin sine sit skal skulle som sådan thi til ud under var vi vil ville vor være været'.split(' ');
 
     lunr.Pipeline.registerFunction(lunr.da.stopWordFilter, 'stopWordFilter-da');
   };
