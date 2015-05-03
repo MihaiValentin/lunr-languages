@@ -1,3 +1,5 @@
+[![Bower](https://img.shields.io/bower/v/lunr-languages.svg)]()
+
 Lunr languages
 ==============
 
