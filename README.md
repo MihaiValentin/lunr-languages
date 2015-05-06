@@ -1,4 +1,4 @@
-Lunr languages [![Bower](https://img.shields.io/bower/v/lunr-languages.svg)]()
+Lunr languages [![npm](https://img.shields.io/npm/v/lunr-languages.svg)](https://www.npmjs.com/package/lunr-languages) [![Bower](https://img.shields.io/bower/v/lunr-languages.svg)]()
 ==============
 
 This project features a collection of languages stemmers and stopwords for [Lunr](http://lunrjs.com/) Javascript library (which currently only supports English).
