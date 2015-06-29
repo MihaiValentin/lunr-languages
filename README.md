@@ -77,7 +77,12 @@ require(['lib/lunr.js', '../lunr.stemmer.support.js', '../lunr.de.js'], function
 ```
 
 # With node.js
+Install:
+```sh
+npm install lunr lunr-languages
+```
 
+Usage:
 ```javascript
 var lunr = require('lunr');
 require('lunr-languages/lunr.stemmer.support')(lunr);
