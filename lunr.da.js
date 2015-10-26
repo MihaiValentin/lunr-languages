@@ -253,20 +253,7 @@
 
     lunr.Pipeline.registerFunction(lunr.da.stemmer, 'stemmer-da');
 
-    /* stop word filter function */
-    lunr.da.stopWordFilter = function(token) {
-      if (lunr.da.stopWordFilter.stopWords.indexOf(token) === -1) {
-        return token;
-      }
-    };
-
-    lunr.da.stopWordFilter.stopWords = new lunr.SortedSet();
-    lunr.da.stopWordFilter.stopWords.length = 95;
-
-    // The space at the beginning is crucial: It marks the empty string
-    // as a stop word. lunr.js crashes during search when documents
-    // processed by the pipeline still contain the empty string.
-    lunr.da.stopWordFilter.stopWords.elements = ' ad af alle alt anden at blev blive bliver da de dem den denne der deres det dette dig din disse dog du efter eller en end er et for fra ham han hans har havde have hende hendes her hos hun hvad hvis hvor i ikke ind jeg jer jo kunne man mange med meget men mig min mine mit mod ned noget nogle nu når og også om op os over på selv sig sin sine sit skal skulle som sådan thi til ud under var vi vil ville vor være været'.split(' ');
+    lunr.da.stopWordFilter = lunr.generateStopWordFilter('ad af alle alt anden at blev blive bliver da de dem den denne der deres det dette dig din disse dog du efter eller en end er et for fra ham han hans har havde have hende hendes her hos hun hvad hvis hvor i ikke ind jeg jer jo kunne man mange med meget men mig min mine mit mod ned noget nogle nu når og også om op os over på selv sig sin sine sit skal skulle som sådan thi til ud under var vi vil ville vor være været'.split(' '));
 
     lunr.Pipeline.registerFunction(lunr.da.stopWordFilter, 'stopWordFilter-da');
   };
