@@ -417,20 +417,7 @@
 
     lunr.Pipeline.registerFunction(lunr.du.stemmer, 'stemmer-du');
 
-    /* stop word filter function */
-    lunr.du.stopWordFilter = function(token) {
-      if (lunr.du.stopWordFilter.stopWords.indexOf(token) === -1) {
-        return token;
-      }
-    };
-
-    lunr.du.stopWordFilter.stopWords = new lunr.SortedSet();
-    lunr.du.stopWordFilter.stopWords.length = 103;
-
-    // The space at the beginning is crucial: It marks the empty string
-    // as a stop word. lunr.js crashes during search when documents
-    // processed by the pipeline still contain the empty string.
-    lunr.du.stopWordFilter.stopWords.elements = '  aan al alles als altijd andere ben bij daar dan dat de der deze die dit doch doen door dus een eens en er ge geen geweest haar had heb hebben heeft hem het hier hij hoe hun iemand iets ik in is ja je kan kon kunnen maar me meer men met mij mijn moet na naar niet niets nog nu of om omdat onder ons ook op over reeds te tegen toch toen tot u uit uw van veel voor want waren was wat werd wezen wie wil worden wordt zal ze zelf zich zij zijn zo zonder zou'.split(' ');
+    lunr.du.stopWordFilter = lunr.generateStopWordFilter(' aan al alles als altijd andere ben bij daar dan dat de der deze die dit doch doen door dus een eens en er ge geen geweest haar had heb hebben heeft hem het hier hij hoe hun iemand iets ik in is ja je kan kon kunnen maar me meer men met mij mijn moet na naar niet niets nog nu of om omdat onder ons ook op over reeds te tegen toch toen tot u uit uw van veel voor want waren was wat werd wezen wie wil worden wordt zal ze zelf zich zij zijn zo zonder zou'.split(' '));
 
     lunr.Pipeline.registerFunction(lunr.du.stopWordFilter, 'stopWordFilter-du');
   };
