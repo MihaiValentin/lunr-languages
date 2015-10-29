@@ -92,6 +92,32 @@ var idx = lunr(function () {
 });
 ```
 
+# Indexing multi-language content
+
+If your documents are written in more than one language, you can enable multi-language indexing. This ensures every word is properly trimmed and stemmed, every stopword is removed, and no words are lost (indexing in just one language would remove words from every other one.)
+
+```javascript
+var lunr = require('./lib/lunr.js');
+require('./lunr.stemmer.support.js')(lunr);
+require('./lunr.ru.js')(lunr);
+require('./lunr.multi.js')(lunr);
+
+var idx = lunr(function () {
+    this.use(lunr.multiLanguage('en', 'ru'));
+    // then, the normal lunr index initialization
+    // ...
+});
+```
+
+You can combine any number of supported languages this way. The corresponding lunr language scripts must be loaded (English is built in).
+
+If you serialize the index and load it in another script, you'll have to initialize the multi-language support in that script, too, like this:
+
+```javascript
+lunr.multiLanguage('en', 'ru');
+var idx = lunr.Index.load(serializedIndex);
+```
+
 # Building your own files
 
 The `lunr.<locale>.js` files are the result of a build process that concatenates a stemmer and a stop word list and add functionality to become lunr.js-compatible.
