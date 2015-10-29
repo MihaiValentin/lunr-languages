@@ -38,10 +38,20 @@
         lunr.{{locale}} = function () {
             this.pipeline.reset();
             this.pipeline.add(
+                lunr.{{locale}}.trimmer,
                 lunr.{{locale}}.stopWordFilter,
                 lunr.{{locale}}.stemmer
             );
         };
+
+        /* lunr trimmer function */
+        lunr.{{locale}}.trimmer = function(token) {
+            return token
+                .replace(/^[^{{wordCharacters}}]+/, '')
+                .replace(/[^{{wordCharacters}}]+$/, '');
+        };
+
+        lunr.Pipeline.registerFunction(lunr.{{locale}}.trimmer, 'trimmer-{{locale}}');
 
         /* lunr stemmer function */
         lunr.{{locale}}.stemmer = (function() {

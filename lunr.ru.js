@@ -56,10 +56,20 @@
     lunr.ru = function() {
       this.pipeline.reset();
       this.pipeline.add(
+        lunr.ru.trimmer,
         lunr.ru.stopWordFilter,
         lunr.ru.stemmer
       );
     };
+
+    /* lunr trimmer function */
+    lunr.ru.trimmer = function(token) {
+      return token
+        .replace(/^[^\u0400-\u0484\u0487-\u052F\u1D2B\u1D78\u2DE0-\u2DFF\uA640-\uA69F\uFE2E\uFE2F]+/, '')
+        .replace(/[^\u0400-\u0484\u0487-\u052F\u1D2B\u1D78\u2DE0-\u2DFF\uA640-\uA69F\uFE2E\uFE2F]+$/, '');
+    };
+
+    lunr.Pipeline.registerFunction(lunr.ru.trimmer, 'trimmer-ru');
 
     /* lunr stemmer function */
     lunr.ru.stemmer = (function() {
