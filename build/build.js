@@ -137,5 +137,9 @@ console.log('Building Stemmer Support');
 // build stemmer support
 var support = fs.readFileSync('lunr.stemmer.support.js', 'utf8');
 fs.writeFile('min/lunr.stemmer.support.min.js', compress(support));
+console.log('Building Multi-Language Extension');
+// build multi
+var multi = fs.readFileSync('lunr.multi.js', 'utf8');
+fs.writeFile('min/lunr.multi.min.js', compress(multi));
 
 console.log('Done!');

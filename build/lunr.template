@@ -45,11 +45,8 @@
         };
 
         /* lunr trimmer function */
-        lunr.{{locale}}.trimmer = function(token) {
-            return token
-                .replace(/^[^{{wordCharacters}}]+/, '')
-                .replace(/[^{{wordCharacters}}]+$/, '');
-        };
+        lunr.{{locale}}.wordCharacters = "{{wordCharacters}}";
+        lunr.{{locale}}.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.{{locale}}.wordCharacters);
 
         lunr.Pipeline.registerFunction(lunr.{{locale}}.trimmer, 'trimmer-{{locale}}');
 

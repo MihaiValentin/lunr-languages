@@ -278,5 +278,18 @@
                 };
             }
         };
+
+        lunr.trimmerSupport = {
+            generateTrimmer: function(wordCharacters) {
+                var startRegex = new RegExp("^[^" + wordCharacters + "]+")
+                var endRegex = new RegExp("[^" + wordCharacters + "]+$")
+
+                return function(token) {
+                    return token
+                        .replace(startRegex, '')
+                        .replace(endRegex, '');
+                };
+            }
+        }
     }
 }));
