@@ -17,63 +17,92 @@ var stopwordsRepoFolder = './stopwords-filter/lib/stopwords/snowball/locales/';
 // and, since that repository does not include all the stopwords we want, we add more, custom stopwords lists
 var stopwordsCustomFolder = './stopwords-custom/';
 
-// list mapping between locale, file and stopwords file
+// Use the Unicode library to produce a regex for characters of a particular
+// 'script' (such as Latin), then extract the character ranges from that
+// regex for use in our trimmer
+function wordCharacters(script) {
+    var charRegex = require('unicode-8.0.0/scripts/' + script + '/regex');
+    // Now from /[a-z]/ get "a-z"
+    var regexString = charRegex.toString()
+    // Format sanity check
+    if (regexString.slice(0,2) !== '/[' || regexString.slice(-2) != ']/') {
+        console.error('Unexpected regex structure, aborting: ' + regexString);
+        throw Error;
+    }
+    return regexString.slice(2, -2);
+}
+
+// list mapping between locale, stemmer file, stopwords file, and char pattern
 var list = [{
     locale: 'da',
     file: 'DanishStemmer.js',
-    stopwords: stopwordsRepoFolder + 'da.csv'
+    stopwords: stopwordsRepoFolder + 'da.csv',
+    wordCharacters: wordCharacters('Latin')
 }, {
     locale: 'du',
     file: 'DutchStemmer.js',
-    stopwords: stopwordsRepoFolder + 'nl.csv'
+    stopwords: stopwordsRepoFolder + 'nl.csv',
+    wordCharacters: wordCharacters('Latin')
 }, {
     locale: 'fi',
     file: 'FinnishStemmer.js',
-    stopwords: stopwordsRepoFolder + 'fn.csv'
+    stopwords: stopwordsRepoFolder + 'fn.csv',
+    wordCharacters: wordCharacters('Latin')
 }, {
     locale: 'fr',
     file: 'FrenchStemmer.js',
-    stopwords: stopwordsRepoFolder + 'fr.csv'
+    stopwords: stopwordsRepoFolder + 'fr.csv',
+    wordCharacters: wordCharacters('Latin')
 }, {
     locale: 'de',
     file: 'GermanStemmer.js',
-    stopwords: stopwordsRepoFolder + 'de.csv'
+    stopwords: stopwordsRepoFolder + 'de.csv',
+    wordCharacters: wordCharacters('Latin')
 }, {
     locale: 'hu',
     file: 'HungarianStemmer.js',
-    stopwords: stopwordsRepoFolder + 'hu.csv'
+    stopwords: stopwordsRepoFolder + 'hu.csv',
+    wordCharacters: wordCharacters('Latin')
 }, {
     locale: 'it',
     file: 'ItalianStemmer.js',
-    stopwords: stopwordsRepoFolder + 'it.csv'
+    stopwords: stopwordsRepoFolder + 'it.csv',
+    wordCharacters: wordCharacters('Latin')
 }, {
     locale: 'no',
     file: 'NorwegianStemmer.js',
-    stopwords: stopwordsCustomFolder + 'no.csv'
+    stopwords: stopwordsCustomFolder + 'no.csv',
+    wordCharacters: wordCharacters('Latin')
 }, {
     locale: 'pt',
     file: 'PortugueseStemmer.js',
-    stopwords: stopwordsRepoFolder + 'pt.csv'
+    stopwords: stopwordsRepoFolder + 'pt.csv',
+    wordCharacters: wordCharacters('Latin')
 }, {
     locale: 'ro',
     file: 'RomanianStemmer.js',
-    stopwords: stopwordsCustomFolder + 'ro.csv'
+    stopwords: stopwordsCustomFolder + 'ro.csv',
+    wordCharacters: wordCharacters('Latin')
 }, {
     locale: 'ru',
     file: 'RussianStemmer.js',
-    stopwords: stopwordsCustomFolder + 'ru.csv'
+    stopwords: stopwordsCustomFolder + 'ru.csv',
+    wordCharacters: wordCharacters('Cyrillic')
 }, {
     locale: 'es',
     file: 'SpanishStemmer.js',
-    stopwords: stopwordsRepoFolder + 'es.csv'
+    stopwords: stopwordsRepoFolder + 'es.csv',
+    wordCharacters: wordCharacters('Latin')
 }, {
     locale: 'sv',
     file: 'SwedishStemmer.js',
-    stopwords: stopwordsCustomFolder + 'sv.csv'
+    stopwords: stopwordsCustomFolder + 'sv.csv',
+    wordCharacters: wordCharacters('Latin')
 }, {
     locale: 'tr',
     file: 'TurkishStemmer.js',
-    stopwords: stopwordsCustomFolder + 'tr.csv'
+    stopwords: stopwordsCustomFolder + 'tr.csv',
+    wordCharacters: wordCharacters('Latin')
 }
 ];
 
@@ -96,6 +125,7 @@ for(var i = 0; i < list.length; i++) {
     f = f.replace(/\{\{stopWords\}\}/g, stopWords.split(',').sort().join(' '));
     f = f.replace(/\{\{stopWordsLength\}\}/g, stopWords.split(',').length + 1);
     f = f.replace(/\{\{languageName\}\}/g, list[i].file.replace(/Stemmer\.js/g, ''));
+    f = f.replace(/\{\{wordCharacters\}\}/g, list[i].wordCharacters);
 
     // write the full file
     fs.writeFile('lunr.' + list[i].locale + '.js', beautify(f, { indent_size: 2 }));

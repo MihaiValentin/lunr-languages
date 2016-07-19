@@ -7,6 +7,7 @@
     "engine": "node 0.10.1",
     "devDependencies": {
         "js-beautify": "^1.5.1",
-        "uglify-js": "^2.4.15"
+        "uglify-js": "^2.4.15",
+        "unicode-8.0.0": "^0.1.5"
     }
 }
