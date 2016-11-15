@@ -97,7 +97,7 @@
     })();
 
     lunr.Pipeline.registerFunction(lunr.jp.stemmer, 'stemmer-jp');
-    lunr.jp.wordCharacters = "一二三四五六七八九十百千万億兆一-龠々〆ヵヶぁ-んァ-ヴーｱ-ﾝﾞa-zA-Zａ-ｚＡ-Ｚ0-9０-９"
+    lunr.jp.wordCharacters = "一二三四五六七八九十百千万億兆一-龠々〆ヵヶぁ-んァ-ヴーｱ-ﾝﾞa-zA-Zａ-ｚＡ-Ｚ0-9０-９";
 
     /* stop word filter function */
     lunr.jp.stopWordFilter = function(token) {
