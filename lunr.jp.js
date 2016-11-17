@@ -68,7 +68,7 @@
         if (!arguments.length || obj == null || obj == undefined) return []
         if (Array.isArray(obj)) return obj.map(function (t) { return t.toLowerCase() })
 
-        var str = obj.toString().replace(/^\s+/, '')
+        var str = obj.toString().toLowerCase().replace(/^\s+/, '')
 
         for (var i = str.length - 1; i >= 0; i--) {
             if (/\S/.test(str.charAt(i))) {
