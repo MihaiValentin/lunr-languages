@@ -67,20 +67,7 @@
 
         lunr.Pipeline.registerFunction(lunr.{{locale}}.stemmer, 'stemmer-{{locale}}');
 
-        /* stop word filter function */
-        lunr.{{locale}}.stopWordFilter = function (token) {
-            if (lunr.{{locale}}.stopWordFilter.stopWords.indexOf(token) === -1) {
-                return token;
-            }
-        };
-
-        lunr.{{locale}}.stopWordFilter.stopWords = new lunr.SortedSet();
-        lunr.{{locale}}.stopWordFilter.stopWords.length = {{stopWordsLength}};
-
-        // The space at the beginning is crucial: It marks the empty string
-        // as a stop word. lunr.js crashes during search when documents
-        // processed by the pipeline still contain the empty string.
-        lunr.{{locale}}.stopWordFilter.stopWords.elements = ' {{stopWords}}'.split(' ');
+        lunr.{{locale}}.stopWordFilter = lunr.generateStopWordFilter('{{stopWords}}'.split(' '));
 
         lunr.Pipeline.registerFunction(lunr.{{locale}}.stopWordFilter, 'stopWordFilter-{{locale}}');
     };
