@@ -68,7 +68,7 @@
         if (!arguments.length || obj == null || obj == undefined) return []
         if (Array.isArray(obj)) return obj.map(function (t) { return t.toLowerCase() })
 
-        var str = obj.toString().replace(/^\s+/, '')
+        var str = obj.toString().toLowerCase().replace(/^\s+/, '')
 
         for (var i = str.length - 1; i >= 0; i--) {
             if (/\S/.test(str.charAt(i))) {
@@ -97,6 +97,7 @@
     })();
 
     lunr.Pipeline.registerFunction(lunr.jp.stemmer, 'stemmer-jp');
+    lunr.jp.wordCharacters = "一二三四五六七八九十百千万億兆一-龠々〆ヵヶぁ-んァ-ヴーｱ-ﾝﾞa-zA-Zａ-ｚＡ-Ｚ0-9０-９";
 
     /* stop word filter function */
     lunr.jp.stopWordFilter = function(token) {
