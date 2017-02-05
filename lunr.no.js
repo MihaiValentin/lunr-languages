@@ -160,7 +160,8 @@
                       sbp.slice_del();
                     else {
                       sbp.cursor = sbp.limit - v_2;
-                      if (sbp.eq_s_b(1, "k") && sbp.out_grouping_b(g_v, 97, 248))
+                      if (sbp.eq_s_b(1, "k") &&
+                        sbp.out_grouping_b(g_v, 97, 248))
                         sbp.slice_del();
                     }
                     break;

@@ -315,7 +315,8 @@
                 while (!sbp.in_grouping(g_v, 97, 249)) {
                   if (sbp.cursor >= sbp.limit) {
                     sbp.cursor = v_2;
-                    if (sbp.in_grouping(g_v, 97, 249) && sbp.cursor < sbp.limit)
+                    if (sbp.in_grouping(g_v, 97, 249) &&
+                      sbp.cursor < sbp.limit)
                       sbp.cursor++;
                     return;
                   }

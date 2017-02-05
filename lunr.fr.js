@@ -251,7 +251,8 @@
             I_pV = sbp.limit;
             I_p1 = I_pV;
             I_p2 = I_pV;
-            if (sbp.in_grouping(g_v, 97, 251) && sbp.in_grouping(g_v, 97, 251) && sbp.cursor < sbp.limit)
+            if (sbp.in_grouping(g_v, 97, 251) && sbp.in_grouping(g_v, 97, 251) &&
+              sbp.cursor < sbp.limit)
               sbp.cursor++;
             else {
               sbp.cursor = v_1;

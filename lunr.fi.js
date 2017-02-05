@@ -327,7 +327,8 @@
                     sbp.bra = sbp.cursor;
                     break;
                   case 8:
-                    if (!sbp.in_grouping_b(g_V1, 97, 246) || !sbp.out_grouping_b(g_V1, 97, 246))
+                    if (!sbp.in_grouping_b(g_V1, 97, 246) ||
+                      !sbp.out_grouping_b(g_V1, 97, 246))
                       return;
                     break;
                 }

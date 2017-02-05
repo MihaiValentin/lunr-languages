@@ -317,11 +317,13 @@
           }
 
           function r_mark_possessives() {
-            return sbp.find_among_b(a_0, 10) && r_mark_suffix_with_optional_U_vowel();
+            return sbp.find_among_b(a_0, 10) &&
+              r_mark_suffix_with_optional_U_vowel();
           }
 
           function r_mark_sU() {
-            return r_check_vowel_harmony() && sbp.in_grouping_b(g_U, 105, 305) && r_mark_suffix_with_optional_s_consonant();
+            return r_check_vowel_harmony() && sbp.in_grouping_b(g_U, 105, 305) &&
+              r_mark_suffix_with_optional_s_consonant();
           }
 
           function r_mark_lArI() {
@@ -329,7 +331,8 @@
           }
 
           function r_mark_yU() {
-            return r_check_vowel_harmony() && sbp.in_grouping_b(g_U, 105, 305) && r_mark_suffix_with_optional_y_consonant();
+            return r_check_vowel_harmony() && sbp.in_grouping_b(g_U, 105, 305) &&
+              r_mark_suffix_with_optional_y_consonant();
           }
 
           function r_mark_nU() {
@@ -337,11 +340,13 @@
           }
 
           function r_mark_nUn() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_3, 4) && r_mark_suffix_with_optional_n_consonant();
+            return r_check_vowel_harmony() && sbp.find_among_b(a_3, 4) &&
+              r_mark_suffix_with_optional_n_consonant();
           }
 
           function r_mark_yA() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_4, 2) && r_mark_suffix_with_optional_y_consonant();
+            return r_check_vowel_harmony() && sbp.find_among_b(a_4, 2) &&
+              r_mark_suffix_with_optional_y_consonant();
           }
 
           function r_mark_nA() {
@@ -365,7 +370,8 @@
           }
 
           function r_mark_ylA() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_10, 2) && r_mark_suffix_with_optional_y_consonant();
+            return r_check_vowel_harmony() && sbp.find_among_b(a_10, 2) &&
+              r_mark_suffix_with_optional_y_consonant();
           }
 
           function r_mark_ki() {
@@ -373,11 +379,13 @@
           }
 
           function r_mark_ncA() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_11, 2) && r_mark_suffix_with_optional_n_consonant();
+            return r_check_vowel_harmony() && sbp.find_among_b(a_11, 2) &&
+              r_mark_suffix_with_optional_n_consonant();
           }
 
           function r_mark_yUm() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_12, 4) && r_mark_suffix_with_optional_y_consonant();
+            return r_check_vowel_harmony() && sbp.find_among_b(a_12, 4) &&
+              r_mark_suffix_with_optional_y_consonant();
           }
 
           function r_mark_sUn() {
@@ -385,7 +393,8 @@
           }
 
           function r_mark_yUz() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_14, 4) && r_mark_suffix_with_optional_y_consonant();
+            return r_check_vowel_harmony() && sbp.find_among_b(a_14, 4) &&
+              r_mark_suffix_with_optional_y_consonant();
           }
 
           function r_mark_sUnUz() {
@@ -409,19 +418,23 @@
           }
 
           function r_mark_yDU() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_20, 32) && r_mark_suffix_with_optional_y_consonant();
+            return r_check_vowel_harmony() && sbp.find_among_b(a_20, 32) &&
+              r_mark_suffix_with_optional_y_consonant();
           }
 
           function r_mark_ysA() {
-            return sbp.find_among_b(a_21, 8) && r_mark_suffix_with_optional_y_consonant();
+            return sbp.find_among_b(a_21, 8) &&
+              r_mark_suffix_with_optional_y_consonant();
           }
 
           function r_mark_ymUs_() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_22, 4) && r_mark_suffix_with_optional_y_consonant();
+            return r_check_vowel_harmony() && sbp.find_among_b(a_22, 4) &&
+              r_mark_suffix_with_optional_y_consonant();
           }
 
           function r_mark_yken() {
-            return sbp.eq_s_b(3, "ken") && r_mark_suffix_with_optional_y_consonant();
+            return sbp.eq_s_b(3, "ken") &&
+              r_mark_suffix_with_optional_y_consonant();
           }
 
           function habr4() {
