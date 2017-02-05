@@ -18,6 +18,7 @@ The following languages are available:
 * Hungarian
 * Russian
 * Norwegian
+* Japanese
 
 # How to use
 
