@@ -5,6 +5,10 @@
     "version": "0.0.4",
     "license": "MPL-1.1",
     "engine": "node 0.10.1",
+    "repository": { 
+        "type" : "git", 
+        "url" : "https://github.com/MihaiValentin/lunr-languages"
+    },
     "devDependencies": {
         "js-beautify": "^1.5.1",
         "uglify-js": "^2.4.15",
