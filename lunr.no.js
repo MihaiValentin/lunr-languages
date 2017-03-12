@@ -225,10 +225,12 @@
         };
 
       /* and return a function that stems a word for the current locale */
-      return function(word) {
-        st.setCurrent(word);
-        st.stem();
-        return st.getCurrent();
+      return function(token) {
+        return token.update(function(word) {
+          st.setCurrent(word);
+          st.stem();
+          return st.getCurrent();
+        })
       }
     })();
 

@@ -285,9 +285,10 @@
                 var endRegex = new RegExp("[^" + wordCharacters + "]+$")
 
                 return function(token) {
-                    return token
-                        .replace(startRegex, '')
-                        .replace(endRegex, '');
+                    return token.update(function (s) {
+                        return s.replace(startRegex, '')
+                                .replace(endRegex, '');
+                    })
                 };
             }
         }

@@ -59,14 +59,15 @@
         lunr.jp.stopWordFilter,
         lunr.jp.stemmer
       );
+
       // change the tokenizer for japanese one
-      lunr.tokenizer = lunr.jp.tokenizer;
+      this.tokenizer = lunr.jp.tokenizer;
     };
     var segmenter = new lunr.TinySegmenter();  // インスタンス生成
 
     lunr.jp.tokenizer = function (obj) {
         if (!arguments.length || obj == null || obj == undefined) return []
-        if (Array.isArray(obj)) return obj.map(function (t) { return t.toLowerCase() })
+        if (Array.isArray(obj)) return obj.map(function (t) { return new lunr.Token(t.toLowerCase()) })
 
         var str = obj.toString().toLowerCase().replace(/^\s+/, '')
 
@@ -83,7 +84,7 @@
             return !!token
           })
           .map(function (token) {
-            return token
+            return new lunr.Token(token)
           })
     }
 
@@ -101,19 +102,15 @@
 
     /* stop word filter function */
     lunr.jp.stopWordFilter = function(token) {
-      if (lunr.jp.stopWordFilter.stopWords.indexOf(token) === -1) {
+      if (lunr.jp.stopWordFilter.stopWords.indexOf(token.toString()) === -1) {
         return token;
       }
     };
 
-    lunr.jp.stopWordFilter.stopWords = new lunr.SortedSet();
-    lunr.jp.stopWordFilter.stopWords.length = 45;
-
-    // The space at the beginning is crucial: It marks the empty string
-    // as a stop word. lunr.js crashes during search when documents
-    // processed by the pipeline still contain the empty string.
     // stopword for japanese is from http://www.ranks.nl/stopwords/japanese
-    lunr.jp.stopWordFilter.stopWords.elements = ' これ それ あれ この その あの ここ そこ あそこ こちら どこ だれ なに なん 何 私 貴方 貴方方 我々 私達 あの人 あのかた 彼女 彼 です あります おります います は が の に を で え から まで より も どの と し それで しかし'.split(' ');
+    lunr.jp.stopWordFilter = lunr.generateStopWordFilter(
+    'これ それ あれ この その あの ここ そこ あそこ こちら どこ だれ なに なん 何 私 貴方 貴方方 我々 私達 あの人 あのかた 彼女 彼 です あります おります います は が の に を で え から まで より も どの と し それで しかし'.split(' '));
+
     lunr.Pipeline.registerFunction(lunr.jp.stopWordFilter, 'stopWordFilter-jp');
   };
 }))
