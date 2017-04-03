@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <title>Lunr multi-language demo</title>
-    <script src="lib/lunr.js"></script>
+    <script src="../test/lunr/lunr-2.0.0-alpha.5.js"></script>
     <script src="../lunr.stemmer.support.js"></script>
     <script src="../lunr.ru.js"></script>
     <script src="../lunr.multi.js"></script>
@@ -14,25 +14,23 @@
         /* init lunr */
         var idxEn = lunr(function () {
             this.field('body')
+            this.add({"body": "Этот текст написан на русском.", "id": 1})
+            this.add({"body": "This text is written in the English language.", "id": 2})
         });
 
         var idxRu = lunr(function () {
             this.use(lunr.ru);
             this.field('body')
+            this.add({"body": "Этот текст написан на русском.", "id": 1})
+            this.add({"body": "This text is written in the English language.", "id": 2})
         });
 
         var idxMulti = lunr(function () {
             this.use(lunr.multiLanguage('en', 'ru'));
             this.field('body')
+            this.add({"body": "Этот текст написан на русском.", "id": 1})
+            this.add({"body": "This text is written in the English language.", "id": 2})
         });
-
-        idxEn.add({"body": "Этот текст написан на русском.", "id": 1})
-        idxRu.add({"body": "Этот текст написан на русском.", "id": 1})
-        idxMulti.add({"body": "Этот текст написан на русском.", "id": 1})
-
-        idxEn.add({"body": "This text is written in the English language.", "id": 2})
-        idxRu.add({"body": "This text is written in the English language.", "id": 2})
-        idxMulti.add({"body": "This text is written in the English language.", "id": 2})
 
         console.log('Search for `Русских` (English pipeline): ', idxEn.search('Русских'));
         console.log('Search for `languages` (English pipeline): ', idxEn.search('languages'));

@@ -1,27 +1,28 @@
-Lunr languages [![npm](https://img.shields.io/npm/v/lunr-languages.svg)](https://www.npmjs.com/package/lunr-languages) [![Bower](https://img.shields.io/bower/v/lunr-languages.svg)]() [![Join the chat at https://gitter.im/lunr-languages/Lobby](https://badges.gitter.im/lunr-languages/Lobby.svg)](https://gitter.im/lunr-languages/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+Lunr Languages [![npm](https://img.shields.io/npm/v/lunr-languages.svg)](https://www.npmjs.com/package/lunr-languages) [![Bower](https://img.shields.io/bower/v/lunr-languages.svg)]() [![Join the chat at https://gitter.im/lunr-languages/Lobby](https://badges.gitter.im/lunr-languages/Lobby.svg)](https://gitter.im/lunr-languages/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![](https://img.shields.io/badge/compatible%20with%20Lunr-0.6.0%20--%3E%202.0.0-green.svg)](http://lunrjs.com/)
 ==============
 
-This project features a collection of languages stemmers and stopwords for [Lunr](http://lunrjs.com/) Javascript library (which currently only supports English).
+Lunr Languages is a [Lunr](http://lunrjs.com/) addon that helps you search in documents written in the following languages:
 
-The following languages are available:
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/DE.png) German
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/FR.png) French
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/ES.png) Spanish
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/IT.png) Italian
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/JP.png) Japanese
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/NL.png) Dutch
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/DK.png) Danish
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/PT.png) Portuguese
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/FI.png) Finnish
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/RO.png) Romanian
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/HU.png) Hungarian
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/RU.png) Russian
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/NO.png) Norwegian
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/WW.png) [Contribute with a new language](CONTRIBUTING.md)
 
-* German
-* French
-* Spanish
-* Italian
-* Japanese
-* Dutch
-* Danish
-* Portuguese
-* Finnish
-* Romanian
-* Hungarian
-* Russian
-* Norwegian
+Lunr Languages is compatible with Lunr version `0.6`, `0.7`, `1.0` and `2.0 (latest alpha)`.
 
 # How to use
 
-Lunr-languages supports AMD and CommonJS. Check out the examples below:
+Lunr-languages works well with script loaders (Webpack, requirejs) and can be used in the browser and on the server.
 
 ## In a web browser
 
@@ -30,19 +31,21 @@ The following example is for the German language (de).
 Add the following JS files to the page:
 
 ```html
+<script src="lunr.js"></script> <!-- lunr.js library -->
 <script src="lunr.stemmer.support.js"></script>
-<script src="lunr.de.js"></script>
+<script src="lunr.de.js"></script> <!-- or any other language you want -->
 ```
 
 then, use the language in when initializing lunr:
 
 ```javascript
 var idx = lunr(function () {
-    // use the language (de)
-    this.use(lunr.de);
-    // then, the normal lunr index initialization
-    this.field('title', { boost: 10 });
-    this.field('body');
+  // use the language (de)
+  this.use(lunr.de);
+  // then, the normal lunr index initialization
+  this.field('title', { boost: 10 });
+  this.field('body');
+  // now you can call this.add(...) to add documents written in German
 });
 ```
 
@@ -60,19 +63,20 @@ then, use the language in when initializing lunr:
 
 ```javascript
 require(['lib/lunr.js', '../lunr.stemmer.support.js', '../lunr.de.js'], function(lunr, stemmerSupport, de) {
-    // since the stemmerSupport and de add keys on the lunr object, we'll pass it as reference to them
-    // in the end, we will only need lunr.
-    stemmerSupport(lunr); // adds lunr.stemmerSupport
-    de(lunr); // adds lunr.de key
+  // since the stemmerSupport and de add keys on the lunr object, we'll pass it as reference to them
+  // in the end, we will only need lunr.
+  stemmerSupport(lunr); // adds lunr.stemmerSupport
+  de(lunr); // adds lunr.de key
 
-    // at this point, lunr can be used
-    var idx = lunr(function () {
-        // use the language (de)
-        this.use(lunr.de);
-        // then, the normal lunr index initialization
-        this.field('title', { boost: 10 })
-        this.field('body')
-    });
+  // at this point, lunr can be used
+  var idx = lunr(function () {
+  // use the language (de)
+  this.use(lunr.de);
+  // then, the normal lunr index initialization
+  this.field('title', { boost: 10 })
+  this.field('body')
+  // now you can call this.add(...) to add documents written in German
+  });
 });
 ```
 
@@ -81,14 +85,15 @@ require(['lib/lunr.js', '../lunr.stemmer.support.js', '../lunr.de.js'], function
 ```javascript
 var lunr = require('./lib/lunr.js');
 require('./lunr.stemmer.support.js')(lunr);
-require('./lunr.de.js')(lunr);
+require('./lunr.de.js')(lunr); // or any other language you want
 
 var idx = lunr(function () {
-    // use the language (de)
-    this.use(lunr.de);
-    // then, the normal lunr index initialization
-    this.field('title', { boost: 10 })
-    this.field('body')
+  // use the language (de)
+  this.use(lunr.de);
+  // then, the normal lunr index initialization
+  this.field('title', { boost: 10 })
+  this.field('body')
+  // now you can call this.add(...) to add documents written in German
 });
 ```
 
@@ -103,9 +108,10 @@ require('./lunr.ru.js')(lunr);
 require('./lunr.multi.js')(lunr);
 
 var idx = lunr(function () {
-    this.use(lunr.multiLanguage('en', 'ru'));
-    // then, the normal lunr index initialization
-    // ...
+  // the reason "en" does not appear above is that "en" is built in into lunr js
+  this.use(lunr.multiLanguage('en', 'ru'));
+  // then, the normal lunr index initialization
+  // ...
 });
 ```
 
@@ -118,20 +124,32 @@ lunr.multiLanguage('en', 'ru');
 var idx = lunr.Index.load(serializedIndex);
 ```
 
-# Building your own files
+# How to add a new language
 
-The `lunr.<locale>.js` files are the result of a build process that concatenates a stemmer and a stop word list and add functionality to become lunr.js-compatible.
-Should you decide to make mass-modifications (add stopwords, change stemming rules, reorganize the code) and build a new set of files, you should do follow these steps:
+Check the [Contributing](CONTRIBUTING.md) section
 
-* `git clone --recursive git://github.com/MihaiValentin/lunr-languages.git` (make sure you use the `--recursive` flag to also clone the repos needed to build `lunr-languages`)
-* `cd path/to/lunr-languages`
-* `npm install` to install the dependencies needed for building
-* change the `build/*.template` files
-* run `node build/build.js` to generate the `lunr.<locale>.js` files (and the minified versions as well) and the `lunr.stemmer.support.js` file
+# How does Lunr Languages work?
+
+Searching inside documents is not as straight forward as using `indexOf()`, since there are many things to consider in order to get quality search results:
+* **Tokenization**
+    * Given a string like *"Hope you like using Lunr Languages!"*, the tokenizer would split it into individual words, becoming an array like `['Hope', 'you', 'like', 'using', 'Lunr', 'Languages!']`
+    * Though it seems a trivial task for Latin characters (just splitting by the space), it gets more complicated for languages like Japanese. Lunr Languages has this included for the Japanese language.
+* **Trimming**
+    * After tokenization, trimming ensures that the words contain *just* what is needed in them. In our example above, the trimmer would convert `Languages!` into `Languages`
+    * So, the trimmer basically removes special characters that do not add value for the search purpose.
+* **Stemming**
+    * What happens if our text contains the word `consignment` but we want to search for `consigned`? It should find it, since its meaning is the same, only the form is different.
+    * A stemmer extracts the root of words that can have many forms and stores it in the index. Then, any search is also stemmed and searched in the index.
+    * Lunr Languages does stemming for all the included languages, so you can capture all the forms of words in your documents.
+* **Stop words**
+    * There's no point in adding or searching words like `the`, `it`, `so`, etc. These words are called *Stop words*
+    * Stop words are removed so your index will only contain meaningful words.
+    * Lunr Languages includes stop words for all the included languages.
 
 # Technical details & Credits
 
-I've created this project by compiling and wrapping stemmers toghether with stop words from various sources so they can be directly used with Lunr.
+I've created this project by compiling and wrapping stemmers toghether with stop words from various sources so they can be directly used with all the current versions of Lunr.
 
-*   <https://github.com/fortnightlabs/snowball-js> (the stemmers for all languages, ported from snowball-js)
-*   <https://github.com/brenes/stopwords-filter> (the stop words list for the other languages)
+* <https://github.com/fortnightlabs/snowball-js> (the stemmers for all languages, ported from snowball-js)
+* <https://github.com/brenes/stopwords-filter> (the stop words list for the other languages)
+* <http://chasen.org/~taku/software/TinySegmenter/> (the tinyseg Tiny Segmente Japanese tokenizer)

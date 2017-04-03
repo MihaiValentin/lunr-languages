@@ -2,7 +2,7 @@
 <html>
 <head>
     <title></title>
-    <script src="lib/lunr.js"></script>
+    <script src="../test/lunr/lunr-0.7.0.min.js"></script>
     <script src="../lunr.stemmer.support.js"></script>
     <script src="../lunr.de.js"></script>
 </head>
@@ -21,7 +21,7 @@
         /* add documents to index */
         idx.add({
             "title": "Deutschland",
-            "body": "An Deutschland grenzen neun Nachbarländer und naturräumlich im Norden die Gewässer der Nord- und Ostsee, im Süden das Bergland der Alpen. Es liegt in der gemäßigten Klimazone, zählt mit rund 80 Millionen Einwohnern zu den dicht besiedelten Flächenstaaten und gilt international als das Land mit der dritthöchsten Zahl von Einwanderern.",
+            "body": "auffassen An Deutschland grenzen neun Nachbarländer und naturräumlich im Norden die Gewässer der Nord- und Ostsee, im Süden das Bergland der Alpen. Es liegt in der gemäßigten Klimazone, zählt mit rund 80 Millionen Einwohnern zu den dicht besiedelten Flächenstaaten und gilt international als das Land mit der dritthöchsten Zahl von Einwanderern.",
             "id": 1
         });
         idx.add({
@@ -30,9 +30,8 @@
             "id": 2
         });
 
-        console.log('Search for `Deutsch`: ', idx.search('Deutsch'));
-        console.log('Search for `Urlaubsziel`: ', idx.search('Urlaubsziel'));
-        console.log('Search for `inexistent`: ', idx.search('inexistent'));
+        console.log('Search for `auffassen`: ', idx.search('auffassen'));
+        console.log('Search for `auffassung`: ', idx.search('auffassung'));
     </script>
 </body>
 </html>

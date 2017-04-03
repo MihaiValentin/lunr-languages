@@ -3,7 +3,8 @@
 <head>
     <title></title>
     <meta charset="UTF-8">
-    <script src="lib/lunr.js"></script>
+    <script src="../test/lunr/lunr-0.7.0.min.js"></script>
+    <!--<script src="../test/lunr/lunr-2.0.0-alpha.5.js"></script>-->
     <script src="../lunr.stemmer.support.js" charset="UTF-8"></script>
     <script src="../tinyseg.js" charset="UTF-8"></script>
     <script src="../lunr.jp.js" charset="UTF-8"></script>
@@ -18,18 +19,13 @@
             // then, the normal lunr index initialization
             this.field('title', { boost: 10 })
             this.field('body')
-        });
 
-        /* add documents to index */
-        idx.add({
-            "title": "名前",
-            "body": "私の名前は中野です",
-            "id": 1
-        });
-        idx.add({
-            "title": "Tourismus in Deutschland",
-            "body": "Deutschland als Urlaubsziel verfügt über günstige Voraussetzungen: Gebirgslandschaften (Alpen und Mittelgebirge), See- und Flusslandschaften, die Küsten und Inseln der Nord- und Ostsee, zahlreiche Kulturdenkmäler und eine Vielzahl geschichtsträchtiger Städte sowie gut ausgebaute Infrastruktur. Vorteilhaft ist die zentrale Lage in Europa.",
-            "id": 2
+            /* add documents to index */
+            this.add({
+                "title": "名前",
+                "body": "私の名前は中野です",
+                "id": 1
+            });
         });
 
         console.log('Search for `中野`: ', idx.search('中野'));
