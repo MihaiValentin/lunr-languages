@@ -11,8 +11,8 @@ var lunrVersions = [
         version: "1.0.0",
         lunr: "lunr-1.0.0.min"
     }, {
-        version: "2.0.0-alpha.5",
-        lunr: "lunr-2.0.0-alpha.5"
+        version: "2.0.1",
+        lunr: "lunr-2.0.1"
     }
 ];
 
