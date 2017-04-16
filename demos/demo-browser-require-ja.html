@@ -2,22 +2,23 @@
 <html>
 <head>
     <title></title>
+    <meta charset="UTF-8">
     <script src="lib/require.js"></script>
 </head>
 <body>
     <p>Open developer tools and observe the results in the Console tab. View source for code.</p>
     <script>
-        require(['../test/lunr/lunr-0.7.0.min.js', '../lunr.stemmer.support.js', '../tinyseg.js', '../lunr.jp.js'], function(lunr, stemmerSupport, TinySegmenter, jp) {
-            // since the `stemmerSupport` and `jp` add keys on the lunr object, we'll pass it as reference to them
+        require(['../test/lunr/lunr-0.7.0.min.js', '../lunr.stemmer.support.js', '../tinyseg.js', '../lunr.ja.js'], function(lunr, stemmerSupport, TinySegmenter, ja) {
+            // since the `stemmerSupport` and `ja` add keys on the lunr object, we'll pass it as reference to them
             // in the end, we will only need `lunr`.
             stemmerSupport(lunr); // adds `lunr.stemmerSupport`
             TinySegmenter(lunr);
-            jp(lunr); // adds `lunr.jp` key
+            ja(lunr); // adds `lunr.ja` key
 
             // at this point, `lunr` can be used
             var idx = lunr(function () {
-                // use the language (jp)
-                this.use(lunr.jp);
+                // use the language (ja)
+                this.use(lunr.ja);
                 // then, the normal lunr index initialization
                 this.field('title', { boost: 10 })
                 this.field('body')
