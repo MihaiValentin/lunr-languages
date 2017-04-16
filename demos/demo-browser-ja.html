@@ -7,15 +7,15 @@
     <!--<script src="../test/lunr/lunr-2.0.0-alpha.5.js"></script>-->
     <script src="../lunr.stemmer.support.js" charset="UTF-8"></script>
     <script src="../tinyseg.js" charset="UTF-8"></script>
-    <script src="../lunr.jp.js" charset="UTF-8"></script>
+    <script src="../lunr.ja.js" charset="UTF-8"></script>
 </head>
 <body>
     <p>Open developer tools and observe the results in the Console tab. View source for code.</p>
     <script>
         /* init lunr */
         var idx = lunr(function () {
-            // use the language (de)
-            this.use(lunr.jp);
+            // use the language (ja)
+            this.use(lunr.ja);
             // then, the normal lunr index initialization
             this.field('title', { boost: 10 })
             this.field('body')
