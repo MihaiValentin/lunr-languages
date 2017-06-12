@@ -86,7 +86,7 @@
     var segmenter = require('wordcut');
     segmenter.init();
     lunr.th.tokenizer = function (obj) {
-      console.log(obj);
+      //console.log(obj);
       if (!arguments.length || obj == null || obj == undefined) return []
       if (Array.isArray(obj)) return obj.map(function (t) { return isLunr2 ? new lunr.Token(t) : t })
 
