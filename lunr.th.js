@@ -83,7 +83,7 @@
     lunr.th.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.th.wordCharacters);
     lunr.Pipeline.registerFunction(lunr.th.trimmer, 'trimmer-th');
 
-    var segmenter = require('wordcut');
+    var segmenter = lunr.wordcut;
     segmenter.init();
     lunr.th.tokenizer = function (obj) {
       //console.log(obj);
