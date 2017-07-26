@@ -85,25 +85,74 @@
         var segmenter = new lunr.TinySegmenter();  // インスタンス生成
 
         lunr.ja.tokenizer = function (obj) {
-            if (!arguments.length || obj == null || obj == undefined) return []
-            if (Array.isArray(obj)) return obj.map(function (t) { return isLunr2 ? new lunr.Token(t.toLowerCase()) : t.toLowerCase() })
+            var i;
+            var str;
+            var len;
+            var segs;
+            var tokens;
+            var char;
+            var sliceLength;
+            var sliceStart;
+            var sliceEnd;
+            var segStart;
 
-            var str = obj.toString().toLowerCase().replace(/^\s+/, '')
+            if (!arguments.length || obj == null || obj == undefined)
+                return [];
 
-            for (var i = str.length - 1; i >= 0; i--) {
+            if (Array.isArray(obj)) {
+                return obj.map(
+                    function (t) {
+                        return isLunr2 ? new lunr.Token(t.toLowerCase()) : t.toLowerCase();
+                    }
+                );
+            }
+
+            str = obj.toString().toLowerCase().replace(/^\s+/, '');
+            for (i = str.length - 1; i >= 0; i--) {
                 if (/\S/.test(str.charAt(i))) {
-                    str = str.substring(0, i + 1)
-                    break
+                    str = str.substring(0, i + 1);
+                    break;
                 }
             }
 
-            var segs = segmenter.segment(str);  // 単語の配列が返る
-            return segs.filter(function (token) {
-                    return !!token
-                })
-                .map(function (token) {
-                    return isLunr2 ? new lunr.Token(token) : token
-                })
+            tokens = [];
+            len = str.length;
+            for (sliceEnd = 0, sliceStart = 0; sliceEnd <= len; sliceEnd++) {
+                char = str.charAt(sliceEnd);
+                sliceLength = sliceEnd - sliceStart;
+
+                if ((char.match(/\s/) || sliceEnd == len)) {
+                    if (sliceLength > 0) {
+                        segs = segmenter.segment(str.slice(sliceStart, sliceEnd)).filter(
+                            function (token) {
+                                return !!token;
+                            }
+                        );
+
+                        segStart = sliceStart;
+                        for (i = 0; i < segs.length; i++) {
+                            if (isLunr2) {
+                                tokens.push(
+                                    new lunr.Token(
+                                        segs[i],
+                                        {
+                                            position: [segStart, segs[i].length],
+                                            index: tokens.length
+                                        }
+                                    )
+                                );
+                            } else {
+                                tokens.push(segs[i]);
+                            }
+                            segStart += segs[i].length;
+                        }
+                    }
+
+                    sliceStart = sliceEnd + 1;
+                }
+            }
+
+            return tokens;
         }
 
         /* lunr stemmer function */
