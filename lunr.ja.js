@@ -114,21 +114,16 @@
                 return word;
             }
         })();
-
         lunr.Pipeline.registerFunction(lunr.ja.stemmer, 'stemmer-ja');
+
+        /* lunr trimmer function */
         lunr.ja.wordCharacters = "一二三四五六七八九十百千万億兆一-龠々〆ヵヶぁ-んァ-ヴーｱ-ﾝﾞa-zA-Zａ-ｚＡ-Ｚ0-9０-９";
+        lunr.ja.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.ja.wordCharacters);
+        lunr.Pipeline.registerFunction(lunr.ja.trimmer, 'trimmer-ja');
 
-        /* stop word filter function */
-        lunr.ja.stopWordFilter = function(token) {
-            if (lunr.ja.stopWordFilter.stopWords.indexOf(isLunr2 ? token.toString() : token) === -1) {
-                return token;
-            }
-        };
-
-        // stopword for japanese is from http://www.ranks.nl/stopwords/japanese
+        /* lunr stop word filter. see http://www.ranks.nl/stopwords/japanese */
         lunr.ja.stopWordFilter = lunr.generateStopWordFilter(
             'これ それ あれ この その あの ここ そこ あそこ こちら どこ だれ なに なん 何 私 貴方 貴方方 我々 私達 あの人 あのかた 彼女 彼 です あります おります います は が の に を で え から まで より も どの と し それで しかし'.split(' '));
-
         lunr.Pipeline.registerFunction(lunr.ja.stopWordFilter, 'stopWordFilter-ja');
 
         // alias ja => jp for backward-compatibility.
@@ -138,6 +133,7 @@
         // here for a while, and just make it use the new lunr.ja.js
         lunr.jp = lunr.ja;
         lunr.Pipeline.registerFunction(lunr.jp.stemmer, 'stemmer-jp');
+        lunr.Pipeline.registerFunction(lunr.jp.trimmer, 'trimmer-jp');
         lunr.Pipeline.registerFunction(lunr.jp.stopWordFilter, 'stopWordFilter-jp');
     };
 }))
