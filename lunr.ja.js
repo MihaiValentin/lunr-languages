@@ -66,6 +66,7 @@
         lunr.ja = function() {
             this.pipeline.reset();
             this.pipeline.add(
+                lunr.ja.trimmer,
                 lunr.ja.stopWordFilter,
                 lunr.ja.stemmer
             );
@@ -85,25 +86,74 @@
         var segmenter = new lunr.TinySegmenter();  // インスタンス生成
 
         lunr.ja.tokenizer = function (obj) {
-            if (!arguments.length || obj == null || obj == undefined) return []
-            if (Array.isArray(obj)) return obj.map(function (t) { return isLunr2 ? new lunr.Token(t.toLowerCase()) : t.toLowerCase() })
+            var i;
+            var str;
+            var len;
+            var segs;
+            var tokens;
+            var char;
+            var sliceLength;
+            var sliceStart;
+            var sliceEnd;
+            var segStart;
 
-            var str = obj.toString().toLowerCase().replace(/^\s+/, '')
+            if (!arguments.length || obj == null || obj == undefined)
+                return [];
 
-            for (var i = str.length - 1; i >= 0; i--) {
+            if (Array.isArray(obj)) {
+                return obj.map(
+                    function (t) {
+                        return isLunr2 ? new lunr.Token(t.toLowerCase()) : t.toLowerCase();
+                    }
+                );
+            }
+
+            str = obj.toString().toLowerCase().replace(/^\s+/, '');
+            for (i = str.length - 1; i >= 0; i--) {
                 if (/\S/.test(str.charAt(i))) {
-                    str = str.substring(0, i + 1)
-                    break
+                    str = str.substring(0, i + 1);
+                    break;
                 }
             }
 
-            var segs = segmenter.segment(str);  // 単語の配列が返る
-            return segs.filter(function (token) {
-                    return !!token
-                })
-                .map(function (token) {
-                    return isLunr2 ? new lunr.Token(token) : token
-                })
+            tokens = [];
+            len = str.length;
+            for (sliceEnd = 0, sliceStart = 0; sliceEnd <= len; sliceEnd++) {
+                char = str.charAt(sliceEnd);
+                sliceLength = sliceEnd - sliceStart;
+
+                if ((char.match(/\s/) || sliceEnd == len)) {
+                    if (sliceLength > 0) {
+                        segs = segmenter.segment(str.slice(sliceStart, sliceEnd)).filter(
+                            function (token) {
+                                return !!token;
+                            }
+                        );
+
+                        segStart = sliceStart;
+                        for (i = 0; i < segs.length; i++) {
+                            if (isLunr2) {
+                                tokens.push(
+                                    new lunr.Token(
+                                        segs[i],
+                                        {
+                                            position: [segStart, segs[i].length],
+                                            index: tokens.length
+                                        }
+                                    )
+                                );
+                            } else {
+                                tokens.push(segs[i]);
+                            }
+                            segStart += segs[i].length;
+                        }
+                    }
+
+                    sliceStart = sliceEnd + 1;
+                }
+            }
+
+            return tokens;
         }
 
         /* lunr stemmer function */
@@ -114,21 +164,16 @@
                 return word;
             }
         })();
-
         lunr.Pipeline.registerFunction(lunr.ja.stemmer, 'stemmer-ja');
+
+        /* lunr trimmer function */
         lunr.ja.wordCharacters = "一二三四五六七八九十百千万億兆一-龠々〆ヵヶぁ-んァ-ヴーｱ-ﾝﾞa-zA-Zａ-ｚＡ-Ｚ0-9０-９";
+        lunr.ja.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.ja.wordCharacters);
+        lunr.Pipeline.registerFunction(lunr.ja.trimmer, 'trimmer-ja');
 
-        /* stop word filter function */
-        lunr.ja.stopWordFilter = function(token) {
-            if (lunr.ja.stopWordFilter.stopWords.indexOf(isLunr2 ? token.toString() : token) === -1) {
-                return token;
-            }
-        };
-
-        // stopword for japanese is from http://www.ranks.nl/stopwords/japanese
+        /* lunr stop word filter. see http://www.ranks.nl/stopwords/japanese */
         lunr.ja.stopWordFilter = lunr.generateStopWordFilter(
             'これ それ あれ この その あの ここ そこ あそこ こちら どこ だれ なに なん 何 私 貴方 貴方方 我々 私達 あの人 あのかた 彼女 彼 です あります おります います は が の に を で え から まで より も どの と し それで しかし'.split(' '));
-
         lunr.Pipeline.registerFunction(lunr.ja.stopWordFilter, 'stopWordFilter-ja');
 
         // alias ja => jp for backward-compatibility.
@@ -138,6 +183,7 @@
         // here for a while, and just make it use the new lunr.ja.js
         lunr.jp = lunr.ja;
         lunr.Pipeline.registerFunction(lunr.jp.stemmer, 'stemmer-jp');
+        lunr.Pipeline.registerFunction(lunr.jp.trimmer, 'trimmer-jp');
         lunr.Pipeline.registerFunction(lunr.jp.stopWordFilter, 'stopWordFilter-jp');
     };
 }))
