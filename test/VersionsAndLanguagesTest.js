@@ -32,7 +32,8 @@ var testDocuments = {
     ro: require('./testdata/ro'),
     ru: require('./testdata/ru'),
     sv: require('./testdata/sv'),
-    tr: require('./testdata/tr')
+    tr: require('./testdata/tr'),
+    th: require('./testdata/th')
 };
 
 lunrVersions.forEach(function(lunrVersion) {
@@ -99,6 +100,9 @@ lunrVersions.forEach(function(lunrVersion) {
                 require('../lunr.stemmer.support.js')(lunr);
                 if (language === 'ja' || language === 'jp') {    // for japanese, we must also load the tinyseg tokenizer
                     require('../tinyseg')(lunr);
+                }
+                if (language === 'th') {    // for thai, we must also load the wordcut tokenizer
+                    lunr.wordcut = require('../wordcut');
                 }
                 require('../lunr.' + language + '.js')(lunr);
 
