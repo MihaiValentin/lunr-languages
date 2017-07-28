@@ -69,6 +69,10 @@ var list = [{
     stopwords: stopwordsRepoFolder + 'it.csv',
     wordCharacters: wordCharacters('Latin')
 }, {
+    locale: 'ja'
+}, {
+    locale: 'jp'
+}, {
     locale: 'no',
     file: 'NorwegianStemmer.js',
     stopwords: stopwordsCustomFolder + 'no.csv',
@@ -114,23 +118,35 @@ var cm = fs.readFileSync('build/lunr.comments', 'utf8');
 // for each language, start building
 for(var i = 0; i < list.length; i++) {
     console.log('Building for "' + list[i].locale + '"');
-    var data = fs.readFileSync('build/snowball-js/stemmer/src/ext/' + list[i].file, 'utf8');
-    var stopWords = fs.readFileSync('build/' + list[i].stopwords, 'utf8');
-    var f = tpl;
+    var data;
+    var stopWords;
+    var f;
+    var fromTemplate = list[i].file && list[i].stopwords;
 
-    // start replacing the placeholders
-    f = cm + f;
-    f = f.replace(/\{\{locale\}\}/g, list[i].locale);
-    f = f.replace(/\{\{stemmerFunction\}\}/g, data.substring(data.indexOf('function')));
-    f = f.replace(/\{\{stopWords\}\}/g, stopWords.split(',').sort().join(' '));
-    f = f.replace(/\{\{stopWordsLength\}\}/g, stopWords.split(',').length + 1);
-    f = f.replace(/\{\{languageName\}\}/g, list[i].file.replace(/Stemmer\.js/g, ''));
-    f = f.replace(/\{\{wordCharacters\}\}/g, list[i].wordCharacters);
+    if (fromTemplate) {
+        data = fs.readFileSync('build/snowball-js/stemmer/src/ext/' + list[i].file, 'utf8');
+        stopWords = fs.readFileSync('build/' + list[i].stopwords, 'utf8');
+
+        // start replacing the placeholders
+        f = tpl;
+        f = cm + f;
+        f = f.replace(/\{\{locale\}\}/g, list[i].locale);
+        f = f.replace(/\{\{stemmerFunction\}\}/g, data.substring(data.indexOf('function')));
+        f = f.replace(/\{\{stopWords\}\}/g, stopWords.split(',').sort().join(' '));
+        f = f.replace(/\{\{stopWordsLength\}\}/g, stopWords.split(',').length + 1);
+        f = f.replace(/\{\{languageName\}\}/g, list[i].file.replace(/Stemmer\.js/g, ''));
+        f = f.replace(/\{\{wordCharacters\}\}/g, list[i].wordCharacters);
+    } else {
+        // beautify andminify languages not generated from the template.
+        f = fs.readFileSync('lunr.' + list[i].locale + '.js', 'utf8');
+    }
 
     // write the full file
     fs.writeFile('lunr.' + list[i].locale + '.js', beautify(f, { indent_size: 2 }));
     // and the minified version
-    fs.writeFile('min/lunr.' + list[i].locale + '.min.js', cm.replace(/\{\{languageName\}\}/g, list[i].file.replace(/Stemmer\.js/g, '')) + compress(f));
+    fs.writeFile('min/lunr.' + list[i].locale + '.min.js',
+        fromTemplate ? cm.replace(/\{\{languageName\}\}/g, list[i].file.replace(/Stemmer\.js/g, '')) + compress(f) : compress(f)
+    );
 }
 
 console.log('Building Stemmer Support');
