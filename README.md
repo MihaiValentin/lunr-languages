@@ -3,21 +3,21 @@ Lunr Languages [![npm](https://img.shields.io/npm/v/lunr-languages.svg)](https:/
 
 Lunr Languages is a [Lunr](http://lunrjs.com/) addon that helps you search in documents written in the following languages:
 
-* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/DE.png) German
-* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/FR.png) French
-* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/ES.png) Spanish
-* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/IT.png) Italian
-* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/JP.png) Japanese
-* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/NL.png) Dutch
-* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/DK.png) Danish
-* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/PT.png) Portuguese
-* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/FI.png) Finnish
-* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/RO.png) Romanian
-* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/HU.png) Hungarian
-* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/RU.png) Russian
-* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/NO.png) Norwegian
-* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/TH.png) Thai
-* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Images/WW.png) [Contribute with a new language](CONTRIBUTING.md)
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/DE.png) German
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/FR.png) French
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/ES.png) Spanish
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IT.png) Italian
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/JP.png) Japanese
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/NL.png) Dutch
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/DK.png) Danish
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/PT.png) Portuguese
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/FI.png) Finnish
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/RO.png) Romanian
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/HU.png) Hungarian
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/RU.png) Russian
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/NO.png) Norwegian
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/TH.png) Thai
+* [Contribute with a new language](CONTRIBUTING.md)
 
 Lunr Languages is compatible with Lunr version `0.6`, `0.7`, `1.0` and `2.0 (latest alpha)`.
 
