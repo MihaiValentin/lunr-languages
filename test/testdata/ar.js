@@ -33,7 +33,7 @@ module.exports = {
             found: 0
         },{
             what: "find a correctly stemmed word %w",
-            search: "مسلم",
+            search: "كتب",
             found: 2
         }
     ]
