@@ -19,7 +19,7 @@ var lunrVersions = [
 var testDocuments = {
     de: require('./testdata/de'),
     da: require('./testdata/da'),
-    du: require('./testdata/du'),
+    du: require('./testdata/nl'),
     es: require('./testdata/es'),
     fi: require('./testdata/fi'),
     fr: require('./testdata/fr'),
@@ -27,6 +27,7 @@ var testDocuments = {
     it: require('./testdata/it'),
     ja: require('./testdata/ja'),
     jp: require('./testdata/ja'),
+    nl: require('./testdata/nl'),
     no: require('./testdata/no'),
     pt: require('./testdata/pt'),
     ro: require('./testdata/ro'),
