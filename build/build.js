@@ -39,7 +39,7 @@ var list = [{
     stopwords: stopwordsRepoFolder + 'da.csv',
     wordCharacters: wordCharacters('Latin')
 }, {
-    locale: 'du',
+    locale: 'nl',
     file: 'DutchStemmer.js',
     stopwords: stopwordsRepoFolder + 'nl.csv',
     wordCharacters: wordCharacters('Latin')
