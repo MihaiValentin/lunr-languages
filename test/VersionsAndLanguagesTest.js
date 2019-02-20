@@ -13,7 +13,11 @@ var lunrVersions = [
     }, {
         version: "2.0.1",
         lunr: "lunr-2.0.1"
+    }, {
+        version: "2.3.5",
+        lunr: "lunr-2.3.5"
     }
+    
 ];
 
 var testDocuments = {
