@@ -142,9 +142,9 @@ for(var i = 0; i < list.length; i++) {
     }
 
     // write the full file
-    fs.writeFile('lunr.' + list[i].locale + '.js', beautify(f, { indent_size: 2 }));
+    fs.writeFileSync('lunr.' + list[i].locale + '.js', beautify(f, { indent_size: 2 }));
     // and the minified version
-    fs.writeFile('min/lunr.' + list[i].locale + '.min.js',
+    fs.writeFileSync('min/lunr.' + list[i].locale + '.min.js',
         fromTemplate ? cm.replace(/\{\{languageName\}\}/g, list[i].file.replace(/Stemmer\.js/g, '')) + compress(f) : compress(f)
     );
 }
@@ -152,10 +152,10 @@ for(var i = 0; i < list.length; i++) {
 console.log('Building Stemmer Support');
 // build stemmer support
 var support = fs.readFileSync('lunr.stemmer.support.js', 'utf8');
-fs.writeFile('min/lunr.stemmer.support.min.js', compress(support));
+fs.writeFileSync('min/lunr.stemmer.support.min.js', compress(support));
 console.log('Building Multi-Language Extension');
 // build multi
 var multi = fs.readFileSync('lunr.multi.js', 'utf8');
-fs.writeFile('min/lunr.multi.min.js', compress(multi));
+fs.writeFileSync('min/lunr.multi.min.js', compress(multi));
 
 console.log('Done!');
