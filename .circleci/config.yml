@@ -1,0 +1,11 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/lunr-languages
+    docker:
+      - image: circleci/node:4.8.2
+    steps:
+      - checkout
+      - run:
+          name: test
+          command: npm test
