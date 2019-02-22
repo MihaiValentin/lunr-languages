@@ -149,7 +149,7 @@ for(var i = 0; i < list.length; i++) {
         f = f.replace(/\{\{languageName\}\}/g, list[i].file.replace(/Stemmer\.js/g, ''));
         f = f.replace(/\{\{wordCharacters\}\}/g, list[i].wordCharacters);
 
-        f = f.replace(/\{\{consoleWarning\}\}/g, list[i].warningMessage ? '\n\nconsole.warn(' + JSON.stringify(list[i].warningMessage) + ')' : '');
+        f = f.replace(/\{\{consoleWarning\}\}/g, list[i].warningMessage ? '\n\nconsole.warn(' + JSON.stringify(list[i].warningMessage) + ');' : '');
     } else {
         // beautify andminify languages not generated from the template.
         f = fs.readFileSync('lunr.' + list[i].locale + '.js', 'utf8');
