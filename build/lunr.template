@@ -32,7 +32,7 @@
         /* throw error if lunr stemmer support is not yet included */
         if ('undefined' === typeof lunr.stemmerSupport) {
             throw new Error('Lunr stemmer support is not present. Please include / require Lunr stemmer support before this script.');
-        }
+        }{{consoleWarning}}
 
         /* register specific locale function */
         lunr.{{locale}} = function () {

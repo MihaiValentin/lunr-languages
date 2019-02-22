@@ -39,10 +39,22 @@ var list = [{
     stopwords: stopwordsRepoFolder + 'da.csv',
     wordCharacters: wordCharacters('Latin')
 }, {
-    locale: 'du',
+    locale: 'nl',
     file: 'DutchStemmer.js',
     stopwords: stopwordsRepoFolder + 'nl.csv',
     wordCharacters: wordCharacters('Latin')
+}, {
+    /*
+    Kept here to prevent breaking changes.
+    The correct code for Dutch is NL.
+    Please do not use "du" anymore, start using "nl".
+    I will remove "du" next time I'll build a major, backward incompatible package
+    */
+    locale: 'du',
+    file: 'DutchStemmer.js',
+    stopwords: stopwordsRepoFolder + 'nl.csv',
+    wordCharacters: wordCharacters('Latin'),
+    warningMessage: '[Lunr Languages] Please use the "nl" instead of the "du". The "nl" code is the standard code for Dutch language, and "du" will be removed in the next major versions.'
 }, {
     locale: 'fi',
     file: 'FinnishStemmer.js',
@@ -136,6 +148,8 @@ for(var i = 0; i < list.length; i++) {
         f = f.replace(/\{\{stopWordsLength\}\}/g, stopWords.split(',').length + 1);
         f = f.replace(/\{\{languageName\}\}/g, list[i].file.replace(/Stemmer\.js/g, ''));
         f = f.replace(/\{\{wordCharacters\}\}/g, list[i].wordCharacters);
+
+        f = f.replace(/\{\{consoleWarning\}\}/g, list[i].warningMessage ? '\n\nconsole.warn(' + JSON.stringify(list[i].warningMessage) + ')' : '');
     } else {
         // beautify andminify languages not generated from the template.
         f = fs.readFileSync('lunr.' + list[i].locale + '.js', 'utf8');
