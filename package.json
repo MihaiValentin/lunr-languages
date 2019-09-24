@@ -18,5 +18,8 @@
     "mocha": "^3.2.0",
     "uglify-js": "^2.4.15",
     "unicode-8.0.0": "^0.1.5"
+  },
+  "dependencies": {
+    "nodejieba": "^2.3.0"
   }
 }

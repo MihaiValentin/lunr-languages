@@ -52,16 +52,6 @@
       throw new Error('Lunr stemmer support is not present. Please include / require Lunr stemmer support before this script.');
     }
 
-    /*
-    Japanese tokenization is trickier, since it does not
-    take into account spaces.
-    Since the tokenization function is represented different
-    internally for each of the Lunr versions, this had to be done
-    in order to try to try to pick the best way of doing this based
-    on the Lunr version
-     */
-    var isLunr2 = lunr.version[0] == "2";
-
     /* register specific locale function */
     lunr.ja = function() {
       this.pipeline.reset();
@@ -70,17 +60,10 @@
         lunr.ja.stopWordFilter,
         lunr.ja.stemmer
       );
-
-      // change the tokenizer for japanese one
-      if (isLunr2) { // for lunr version 2.0.0
-        this.tokenizer = lunr.ja.tokenizer;
-      } else {
-        if (lunr.tokenizer) { // for lunr version 0.6.0
-          lunr.tokenizer = lunr.ja.tokenizer;
-        }
-        if (this.tokenizerFn) { // for lunr version 0.7.0 -> 1.0.0
-          this.tokenizerFn = lunr.ja.tokenizer;
-        }
+	  this.tokenizer = lunr.ja.tokenizer;
+	  if (this.searchPipeline) {
+        this.searchPipeline.reset();
+        this.searchPipeline.add(lunr.ja.stemmer)
       }
     };
     var segmenter = new lunr.TinySegmenter(); // インスタンス生成
@@ -103,7 +86,7 @@
       if (Array.isArray(obj)) {
         return obj.map(
           function(t) {
-            return isLunr2 ? new lunr.Token(t.toLowerCase()) : t.toLowerCase();
+            return new lunr.Token(t.toLowerCase());
           }
         );
       }
@@ -132,18 +115,14 @@
 
             segStart = sliceStart;
             for (i = 0; i < segs.length; i++) {
-              if (isLunr2) {
-                tokens.push(
-                  new lunr.Token(
-                    segs[i], {
-                      position: [segStart, segs[i].length],
-                      index: tokens.length
-                    }
-                  )
-                );
-              } else {
-                tokens.push(segs[i]);
-              }
+				tokens.push(
+				  new lunr.Token(
+					segs[i], {
+					  position: [segStart, segs[i].length],
+					  index: tokens.length
+					}
+				  )
+				);
               segStart += segs[i].length;
             }
           }
@@ -175,14 +154,5 @@
       'これ それ あれ この その あの ここ そこ あそこ こちら どこ だれ なに なん 何 私 貴方 貴方方 我々 私達 あの人 あのかた 彼女 彼 です あります おります います は が の に を で え から まで より も どの と し それで しかし'.split(' '));
     lunr.Pipeline.registerFunction(lunr.ja.stopWordFilter, 'stopWordFilter-ja');
 
-    // alias ja => jp for backward-compatibility.
-    // jp is the country code, while ja is the language code
-    // a new lunr.ja.js has been created, but in order to
-    // keep the backward compatibility, we'll leave the lunr.jp.js
-    // here for a while, and just make it use the new lunr.ja.js
-    lunr.jp = lunr.ja;
-    lunr.Pipeline.registerFunction(lunr.jp.stemmer, 'stemmer-jp');
-    lunr.Pipeline.registerFunction(lunr.jp.trimmer, 'trimmer-jp');
-    lunr.Pipeline.registerFunction(lunr.jp.stopWordFilter, 'stopWordFilter-jp');
   };
 }))
