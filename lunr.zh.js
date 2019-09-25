@@ -73,7 +73,6 @@
       in order to try to try to pick the best way of doing this based
       on the Lunr version
     */
-    var isLunr2 = lunr.version[0] == "2";
 
     /* register specific locale function */
     lunr.zh = function() {
@@ -83,17 +82,10 @@
         lunr.zh.stopWordFilter,
         lunr.zh.stemmer
       );
-
-      // change the tokenizer for Chinese one
-      if (isLunr2) { // for lunr version 2.0.0
-        this.tokenizer = lunr.zh.tokenizer;
-      } else {
-        if (lunr.tokenizer) { // for lunr version 0.6.0
-          lunr.tokenizer = lunr.zh.tokenizer;
-        }
-        if (this.tokenizerFn) { // for lunr version 0.7.0 -> 1.0.0
-          this.tokenizerFn = lunr.zh.tokenizer;
-        }
+	  this.tokenizer = lunr.zh.tokenizer;
+	  if (this.searchPipeline) {
+        this.searchPipeline.reset();
+        this.searchPipeline.add(lunr.zh.stemmer)
       }
     };
 
@@ -117,7 +109,7 @@
       if (Array.isArray(obj)) {
         return obj.map(
           function(t) {
-            return isLunr2 ? new lunr.Token(t.toLowerCase()) : t.toLowerCase();
+            new lunr.Token(t.toLowerCase());
           }
         );
       }
@@ -128,13 +120,7 @@
         return e[1] !== 'PU';
       }).map(function(e, i, a) {
         var t = e[0].trim().toLowerCase();
-        if (isLunr2) {
-          return new lunr.Token(t, {
-            "index": i
-          });
-        } else {
-          return t;
-        }
+          return new lunr.Token(t, {"index": i});
       });
 
       return tokens;

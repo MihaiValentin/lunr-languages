@@ -138,6 +138,7 @@
     lunr.ja.stemmer = (function() {
 
       /* TODO japanese stemmer  */
+	  /* Maybe use this stemmer? https://github.com/axa-group/nlp.js/blob/master/lib/nlp/stemmers/japanese-stemmer.js */
       return function(word) {
         return word;
       }
