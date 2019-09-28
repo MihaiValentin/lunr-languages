@@ -2,7 +2,7 @@
   "name": "lunr-languages",
   "description": "A a collection of languages stemmers and stopwords for Lunr Javascript library",
   "author": "Mihai Valentin (http://www.mihaivalentin.com)",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "license": "MPL-1.1",
   "engine": "node 0.10.1",
   "scripts": {
