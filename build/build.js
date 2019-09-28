@@ -33,7 +33,10 @@ function wordCharacters(script) {
 }
 
 // list mapping between locale, stemmer file, stopwords file, and char pattern
-var list = [{
+var list = [
+{
+    locale: 'ar',
+},{
     locale: 'da',
     file: 'DanishStemmer.js',
     stopwords: stopwordsRepoFolder + 'da.csv',
