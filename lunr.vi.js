@@ -54,29 +54,29 @@
 
     /* register specific locale function */
     lunr.vi = function() {
-        this.pipeline.reset();
-        this.pipeline.add(
-            lunr.vi.stopWordFilter,
-            lunr.vi.trimmer
-        );
+      this.pipeline.reset();
+      this.pipeline.add(
+        lunr.vi.stopWordFilter,
+        lunr.vi.trimmer
+      );
     };
 
     /* lunr trimmer function */
-    lunr.vi.wordCharacters = "["+
-		"A-Za-z" +
-		"\u0300\u0350" + // dấu huyền
-		"\u0301\u0351" + // dấu sắc
-		"\u0309" + // dấu hỏi
-		"\u0323" + // dấu nặng
-		"\u0303\u0343" + // dấu ngã
-		"\u00C2\u00E2" + // Â
-		"\u00CA\u00EA" + // Ê
-		"\u00D4\u00F4" + // Ô
-		"\u0102-\u0103" + // Ă
-		"\u0110-\u0111" + // Đ
-		"\u01A0-\u01A1" + // Ơ
-		"\u01AF-\u01B0" + // Ư
-	"]";
+    lunr.vi.wordCharacters = "[" +
+      "A-Za-z" +
+      "\u0300\u0350" + // dấu huyền
+      "\u0301\u0351" + // dấu sắc
+      "\u0309" + // dấu hỏi
+      "\u0323" + // dấu nặng
+      "\u0303\u0343" + // dấu ngã
+      "\u00C2\u00E2" + // Â
+      "\u00CA\u00EA" + // Ê
+      "\u00D4\u00F4" + // Ô
+      "\u0102-\u0103" + // Ă
+      "\u0110-\u0111" + // Đ
+      "\u01A0-\u01A1" + // Ơ
+      "\u01AF-\u01B0" + // Ư
+      "]";
     lunr.vi.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.vi.wordCharacters);
     lunr.Pipeline.registerFunction(lunr.vi.trimmer, 'trimmer-vi');
     lunr.vi.stopWordFilter = lunr.generateStopWordFilter('là cái nhưng mà'.split(' '));

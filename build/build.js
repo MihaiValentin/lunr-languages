@@ -119,6 +119,8 @@ var list = [{
     file: 'TurkishStemmer.js',
     stopwords: stopwordsCustomFolder + 'tr.csv',
     wordCharacters: wordCharacters('Latin')
+}, {
+    locale: 'vi',
 }
 ];
 
