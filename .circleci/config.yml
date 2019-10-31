@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/lunr-languages
     docker:
-      - image: circleci/node:4.8.2
+      - image: circleci/node:10.3.0
     steps:
       - checkout
       - run:

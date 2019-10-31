@@ -41,8 +41,7 @@
           }
           this.chartype_ = [];
           for (var i in patterns) {
-            var regexp = new RegExp;
-            regexp.compile(i)
+            var regexp = new RegExp(i);
             this.chartype_.push([regexp, patterns[i]]);
           }
 

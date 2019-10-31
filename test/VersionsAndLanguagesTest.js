@@ -21,6 +21,7 @@ var lunrVersions = [
 ];
 
 var testDocuments = {
+    ar: require('./testdata/ar'),
     de: require('./testdata/de'),
     da: require('./testdata/da'),
     du: require('./testdata/du'),
@@ -38,6 +39,7 @@ var testDocuments = {
     sv: require('./testdata/sv'),
     tr: require('./testdata/tr'),
     th: require('./testdata/th'),
+    vi: require('./testdata/vi'),
     zh: require('./testdata/zh')
 };
 
