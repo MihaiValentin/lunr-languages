@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <script src="lib/require.js"></script>
+</head>
+<body>
+    <p>Open developer tools and observe the results in the Console tab. View source for code.</p>
+    <script>
+        require(['../test/lunr/lunr-0.7.0.min.js', '../lunr.stemmer.support.js', '../tinyseg.js', '../lunr.hi.js'], function(lunr, stemmerSupport, TinySegmenter, hi) {
+
+            stemmerSupport(lunr);
+            TinySegmenter(lunr);
+            hi(lunr);
+
+            // at this point, `lunr` can be used
+            var idx = lunr(function () {
+                // use the language (hi)
+                this.use(lunr.hi);
+                // then, the normal lunr index initialization
+                this.field('title', { boost: 10 })
+                this.field('body')
+
+                /* add documents to index */
+                this.add({
+                    "title": "नम्र निवेदन",
+                    "body": "नम्र निवेदन है कि अपने सुझाव तथा प्रतिक्रियाओं से भविष्य में हमारा मार्गदर्शन करते रहें। thank you",
+                    "id": 1
+                });
+            });
+
+            console.log('Search for `निवेदन`: ', idx.search('निवेदन'));
+            console.log('Search for `thank you`: ', idx.search('thank you'));
+        });
+    </script>
+</body>
+</html>
