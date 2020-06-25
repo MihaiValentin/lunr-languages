@@ -28,6 +28,7 @@ var testDocuments = {
     es: require('./testdata/es'),
     fi: require('./testdata/fi'),
     fr: require('./testdata/fr'),
+    hi: require('./testdata/hi'),
     hu: require('./testdata/hu'),
     it: require('./testdata/it'),
     ja: require('./testdata/ja'),
