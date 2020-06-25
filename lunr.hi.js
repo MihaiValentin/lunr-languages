@@ -75,78 +75,14 @@
         }
       }
     };
-    var segmenter = new lunr.TinySegmenter();
 
-    lunr.hi.tokenizer = function(obj) {
-      var i;
-      var str;
-      var len;
-      var segs;
-      var tokens;
-      var char;
-      var sliceLength;
-      var sliceStart;
-      var sliceEnd;
-      var segStart;
-
-      if (!arguments.length || obj == null || obj == undefined)
-        return [];
-
-      if (Array.isArray(obj)) {
-        return obj.map(
-          function(t) {
-            return isLunr2 ? new lunr.Token(t.toLowerCase()) : t.toLowerCase();
-          }
-        );
-      }
-
-      str = obj.toString().toLowerCase().replace(/^\s+/, '');
-      for (i = str.length - 1; i >= 0; i--) {
-        if (/\S/.test(str.charAt(i))) {
-          str = str.substring(0, i + 1);
-          break;
-        }
-      }
-
-      tokens = [];
-      len = str.length;
-      for (sliceEnd = 0, sliceStart = 0; sliceEnd <= len; sliceEnd++) {
-        char = str.charAt(sliceEnd);
-        sliceLength = sliceEnd - sliceStart;
-
-        if ((char.match(/\s/) || sliceEnd == len)) {
-          if (sliceLength > 0) {
-            segs = segmenter.segment(str.slice(sliceStart, sliceEnd)).filter(
-              function(token) {
-                return !!token;
-              }
-            );
-
-            segStart = sliceStart;
-            for (i = 0; i < segs.length; i++) {
-              if (isLunr2) {
-                tokens.push(
-                  new lunr.Token(
-                    segs[i], {
-                      position: [segStart, segs[i].length],
-                      index: tokens.length
-                    }
-                  )
-                );
-              } else {
-                tokens.push(segs[i]);
-              }
-              segStart += segs[i].length;
-            }
-          }
-
-          sliceStart = sliceEnd + 1;
-        }
-      }
-
-      return tokens;
-    }
-
+    /* lunr trimmer function */
+    lunr.hi.wordCharacters = "\u0900-\u0903\u0904-\u090f\u0910-\u091f\u0920-\u092f\u0930-\u093f\u0940-\u094f\u0950-\u095f\u0960-\u096f\u0970-\u097fa-zA-Zａ-ｚＡ-Ｚ0-9０-９";
+    // lunr.hi.wordCharacters = "ऀँंःऄअआइईउऊऋऌऍऎएऐऑऒओऔकखगघङचछजझञटठडढणतथदधनऩपफबभमयरऱलळऴवशषसहऺऻ़ऽािीुूृॄॅॆेैॉॊोौ्ॎॏॐ॒॑॓॔ॕॖॗक़ख़ग़ज़ड़ढ़फ़य़ॠॡॢॣ।॥०१२३४५६७८९॰ॱॲॳॴॵॶॷॸॹॺॻॼॽॾॿa-zA-Zａ-ｚＡ-Ｚ0-9０-９";
+    lunr.hi.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.hi.wordCharacters);
+    /* lunr stop word filter */
+    lunr.hi.stopWordFilter = lunr.generateStopWordFilter(
+      'अत अपना अपनी अपने अभी अंदर आदि आप इत्यादि इन इनका इन्हीं इन्हें इन्हों इस इसका इसकी इसके इसमें इसी इसे उन उनका उनकी उनके उनको उन्हीं उन्हें उन्हों उस उसके उसी उसे एक एवं एस ऐसे और कई कर करता करते करना करने करें कहते कहा का काफ़ी कि कितना किन्हें किन्हों किया किर किस किसी किसे की कुछ कुल के को कोई कौन कौनसा गया घर जब जहाँ जा जितना जिन जिन्हें जिन्हों जिस जिसे जीधर जैसा जैसे जो तक तब तरह तिन तिन्हें तिन्हों तिस तिसे तो था थी थे दबारा दिया दुसरा दूसरे दो द्वारा न नके नहीं ना निहायत नीचे ने पर पहले पूरा पे फिर बनी बही बहुत बाद बाला बिलकुल भी भीतर मगर मानो मे में यदि यह यहाँ यही या यिह ये रखें रहा रहे ऱ्वासा लिए लिये लेकिन व वग़ैरह वर्ग वह वहाँ वहीं वाले वुह वे वो सकता सकते सबसे सभी साथ साबुत साभ सारा से सो संग ही हुआ हुई हुए है हैं हो होता होती होते होना होने'.split(' '));
     /* lunr stemmer function */
     lunr.hi.stemmer = (function() {
 
@@ -154,17 +90,19 @@
         return word;
       }
     })();
-    lunr.Pipeline.registerFunction(lunr.hi.stemmer, 'stemmer-hi');
 
-    /* lunr trimmer function */
-    lunr.hi.wordCharacters = "\u0900-\u0903\u0904-\u090f\u0910-\u091f\u0920-\u092f\u0930-\u093f\u0940-\u094f\u0950-\u095f\u0960-\u096f\u0970-\u097fa-zA-Zａ-ｚＡ-Ｚ0-9０-９";
-    // lunr.hi.wordCharacters = "ऀँंःऄअआइईउऊऋऌऍऎएऐऑऒओऔकखगघङचछजझञटठडढणतथदधनऩपफबभमयरऱलळऴवशषसहऺऻ़ऽािीुूृॄॅॆेैॉॊोौ्ॎॏॐ॒॑॓॔ॕॖॗक़ख़ग़ज़ड़ढ़फ़य़ॠॡॢॣ।॥०१२३४५६७८९॰ॱॲॳॴॵॶॷॸॹॺॻॼॽॾॿa-zA-Zａ-ｚＡ-Ｚ0-9０-９";
-    lunr.hi.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.hi.wordCharacters);
+    var segmenter = lunr.wordcut;
+    segmenter.init();
+    lunr.hi.tokenizer = function(obj) {
+      if (!arguments.length || obj == null || obj == undefined) return []
+      if (Array.isArray(obj)) return obj.map(function (t) { return isLunr2 ? new lunr.Token(t.toLowerCase()) : t.toLowerCase()});
+
+      var str = obj.toString().toLowerCase().replace(/^\s+/, '');
+      return segmenter.cut(str).split('|');
+    }
+
     lunr.Pipeline.registerFunction(lunr.hi.trimmer, 'trimmer-hi');
-
-    /* lunr stop word filter */
-    lunr.hi.stopWordFilter = lunr.generateStopWordFilter(
-      'अत अपना अपनी अपने अभी अंदर आदि आप इत्यादि इन इनका इन्हीं इन्हें इन्हों इस इसका इसकी इसके इसमें इसी इसे उन उनका उनकी उनके उनको उन्हीं उन्हें उन्हों उस उसके उसी उसे एक एवं एस ऐसे और कई कर करता करते करना करने करें कहते कहा का काफ़ी कि कितना किन्हें किन्हों किया किर किस किसी किसे की कुछ कुल के को कोई कौन कौनसा गया घर जब जहाँ जा जितना जिन जिन्हें जिन्हों जिस जिसे जीधर जैसा जैसे जो तक तब तरह तिन तिन्हें तिन्हों तिस तिसे तो था थी थे दबारा दिया दुसरा दूसरे दो द्वारा न नके नहीं ना निहायत नीचे ने पर पहले पूरा पे फिर बनी बही बहुत बाद बाला बिलकुल भी भीतर मगर मानो मे में यदि यह यहाँ यही या यिह ये रखें रहा रहे ऱ्वासा लिए लिये लेकिन व वग़ैरह वर्ग वह वहाँ वहीं वाले वुह वे वो सकता सकते सबसे सभी साथ साबुत साभ सारा से सो संग ही हुआ हुई हुए है हैं हो होता होती होते होना होने'.split(' '));
+    lunr.Pipeline.registerFunction(lunr.hi.stemmer, 'stemmer-hi');
     lunr.Pipeline.registerFunction(lunr.hi.stopWordFilter, 'stopWordFilter-hi');
 
   };
