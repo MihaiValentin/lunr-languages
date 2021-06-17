@@ -86,24 +86,26 @@
 
     lunr.zh.tokenizer = function(obj) {
       if (!arguments.length || obj == null || obj == undefined) return []
-      if (Array.isArray(obj)) return obj.map(function (t) { return isLunr2 ? new lunr.Token(t.toLowerCase()) : t.toLowerCase() })
+      if (Array.isArray(obj)) return obj.map(function(t) {
+        return isLunr2 ? new lunr.Token(t.toLowerCase()) : t.toLowerCase()
+      })
 
       nodejiebaDictJson && nodejieba.load(nodejiebaDictJson)
 
       var str = obj.toString().trim().toLowerCase();
       var tokens = [];
 
-      nodejieba.cut(str, true).forEach(function (seg) {
+      nodejieba.cut(str, true).forEach(function(seg) {
         tokens = tokens.concat(seg.split(' '))
       })
 
-      tokens = tokens.filter(function (token) {
+      tokens = tokens.filter(function(token) {
         return !!token;
       });
 
       var fromIndex = 0
 
-      return tokens.map(function (token, index) {
+      return tokens.map(function(token, index) {
         if (isLunr2) {
           var start = str.indexOf(token, fromIndex)
 
