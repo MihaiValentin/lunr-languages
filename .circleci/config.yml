@@ -10,11 +10,5 @@ jobs:
           name: install
           command: npm install
       - run:
-          name: setuplibs
-          command: LD_LIBRARY_PATH=/usr/local/lib64/:$LD_LIBRARY_PATH
-      - run:
-          name: setuplibs2
-          command: export LD_LIBRARY_PATH
-      - run:
           name: test
           command: npm test
