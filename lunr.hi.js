@@ -83,7 +83,7 @@
     lunr.hi.wordCharacters = "\u0900-\u0903\u0904-\u090f\u0910-\u091f\u0920-\u092f\u0930-\u093f\u0940-\u094f\u0950-\u095f\u0960-\u096f\u0970-\u097fa-zA-Zａ-ｚＡ-Ｚ0-9０-９";
     // lunr.hi.wordCharacters = "ऀँंःऄअआइईउऊऋऌऍऎएऐऑऒओऔकखगघङचछजझञटठडढणतथदधनऩपफबभमयरऱलळऴवशषसहऺऻ़ऽािीुूृॄॅॆेैॉॊोौ्ॎॏॐ॒॑॓॔ॕॖॗक़ख़ग़ज़ड़ढ़फ़य़ॠॡॢॣ।॥०१२३४५६७८९॰ॱॲॳॴॵॶॷॸॹॺॻॼॽॾॿa-zA-Zａ-ｚＡ-Ｚ0-9０-９";
     lunr.hi.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.hi.wordCharacters);
-    
+
     lunr.Pipeline.registerFunction(lunr.hi.trimmer, 'trimmer-hi');
     /* lunr stop word filter */
     lunr.hi.stopWordFilter = lunr.generateStopWordFilter(
@@ -108,7 +108,9 @@
     segmenter.init();
     lunr.hi.tokenizer = function(obj) {
       if (!arguments.length || obj == null || obj == undefined) return []
-      if (Array.isArray(obj)) return obj.map(function (t) { return isLunr2 ? new lunr.Token(t.toLowerCase()) : t.toLowerCase()});
+      if (Array.isArray(obj)) return obj.map(function(t) {
+        return isLunr2 ? new lunr.Token(t.toLowerCase()) : t.toLowerCase()
+      });
 
       var str = obj.toString().toLowerCase().replace(/^\s+/, '');
       return segmenter.cut(str).split('|');

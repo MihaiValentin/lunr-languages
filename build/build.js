@@ -125,6 +125,8 @@ var list = [
     stopwords: stopwordsCustomFolder + 'tr.csv',
     wordCharacters: wordCharacters('Latin')
 }, {
+    locale: 'th',
+}, {
     locale: 'vi',
 }, {
     locale: 'zh',
