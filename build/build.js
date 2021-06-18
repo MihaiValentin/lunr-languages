@@ -36,7 +36,9 @@ function wordCharacters(script) {
 var list = [
 {
     locale: 'ar',
-},{
+}, {
+    locale: 'hi'
+}, {
     locale: 'da',
     file: 'DanishStemmer.js',
     stopwords: stopwordsRepoFolder + 'da.csv',
