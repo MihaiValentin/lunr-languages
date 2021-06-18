@@ -20,6 +20,6 @@
     "unicode-8.0.0": "^0.1.5"
   },
   "dependencies": {
-    "nodejieba": "^2.3.0"
+    "nodejieba": "~2.3.0"
   }
 }
