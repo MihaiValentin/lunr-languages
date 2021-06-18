@@ -15,8 +15,11 @@
   },
   "devDependencies": {
     "js-beautify": "^1.5.1",
-    "mocha": "^6.2.0",
+    "mocha": "^9.0.0",
     "uglify-js": "^2.4.15",
     "unicode-8.0.0": "^0.1.5"
+  },
+  "dependencies": {
+    "nodejieba": "^2.3.0"
   }
 }

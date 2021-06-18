@@ -126,6 +126,8 @@ var list = [
     wordCharacters: wordCharacters('Latin')
 }, {
     locale: 'vi',
+}, {
+    locale: 'zh',
 }
 ];
 

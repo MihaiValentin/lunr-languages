@@ -20,6 +20,7 @@ Lunr Languages is a [Lunr](http://lunrjs.com/) addon that helps you search in do
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/VN.png) Vietnamese
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IQ.png) Arabic
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IN.png) Hindi
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/CN.png) Chinese
 * [Contribute with a new language](CONTRIBUTING.md)
 
 Lunr Languages is compatible with Lunr version `0.6`, `0.7`, `1.0` and `2.X`.
@@ -152,10 +153,10 @@ Searching inside documents is not as straight forward as using `indexOf()`, sinc
 
 # Technical details & Credits
 
-I've created this project by compiling and wrapping stemmers toghether with stop words from various sources so they can be directly used with all the current versions of Lunr.
+I've created this project by compiling and wrapping stemmers toghether with stop words from various sources ([including users contributions](https://github.com/MihaiValentin/lunr-languages/pulls?q=is%3Apr)) so they can be directly used with all the current versions of Lunr.
 
 * <https://github.com/fortnightlabs/snowball-js> (the stemmers for all languages, ported from snowball-js)
 * <https://github.com/brenes/stopwords-filter> (the stop words list for the other languages)
 * <http://chasen.org/~taku/software/TinySegmenter/> (the tinyseg Tiny Segmente Japanese tokenizer)
 
-I am providing code in the repository to you under an open source license. Because this is my personal repository, the license you receive to my code is from me and not my employer (Facebook)
+I am providing code in the repository to you under an [open source license](LICENSE). Because this is my personal repository, the license you receive to my code is from me and not my employer (Facebook)
