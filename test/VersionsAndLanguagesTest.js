@@ -38,6 +38,7 @@ var testDocuments = {
     ro: require('./testdata/ro'),
     ru: require('./testdata/ru'),
     sv: require('./testdata/sv'),
+    ta: require('./testdata/ta'),
     tr: require('./testdata/tr'),
     th: require('./testdata/th'),
     vi: require('./testdata/vi'),

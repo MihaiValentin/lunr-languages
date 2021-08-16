@@ -120,6 +120,8 @@ var list = [
     stopwords: stopwordsCustomFolder + 'sv.csv',
     wordCharacters: wordCharacters('Latin')
 }, {
+    locale: 'ta',
+}, {
     locale: 'tr',
     file: 'TurkishStemmer.js',
     stopwords: stopwordsCustomFolder + 'tr.csv',
