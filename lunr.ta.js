@@ -2,7 +2,7 @@
  * Lunr languages, `Tamil` language
  * https://github.com/tvmani/lunr-languages
  *
- * Copyright 2020, Mihir Kumar
+ * Copyright 2021, Manikandan Venkatasubban
  * http://www.mozilla.org/MPL/
  */
 /*!
