@@ -64,6 +64,8 @@
 
     /* register specific locale function */
     lunr.zh = function() {
+      nodejiebaDictJson && nodejieba.load(nodejiebaDictJson)
+      
       this.pipeline.reset();
       this.pipeline.add(
         lunr.zh.trimmer,
@@ -89,8 +91,6 @@
       if (Array.isArray(obj)) return obj.map(function(t) {
         return isLunr2 ? new lunr.Token(t.toLowerCase()) : t.toLowerCase()
       })
-
-      nodejiebaDictJson && nodejieba.load(nodejiebaDictJson)
 
       var str = obj.toString().trim().toLowerCase();
       var tokens = [];
