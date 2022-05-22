@@ -143,7 +143,7 @@
         var wordCharacters = "\u0621-\u065b\u0671\u0640";
         var testRegex = new RegExp("[^" + wordCharacters + "]");
         self.word = self.word
-          .replace('\u0640', '');
+          .replaceAll('\u0640', '');
         if (testRegex.test(word)) {
           return true;
         }
