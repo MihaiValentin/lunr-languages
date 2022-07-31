@@ -37,7 +37,7 @@ Wonderful! Here are the changes you need to do, then Open a *Pull request*. Make
 The `lunr.<locale>.js` files are the result of a build process that concatenates a stemmer and a stop word list and add functionality to become lunr.js-compatible.
 Should you decide to make mass-modifications (add stopwords, change stemming rules, reorganize the code) and build a new set of files, you should do follow these steps:
 
-* `git clone --recursive git://github.com/MihaiValentin/lunr-languages.git` (make sure you use the `--recursive` flag to also clone the repos needed to build `lunr-languages`)
+* `git clone --recursive https://github.com/MihaiValentin/lunr-languages.git` (make sure you use the `--recursive` flag to also clone the repos needed to build `lunr-languages`)
 * `cd path/to/lunr-languages`
 * `npm install` to install the dependencies needed for building
 * change the `build/*.template` files
