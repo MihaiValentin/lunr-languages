@@ -30,7 +30,7 @@
      * only CommonJS-like environments that support module.exports,
      * like Node.
      */
-    module.exports = factory(require('nodejieba'))
+    module.exports = factory(require('@node-rs/jieba'))
   } else {
     // Browser globals (root is window)
     factory()(root.lunr);
