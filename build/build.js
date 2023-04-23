@@ -134,6 +134,8 @@ var list = [
     locale: 'zh',
 }, {
     locale: 'ko',
+}, {
+    locale: 'hy',
 }
 ];
 

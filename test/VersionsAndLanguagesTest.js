@@ -30,9 +30,11 @@ var testDocuments = {
     fr: require('./testdata/fr'),
     hi: require('./testdata/hi'),
     hu: require('./testdata/hu'),
+    hy: require('./testdata/hy'),
     it: require('./testdata/it'),
     ja: require('./testdata/ja'),
     jp: require('./testdata/ja'),
+    ko: require('./testdata/ko'),
     no: require('./testdata/no'),
     pt: require('./testdata/pt'),
     ro: require('./testdata/ro'),
@@ -42,8 +44,7 @@ var testDocuments = {
     tr: require('./testdata/tr'),
     th: require('./testdata/th'),
     vi: require('./testdata/vi'),
-    zh: require('./testdata/zh'),
-    ko: require('./testdata/ko')
+    zh: require('./testdata/zh')
 };
 
 lunrVersions.forEach(function(lunrVersion) {
