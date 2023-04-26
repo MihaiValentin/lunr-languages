@@ -23,6 +23,7 @@ Lunr Languages is a [Lunr](http://lunrjs.com/) addon that helps you search in do
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/CN.png) Chinese
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IN.png) Tamil
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/KR.png) Korean
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/AM.png) Armenian
 * [Contribute with a new language](CONTRIBUTING.md)
 
 Lunr Languages is compatible with Lunr version `0.6`, `0.7`, `1.0` and `2.X`.
