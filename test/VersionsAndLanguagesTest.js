@@ -34,13 +34,16 @@ var testDocuments = {
     it: require('./testdata/it'),
     ja: require('./testdata/ja'),
     jp: require('./testdata/ja'),
+    kn: require('./testdata/kn'),
     ko: require('./testdata/ko'),
     no: require('./testdata/no'),
     pt: require('./testdata/pt'),
     ro: require('./testdata/ro'),
     ru: require('./testdata/ru'),
+    sa: require('./testdata/sa'),
     sv: require('./testdata/sv'),
     ta: require('./testdata/ta'),
+    te: require('./testdata/te'),
     tr: require('./testdata/tr'),
     th: require('./testdata/th'),
     vi: require('./testdata/vi'),
@@ -112,7 +115,7 @@ lunrVersions.forEach(function(lunrVersion) {
                 if (language === 'ja' || language === 'jp') {    // for japanese, we must also load the tinyseg tokenizer
                     require('../tinyseg')(lunr);
                 }
-                if (language === 'th' || language === 'hi' || language === 'ta') {    // for thai, we must also load the wordcut tokenizer
+                if (language === 'th' || language === 'hi' || language === 'ta' || language === 'sa' || language === 'kn' || language === 'te') {    // for thai, we must also load the wordcut tokenizer
                     lunr.wordcut = require('../wordcut');
                 }
                 require('../lunr.' + language + '.js')(lunr);

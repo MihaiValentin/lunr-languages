@@ -90,6 +90,8 @@ var list = [
 }, {
     locale: 'jp'
 }, {
+    locale: 'kn'
+},{
     locale: 'no',
     file: 'NorwegianStemmer.js',
     stopwords: stopwordsCustomFolder + 'no.csv',
@@ -115,13 +117,17 @@ var list = [
     stopwords: stopwordsRepoFolder + 'es.csv',
     wordCharacters: wordCharacters('Latin')
 }, {
+    locale: 'sa'
+},{
     locale: 'sv',
     file: 'SwedishStemmer.js',
     stopwords: stopwordsCustomFolder + 'sv.csv',
     wordCharacters: wordCharacters('Latin')
 }, {
     locale: 'ta',
-}, {
+},{
+    locale: 'te'
+},{
     locale: 'tr',
     file: 'TurkishStemmer.js',
     stopwords: stopwordsCustomFolder + 'tr.csv',
