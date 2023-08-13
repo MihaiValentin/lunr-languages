@@ -17,7 +17,7 @@ var lunrVersions = [
         version: "2.3.5",
         lunr: "lunr-2.3.5"
     }
-    
+
 ];
 
 var testDocuments = {
@@ -47,12 +47,13 @@ var testDocuments = {
     tr: require('./testdata/tr'),
     th: require('./testdata/th'),
     vi: require('./testdata/vi'),
-    zh: require('./testdata/zh')
+    zh: require('./testdata/zh'),
+    zh: require('./testdata/he')
 };
 
-lunrVersions.forEach(function(lunrVersion) {
-    describe("Testing Lunr-Languages & Lunr version " + lunrVersion.version, function() {
-        describe("should be able to correctly identify words in multi-documents scenarios (eg: en + ru)", function() {
+lunrVersions.forEach(function (lunrVersion) {
+    describe("Testing Lunr-Languages & Lunr version " + lunrVersion.version, function () {
+        describe("should be able to correctly identify words in multi-documents scenarios (eg: en + ru)", function () {
             delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
             var lunr = require('./lunr/' + lunrVersion.lunr);
             require('../lunr.stemmer.support.js')(lunr);
@@ -61,50 +62,50 @@ lunrVersions.forEach(function(lunrVersion) {
 
             var idxEn = lunr(function () {
                 this.field('body');
-                this.add({"body": "Этот текст написан на русском.", "id": 1});
-                this.add({"body": "This text is written in the English language.", "id": 2});
+                this.add({ "body": "Этот текст написан на русском.", "id": 1 });
+                this.add({ "body": "This text is written in the English language.", "id": 2 });
             });
 
             var idxRu = lunr(function () {
                 this.use(lunr.ru);
                 this.field('body');
-                this.add({"body": "Этот текст написан на русском.", "id": 1});
-                this.add({"body": "This text is written in the English language.", "id": 2});
+                this.add({ "body": "Этот текст написан на русском.", "id": 1 });
+                this.add({ "body": "This text is written in the English language.", "id": 2 });
             });
 
             var idxMulti = lunr(function () {
                 this.use(lunr.multiLanguage('en', 'ru'));
                 this.field('body');
-                this.add({"body": "Этот текст написан на русском.", "id": 1});
-                this.add({"body": "This text is written in the English language.", "id": 2});
+                this.add({ "body": "Этот текст написан на русском.", "id": 1 });
+                this.add({ "body": "This text is written in the English language.", "id": 2 });
             });
 
-            it("should not stem and find 'Русских' in english documents", function() {
+            it("should not stem and find 'Русских' in english documents", function () {
                 assert.equal(idxEn.search('Русских').length, 0)
             });
 
-            it("should stem and find 'languages' in english documents", function() {
+            it("should stem and find 'languages' in english documents", function () {
                 assert.equal(idxEn.search('languages').length, 1)
             });
 
-            it("should stem and find 'Русских' in russian documents", function() {
+            it("should stem and find 'Русских' in russian documents", function () {
                 assert.equal(idxRu.search('Русских').length, 1)
             });
 
-            it("should not stem and find 'languages' in russian documents", function() {
+            it("should not stem and find 'languages' in russian documents", function () {
                 assert.equal(idxRu.search('languages').length, 0)
             });
 
-            it("should stem and find 'Русских' in russian+english documents", function() {
+            it("should stem and find 'Русских' in russian+english documents", function () {
                 assert.equal(idxMulti.search('Русских').length, 1)
             });
 
-            it("should stem and find 'languages' in russian+english documents", function() {
+            it("should stem and find 'languages' in russian+english documents", function () {
                 assert.equal(idxMulti.search('languages').length, 1)
             });
         });
-        Object.keys(testDocuments).forEach(function(language) {
-            describe("should be able to correctly find terms in " + language.toUpperCase() + " correctly", function() {
+        Object.keys(testDocuments).forEach(function (language) {
+            describe("should be able to correctly find terms in " + language.toUpperCase() + " correctly", function () {
                 // because these tests are asynchronous, we must ensure every load of lunr is fresh
                 // so we do not get the previous used languages on it.
                 // if we don't do this, when we'll run the test for jp, we'll also have da, de, fr, it languages used
@@ -122,17 +123,17 @@ lunrVersions.forEach(function(lunrVersion) {
 
                 var idx = lunr(function () {
                     this.use(lunr[language]);
-                    testDocuments[language].fields.forEach(function(field) {
+                    testDocuments[language].fields.forEach(function (field) {
                         this.field(field.name, field.config)
                     }.bind(this));
 
-                    testDocuments[language].documents.forEach(function(doc) {
+                    testDocuments[language].documents.forEach(function (doc) {
                         this.add(doc)
                     }.bind(this));
                 });
 
-                testDocuments[language].tests.forEach(function(test) {
-                    it("should " + test.what.replace('%w', '"' + test.search + '"'), function() {
+                testDocuments[language].tests.forEach(function (test) {
+                    it("should " + test.what.replace('%w', '"' + test.search + '"'), function () {
                         assert.equal(idx.search(test.search).length, test.found)
                     });
                 }.bind(this));
