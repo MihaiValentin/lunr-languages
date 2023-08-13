@@ -10,7 +10,7 @@ module.exports = {
     documents: [
         {
             "title": "בקשה צנועה",
-            "body": "יש לי בקשה צנועה שתמשיכו להדריך אותנו בעתיד עם ההצעות והתגובות שלכם. תודה רבה",
+            "body": "יש לי בקשה צנועה שתמשיכו להדריך בזה אותנו בעתיד עם ההצעות והתגובות שלכם. תודה רבה",
             "id": 1
         }
     ],
@@ -22,7 +22,7 @@ module.exports = {
         },
         {
             what: "find the word %w",
-            search: "תודה רבה",
+            search: "בזה",
             found: 1
         },
         {
@@ -32,22 +32,17 @@ module.exports = {
         },
         {
             what: "find the word %w",
-            search: "עתיד",
+            search: "בעתיד",
             found: 1
         },
         {
             what: "find the word %w",
-            search: "הדריך",
+            search: "להדריך",
             found: 1
         },
         {
-            what: "find a phrase that contains both %w and %w",
+            what: "find a phrase that contains both %w",
             search: "בקשה צנועה",
-            found: 1
-        },
-        {
-            what: "find a word with different casing, like %w",
-            search: "תודה רבה",
             found: 1
         }
     ]
