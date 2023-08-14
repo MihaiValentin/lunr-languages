@@ -9,7 +9,7 @@ var UglifyJS = require("uglify-js");
 
 // shortcut for minifying a piece of code
 function compress(orig_code) {
-    return UglifyJS.minify(orig_code, {fromString: true, comments: true}).code;
+    return UglifyJS.minify(orig_code, { fromString: true, comments: true }).code;
 }
 
 // take some of the stop words list from the stopwords-filter repo
@@ -25,7 +25,7 @@ function wordCharacters(script) {
     // Now from /[a-z]/ get "a-z"
     var regexString = charRegex.toString()
     // Format sanity check
-    if (regexString.slice(0,2) !== '/[' || regexString.slice(-2) != ']/') {
+    if (regexString.slice(0, 2) !== '/[' || regexString.slice(-2) != ']/') {
         console.error('Unexpected regex structure, aborting: ' + regexString);
         throw Error;
     }
@@ -34,115 +34,117 @@ function wordCharacters(script) {
 
 // list mapping between locale, stemmer file, stopwords file, and char pattern
 var list = [
-{
-    locale: 'ar',
-}, {
-    locale: 'hi'
-}, {
-    locale: 'da',
-    file: 'DanishStemmer.js',
-    stopwords: stopwordsRepoFolder + 'da.csv',
-    wordCharacters: wordCharacters('Latin')
-}, {
-    locale: 'nl',
-    file: 'DutchStemmer.js',
-    stopwords: stopwordsRepoFolder + 'nl.csv',
-    wordCharacters: wordCharacters('Latin')
-}, {
-    /*
-    Kept here to prevent breaking changes.
-    The correct code for Dutch is NL.
-    Please do not use "du" anymore, start using "nl".
-    I will remove "du" next time I'll build a major, backward incompatible package
-    */
-    locale: 'du',
-    file: 'DutchStemmer.js',
-    stopwords: stopwordsRepoFolder + 'nl.csv',
-    wordCharacters: wordCharacters('Latin'),
-    warningMessage: '[Lunr Languages] Please use the "nl" instead of the "du". The "nl" code is the standard code for Dutch language, and "du" will be removed in the next major versions.'
-}, {
-    locale: 'fi',
-    file: 'FinnishStemmer.js',
-    stopwords: stopwordsRepoFolder + 'fn.csv',
-    wordCharacters: wordCharacters('Latin')
-}, {
-    locale: 'fr',
-    file: 'FrenchStemmer.js',
-    stopwords: stopwordsRepoFolder + 'fr.csv',
-    wordCharacters: wordCharacters('Latin')
-}, {
-    locale: 'de',
-    file: 'GermanStemmer.js',
-    stopwords: stopwordsRepoFolder + 'de.csv',
-    wordCharacters: wordCharacters('Latin')
-}, {
-    locale: 'hu',
-    file: 'HungarianStemmer.js',
-    stopwords: stopwordsRepoFolder + 'hu.csv',
-    wordCharacters: wordCharacters('Latin')
-}, {
-    locale: 'it',
-    file: 'ItalianStemmer.js',
-    stopwords: stopwordsRepoFolder + 'it.csv',
-    wordCharacters: wordCharacters('Latin')
-}, {
-    locale: 'ja'
-}, {
-    locale: 'jp'
-}, {
-    locale: 'kn'
-},{
-    locale: 'no',
-    file: 'NorwegianStemmer.js',
-    stopwords: stopwordsCustomFolder + 'no.csv',
-    wordCharacters: wordCharacters('Latin')
-}, {
-    locale: 'pt',
-    file: 'PortugueseStemmer.js',
-    stopwords: stopwordsRepoFolder + 'pt.csv',
-    wordCharacters: wordCharacters('Latin')
-}, {
-    locale: 'ro',
-    file: 'RomanianStemmer.js',
-    stopwords: stopwordsCustomFolder + 'ro.csv',
-    wordCharacters: wordCharacters('Latin')
-}, {
-    locale: 'ru',
-    file: 'RussianStemmer.js',
-    stopwords: stopwordsCustomFolder + 'ru.csv',
-    wordCharacters: wordCharacters('Cyrillic')
-}, {
-    locale: 'es',
-    file: 'SpanishStemmer.js',
-    stopwords: stopwordsRepoFolder + 'es.csv',
-    wordCharacters: wordCharacters('Latin')
-}, {
-    locale: 'sa'
-},{
-    locale: 'sv',
-    file: 'SwedishStemmer.js',
-    stopwords: stopwordsCustomFolder + 'sv.csv',
-    wordCharacters: wordCharacters('Latin')
-}, {
-    locale: 'ta',
-},{
-    locale: 'te'
-},{
-    locale: 'tr',
-    file: 'TurkishStemmer.js',
-    stopwords: stopwordsCustomFolder + 'tr.csv',
-    wordCharacters: wordCharacters('Latin')
-}, {
-    locale: 'th',
-}, {
-    locale: 'vi',
-}, {
-    locale: 'zh',
-}, {
-    locale: 'ko',
-}, {
-    locale: 'hy',
-}
+    {
+        locale: 'ar',
+    }, {
+        locale: 'hi'
+    }, {
+        locale: 'da',
+        file: 'DanishStemmer.js',
+        stopwords: stopwordsRepoFolder + 'da.csv',
+        wordCharacters: wordCharacters('Latin')
+    }, {
+        locale: 'nl',
+        file: 'DutchStemmer.js',
+        stopwords: stopwordsRepoFolder + 'nl.csv',
+        wordCharacters: wordCharacters('Latin')
+    }, {
+        /*
+        Kept here to prevent breaking changes.
+        The correct code for Dutch is NL.
+        Please do not use "du" anymore, start using "nl".
+        I will remove "du" next time I'll build a major, backward incompatible package
+        */
+        locale: 'du',
+        file: 'DutchStemmer.js',
+        stopwords: stopwordsRepoFolder + 'nl.csv',
+        wordCharacters: wordCharacters('Latin'),
+        warningMessage: '[Lunr Languages] Please use the "nl" instead of the "du". The "nl" code is the standard code for Dutch language, and "du" will be removed in the next major versions.'
+    }, {
+        locale: 'fi',
+        file: 'FinnishStemmer.js',
+        stopwords: stopwordsRepoFolder + 'fn.csv',
+        wordCharacters: wordCharacters('Latin')
+    }, {
+        locale: 'fr',
+        file: 'FrenchStemmer.js',
+        stopwords: stopwordsRepoFolder + 'fr.csv',
+        wordCharacters: wordCharacters('Latin')
+    }, {
+        locale: 'de',
+        file: 'GermanStemmer.js',
+        stopwords: stopwordsRepoFolder + 'de.csv',
+        wordCharacters: wordCharacters('Latin')
+    }, {
+        locale: 'hu',
+        file: 'HungarianStemmer.js',
+        stopwords: stopwordsRepoFolder + 'hu.csv',
+        wordCharacters: wordCharacters('Latin')
+    }, {
+        locale: 'it',
+        file: 'ItalianStemmer.js',
+        stopwords: stopwordsRepoFolder + 'it.csv',
+        wordCharacters: wordCharacters('Latin')
+    }, {
+        locale: 'ja'
+    }, {
+        locale: 'jp'
+    }, {
+        locale: 'kn'
+    }, {
+        locale: 'no',
+        file: 'NorwegianStemmer.js',
+        stopwords: stopwordsCustomFolder + 'no.csv',
+        wordCharacters: wordCharacters('Latin')
+    }, {
+        locale: 'pt',
+        file: 'PortugueseStemmer.js',
+        stopwords: stopwordsRepoFolder + 'pt.csv',
+        wordCharacters: wordCharacters('Latin')
+    }, {
+        locale: 'ro',
+        file: 'RomanianStemmer.js',
+        stopwords: stopwordsCustomFolder + 'ro.csv',
+        wordCharacters: wordCharacters('Latin')
+    }, {
+        locale: 'ru',
+        file: 'RussianStemmer.js',
+        stopwords: stopwordsCustomFolder + 'ru.csv',
+        wordCharacters: wordCharacters('Cyrillic')
+    }, {
+        locale: 'es',
+        file: 'SpanishStemmer.js',
+        stopwords: stopwordsRepoFolder + 'es.csv',
+        wordCharacters: wordCharacters('Latin')
+    }, {
+        locale: 'sa'
+    }, {
+        locale: 'sv',
+        file: 'SwedishStemmer.js',
+        stopwords: stopwordsCustomFolder + 'sv.csv',
+        wordCharacters: wordCharacters('Latin')
+    }, {
+        locale: 'ta',
+    }, {
+        locale: 'te'
+    }, {
+        locale: 'tr',
+        file: 'TurkishStemmer.js',
+        stopwords: stopwordsCustomFolder + 'tr.csv',
+        wordCharacters: wordCharacters('Latin')
+    }, {
+        locale: 'th',
+    }, {
+        locale: 'vi',
+    }, {
+        locale: 'zh',
+    }, {
+        locale: 'ko',
+    }, {
+        locale: 'hy',
+    }, {
+        locale: 'he',
+    }
 ];
 
 console.log('Starting building lunr-languages ...');
@@ -151,7 +153,7 @@ var tpl = fs.readFileSync('build/lunr.template', 'utf8');
 var cm = fs.readFileSync('build/lunr.comments', 'utf8');
 
 // for each language, start building
-for(var i = 0; i < list.length; i++) {
+for (var i = 0; i < list.length; i++) {
     console.log('Building for "' + list[i].locale + '"');
     var data;
     var stopWords;
