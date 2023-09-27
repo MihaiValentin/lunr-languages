@@ -369,7 +369,7 @@
         }
 
         //step 1
-        var stepOneRegExp = new RegExp('(.*)(' + _.keys(stepOneExceptions).join('|') + ')$');
+        var stepOneRegExp = new RegExp('(.*)(' + Object.keys(stepOneExceptions).join('|') + ')$');
         var match = stepOneRegExp.exec(stemmedWord);
 
         if (match !== null) {
@@ -503,7 +503,7 @@
 
         if ((match = /^(.+?)(ΕΣΤΕ)$/.exec(stemmedWord)) !== null) {
           stemmedWord = match[1];
-          if (/^(ΑΛ|ΑΡ|ΕΚΤΕΛ|Ζ|Μ|Ξ|ΠΑΡΑΚΑΛ|ΑΡ|ΠΡΟ|ΝΙΣ)$/.test(match[1])) {
+          if (/^(ΑΛ|ΑΡ|ΕΚΤΕΛ|Ζ|Μ|Ξ|ΠΑΡΑΚΑΛ|ΠΡΟ|ΝΙΣ)$/.test(match[1])) {
             stemmedWord += 'ΕΣΤ';
           }
         }
