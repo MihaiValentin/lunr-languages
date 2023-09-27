@@ -3,6 +3,10 @@
 <head>
     <title></title>
 	<meta charset="UTF-8">
+<!--    <script src="../test/lunr/lunr-0.6.0.min.js"></script>-->
+<!--    <script src="../test/lunr/lunr-0.7.0.min.js"></script>-->
+<!--    <script src="../test/lunr/lunr-1.0.0.min.js"></script>-->
+<!--    <script src="../test/lunr/lunr-2.0.1.js"></script>-->
     <script src="../test/lunr/lunr-2.3.5.js"></script>
     <script src="../lunr.stemmer.support.js"></script>
     <script src="../lunr.el.js"></script>
@@ -30,7 +34,7 @@
         });
 
         /* add documents to index */
-        console.log('Search for `Ελλάδα`: ', idx.search('Ελλάδα'));
+        console.log('Search for `Ελλάδα*`: ', idx.search('Ελλάδα*'));
         console.log('Search for `απογραφή`: ', idx.search('απογραφή'));
         console.log('Search for `πολιτισμός`: ', idx.search('πολιτισμός'));
         console.log('Search for `όνομα`: ', idx.search('όνομα'));

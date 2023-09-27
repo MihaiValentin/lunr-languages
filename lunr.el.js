@@ -55,8 +55,15 @@
     /* register specific locale function */
     lunr.el = function() {
       this.pipeline.reset();
+
+      if (this.searchPipeline === undefined) {
+        this.pipeline.add(
+          lunr.el.trimmer,
+          lunr.el.normilizer
+        );
+      }
+
       this.pipeline.add(
-        lunr.el.normilizer,
         lunr.el.stopWordFilter,
         lunr.el.stemmer
       );
@@ -67,11 +74,16 @@
       if (this.searchPipeline) {
         this.searchPipeline.reset();
         this.searchPipeline.add(
-          lunr.el.normilizer,
           lunr.el.stemmer
         );
       }
     };
+
+    /* lunr trimmer function */
+    lunr.el.wordCharacters = "A-Za-zΑαΒβΓγΔδΕεΖζΗηΘθΙιΚκΛλΜμΝνΞξΟοΠπΡρΣσςΤτΥυΦφΧχΨψΩωΆάΈέΉήΊίΌόΎύΏώΪΐΫΰΐΰ";
+    lunr.el.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.el.wordCharacters);
+
+    lunr.Pipeline.registerFunction(lunr.el.trimmer, 'trimmer-el');
 
     /* lunr stemmer function */
     lunr.el.stemmer = (function() {
@@ -610,34 +622,41 @@
             return stem(word.toUpperCase()).toLowerCase();
           });
         } else {
-          return token;
+          return stem(token.toUpperCase()).toLowerCase();
         }
       }
     })();
 
     lunr.Pipeline.registerFunction(lunr.el.stemmer, 'stemmer-el');
 
+    /* lunr stopWordFilter function */
     lunr.el.stopWordFilter = lunr.generateStopWordFilter('αλλα αν αντι απο αυτα αυτεσ αυτη αυτο αυτοι αυτοσ αυτουσ αυτων για δε δεν εαν ειμαι ειμαστε ειναι εισαι ειστε εκεινα εκεινεσ εκεινη εκεινο εκεινοι εκεινοσ εκεινουσ εκεινων ενω επι η θα ισωσ κ και κατα κι μα με μετα μη μην να ο οι ομωσ οπωσ οσο οτι παρα ποια ποιεσ ποιο ποιοι ποιοσ ποιουσ ποιων που προσ πωσ σε στη στην στο στον τα την τησ το τον τοτε του των ωσ'.split(' '));
 
     lunr.Pipeline.registerFunction(lunr.el.stopWordFilter, 'stopWordFilter-el');
 
+    /* lunr normilizer function */
     lunr.el.normilizer = (function() {
       var accentMap = {
-        "ή": "η",
-        "Ή": "Η",
-        "ά": "α",
         "Ά": "Α",
-        "ό": "ο",
-        "Ό": "Ο",
-        "έ": "ε",
+        "ά": "α",
         "Έ": "Ε",
-        "ί": "ι",
+        "έ": "ε",
+        "Ή": "Η",
+        "ή": "η",
         "Ί": "Ι",
-        "ύ": "υ",
+        "ί": "ι",
+        "Ό": "Ο",
+        "ο": "ο",
         "Ύ": "Υ",
-        "ώ": "ω",
+        "ύ": "υ",
         "Ώ": "Ω",
-        "ϊ": "ι"
+        "ώ": "ω",
+        "Ϊ": "Ι",
+        "ϊ": "ι",
+        "Ϋ": "Υ",
+        "ϋ": "υ",
+        "ΐ": "ι",
+        "ΰ": "υ"
       };
 
       return function(token) {
@@ -650,7 +669,11 @@
             return ret;
           });
         } else {
-          return token;
+          var ret = "";
+          for (var i = 0; i < token.length; i++) {
+            ret += accentMap[token.charAt(i)] || token.charAt(i);
+          }
+          return ret;
         }
       }
     })();
