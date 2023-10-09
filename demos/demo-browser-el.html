@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+	<meta charset="UTF-8">
+<!--    <script src="../test/lunr/lunr-0.6.0.min.js"></script>-->
+<!--    <script src="../test/lunr/lunr-0.7.0.min.js"></script>-->
+<!--    <script src="../test/lunr/lunr-1.0.0.min.js"></script>-->
+<!--    <script src="../test/lunr/lunr-2.0.1.js"></script>-->
+    <script src="../test/lunr/lunr-2.3.5.js"></script>
+    <script src="../lunr.stemmer.support.js"></script>
+    <script src="../lunr.el.js"></script>
+</head>
+<body>
+    <p>Open developer tools and observe the results in the Console tab. View source for code.</p>
+    <script>
+        /* init lunr */
+        var idx = lunr(function () {
+            // use the language (de)
+            this.use(lunr.el);
+            // then, the normal lunr index initialization
+            this.field('title', { boost: 10 });
+            this.field('body');
+            this.add({
+                "title": "Ελλάδα",
+                "body": "Η Ελλάδα (επίσημη ονομασία: Ελληνική Δημοκρατία) είναι χώρα της νοτιοανατολικής Ευρώπης, ευρισκόμενη στο νοτιότερο άκρο της Βαλκανικής χερσονήσου. Σύμφωνα με την απογραφή του 2021, ο μόνιμος πληθυσμός της ανέρχεται σε 10.482.487 κατοίκους. Πρωτεύουσα και μεγαλύτερη πόλη της είναι η Αθήνα.",
+                "id": 1
+            });
+            this.add({
+                "title": "Ονομασία",
+                "body": "Στη σύγχρονη ελληνική γλώσσα η χώρα αποκαλείται Ελλάδα. Η αντίστοιχη μορφή του ονόματος στα αρχαία ελληνικά και την καθαρεύουσα είναι η «Ελλάς». Από εκεί πηγάζει το όνομα Hellas, το οποίο στις περισσότερες ευρωπαϊκές γλώσσες χρησιμοποιείται σε αρχαϊκά και ποιητικά πλαίσια σήμερα.",
+                "id": 2
+            });
+        });
+
+        /* add documents to index */
+        console.log('Search for `Ελλάδα*`: ', idx.search('Ελλάδα*'));
+        console.log('Search for `απογραφή`: ', idx.search('απογραφή'));
+        console.log('Search for `πολιτισμός`: ', idx.search('πολιτισμός'));
+        console.log('Search for `όνομα`: ', idx.search('όνομα'));
+    </script>
+</body>
+</html>

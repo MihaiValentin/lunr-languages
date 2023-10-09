@@ -144,6 +144,8 @@ var list = [
         locale: 'hy',
     }, {
         locale: 'he',
+    }, {
+        locale: 'el',
     }
 ];
 
