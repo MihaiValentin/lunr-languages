@@ -26,8 +26,10 @@ function wordCharacters(script) {
     var charRegex = require('@unicode/unicode-8.0.0/Script/' + script + '/code-points.js');
     // Add generic numbers (script-specific numerals will already be there)
     var numRegex =  require('@unicode/unicode-8.0.0/General_Category/Number/code-points.js')
+    // Add combining diacritics so that, e.g., stress marks on Russian/Greek will be found
+    var markRegex =  require('@unicode/unicode-8.0.0/Block/Combining_Diacritical_Marks/code-points.js')
     // Make the regex
-    return regexString = regenerate().add(numRegex, charRegex).toString();
+    return regexString = regenerate().add(numRegex, charRegex, markRegex).toString();
 }
 
 // list mapping between locale, stemmer file, stopwords file, and char pattern
