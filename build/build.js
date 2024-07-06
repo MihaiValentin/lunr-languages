@@ -6,6 +6,7 @@
 var fs = require('fs');
 var beautify = require('js-beautify').js_beautify;
 var UglifyJS = require("uglify-js");
+var regenerate = require("regenerate");
 
 // shortcut for minifying a piece of code
 function compress(orig_code) {
@@ -21,15 +22,12 @@ var stopwordsCustomFolder = './stopwords-custom/';
 // 'script' (such as Latin), then extract the character ranges from that
 // regex for use in our trimmer
 function wordCharacters(script) {
-    var charRegex = require('unicode-8.0.0/scripts/' + script + '/regex');
-    // Now from /[a-z]/ get "a-z"
-    var regexString = charRegex.toString()
-    // Format sanity check
-    if (regexString.slice(0, 2) !== '/[' || regexString.slice(-2) != ']/') {
-        console.error('Unexpected regex structure, aborting: ' + regexString);
-        throw Error;
-    }
-    return regexString.slice(2, -2);
+    // Get basic script characters
+    var charRegex = require('@unicode/unicode-8.0.0/Script/' + script + '/code-points.js');
+    // Add generic numbers (script-specific numerals will already be there)
+    var numRegex =  require('@unicode/unicode-8.0.0/General_Category/Number/code-points.js')
+    // Make the regex
+    return regexString = regenerate().add(numRegex, charRegex).toString();
 }
 
 // list mapping between locale, stemmer file, stopwords file, and char pattern
