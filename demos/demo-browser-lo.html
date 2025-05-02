@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Lunr.js Lao Language Test</title>
+    <meta charset="UTF-8">
+    <script src="../test/lunr/lunr-2.0.1.js"></script>
+    <script src="../lunr.stemmer.support.js" charset="UTF-8"></script>
+    <script src="../lunr.lo.js" charset="UTF-8"></script>
+</head>
+
+<body>
+    <p>Open developer tools and observe the results in the Console tab. View source for code.</p>
+    <script>
+        /* init lunr */
+        var idx = lunr(function () {
+            this.use(lunr.lo);
+            // then, the normal lunr index initialization
+            this.field('title', { boost: 10 })
+            this.field('body')
+
+            /* add documents to index */
+            this.add({
+                "title": "ລາວ",
+                "body": "ປະເທດລາວ ຫຼື ສາທາລະນະລັດ ປະຊາທິປະໄຕ ປະຊາຊົນລາວ",
+                "id": 1
+            });
+            this.add({
+                "title": "ນະຄອນຫຼວງວຽງຈັນ",
+                "body": "ນະຄອນຫຼວງວຽງຈັນ ເປັນນະຄອນຫຼວງ ແລະ ເປັນເມືອງທີ່ໃຫຍ່ທີ່ສຸດຂອງ ສາທາລະນະລັດ ປະຊາທິປະໄຕ ປະຊາຊົນລາວ",
+                "id": 2
+            });
+            this.add({
+                "title": "ອາຫານລາວ",
+                "body": "ອາຫານລາວ ແມ່ນອາຫານທີ່ມີລົດຊາດເຜັດ ແລະ ມີຫຼາຍຊະນິດ",
+                "id": 3
+            });
+        });
+
+        // Basic word searches
+        console.log('Test 1: Find "ລາວ" in multiple documents', idx.search('ລາວ'));
+        console.log('Test 2: Find "ນະຄອນຫຼວງ" in one document', idx.search('ນະຄອນຫຼວງ'));
+        console.log('Test 3: Find "ຈັນ" in one document', idx.search('ຈັນ'));
+
+        // Compound word searches
+        console.log('Test 4: Find compound word "ປະເທດລາວ"', idx.search('ປະເທດລາວ'));
+
+        // Phrase searches
+        console.log('Test 5: Find exact phrase "ປະຊາຊົນລາວ"', idx.search('"ປະຊາຊົນລາວ"'));
+        console.log('Test 6: Find exact phrase "ນະຄອນຫຼວງວຽງຈັນ"', idx.search('"ນະຄອນຫຼວງວຽງຈັນ"'));
+
+        // Fuzzy searches
+        console.log('Test 7: Fuzzy search "ລາວ~1"', idx.search('ລາວ~1'));
+
+        // Wildcard searches
+        console.log('Test 8: Wildcard search "ລາ*"', idx.search('ລາ*'));
+
+        // Performance test
+        console.time('Search Performance');
+        for (let i = 0; i < 100; i++) {
+            idx.search('ລາວ');
+            idx.search('ນະຄອນຫຼວງ');
+            idx.search('ປະຊາຊົນລາວ');
+        }
+        console.timeEnd('Search Performance');
+    </script>
+</body>
+
+</html>
