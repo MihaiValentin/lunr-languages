@@ -105,6 +105,35 @@ lunrVersions.forEach(function (lunrVersion) {
                 assert.equal(idxMulti.search('languages').length, 1)
             });
         });
+        describe("should be able to use language tokenizers in multi-language indexes", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            require('../lunr.zh.js')(lunr);
+            require('../lunr.de.js')(lunr);
+            require('../lunr.multi.js')(lunr);
+
+            var idx = lunr(function () {
+                this.ref('id');
+                this.use(lunr.multiLanguage('en', 'zh', 'de'));
+                this.field('name', { boost: 10 });
+                this.add({ name: "Göttin des Sieges", id: 1 });
+                this.add({ name: "goddess of victory", id: 2 });
+                this.add({ name: "校花学姐", id: 3 });
+            });
+
+            it("should find Chinese terms segmented by a language tokenizer", function () {
+                assert.equal(idx.search('学姐').length, 1)
+            });
+
+            it("should keep finding German terms with the default tokenizer", function () {
+                assert.equal(idx.search('Göttin').length, 1)
+            });
+
+            it("should keep finding English terms with the default tokenizer", function () {
+                assert.equal(idx.search('goddess').length, 1)
+            });
+        });
         Object.keys(testDocuments).forEach(function (language) {
             describe("should be able to correctly find terms in " + language.toUpperCase() + " correctly", function () {
                 // because these tests are asynchronous, we must ensure every load of lunr is fresh
