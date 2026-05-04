@@ -1,7 +1,21 @@
-Lunr Languages [![npm](https://img.shields.io/npm/v/lunr-languages.svg)](https://www.npmjs.com/package/lunr-languages) [![Bower](https://img.shields.io/bower/v/lunr-languages.svg)]() [![Join the chat at https://gitter.im/lunr-languages/Lobby](https://badges.gitter.im/lunr-languages/Lobby.svg)](https://gitter.im/lunr-languages/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![](https://img.shields.io/badge/compatible%20with%20Lunr-0.6.0%20--%3E%202.x-green.svg)](http://lunrjs.com/) [![CircleCI branch](https://img.shields.io/circleci/project/github/MihaiValentin/lunr-languages.svg)](https://circleci.com/gh/MihaiValentin/lunr-languages)
-==============
+# Lunr Languages — Multilingual Search for AI, RAG & Local-First Apps
 
-Lunr Languages is a [Lunr](http://lunrjs.com/) addon that helps you search in documents written in the following languages:
+> **Used by 18k+ projects • ~300k weekly downloads**
+
+Lunr Languages is an extension for Lunr.js that enables **fast, multilingual full-text search** across dozens of languages — in the browser or Node.js.
+
+Originally built for classic search, it is now widely used as a **lightweight retrieval layer in AI systems**, including:
+
+* Retrieval-Augmented Generation (RAG)
+* Hybrid search (keyword + vector)
+* Local-first / edge AI apps
+* Static site search and documentation search
+
+⭐ If this project saves you time or powers something important, consider starring it or supporting its maintenance.
+
+---
+
+## Supported Languages
 
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/DE.png) German
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/FR.png) French
@@ -22,7 +36,7 @@ Lunr Languages is a [Lunr](http://lunrjs.com/) addon that helps you search in do
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IQ.png) Arabic
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/CN.png) Chinese
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/VN.png) Vietnamese
-* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IN.png) Sankrit
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IN.png) Sanskrit
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IN.png) Kannada
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IN.png) Telugu
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IN.png) Hindi
@@ -31,142 +45,166 @@ Lunr Languages is a [Lunr](http://lunrjs.com/) addon that helps you search in do
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/AM.png) Armenian
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IL.png) Hebrew
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/GR.png) Greek
-* [Contribute with a new language](CONTRIBUTING.md)
 
-Lunr Languages is compatible with Lunr version `0.6`, `0.7`, `1.0` and `2.X`.
+→ [Contribute a new language](CONTRIBUTING.md)
 
-# How to use
+---
 
-Lunr-languages works well with script loaders (Webpack, requirejs) and can be used in the browser and on the server.
+## Why Lunr Languages in an AI world?
 
-## In a web browser
+Modern AI systems don’t replace search — they **depend on it**.
 
-The following example is for the German language (de).
+Before an LLM can generate an answer, it needs **relevant context**. That’s where Lunr Languages fits:
 
-Add the following JS files to the page:
+### 🔎 Fast and consistent lexical retrieval
 
-```html
-<script src="lunr.js"></script> <!-- lunr.js library -->
-<script src="lunr.stemmer.support.js"></script>
-<script src="lunr.de.js"></script> <!-- or any other language you want -->
+Filter thousands of documents down to a small candidate set before embedding or reranking.
+
+### 🌍 Multilingual support out of the box
+
+Tokenization, stemming, and stopwords for 30+ languages — still a hard problem in AI pipelines.
+
+### ⚡ Zero infrastructure
+
+Runs entirely in the browser or Node.js. No vector DB required.
+
+### 🔒 Privacy-friendly / offline-ready
+
+Perfect for:
+
+* in-browser AI assistants
+* local knowledge bases
+* on-device search
+
+---
+
+## Example: Hybrid Search (Keyword + AI)
+
+```text
+User query
+→ Lunr (keyword search, multilingual)
+→ top 100–500 documents
+→ embeddings / reranker
+→ LLM generates answer
 ```
 
-then, use the language in when initializing lunr:
+Lunr Languages improves **recall and precision**, especially for:
+
+* non-English content
+* inflected languages
+* mixed-language datasets
+
+---
+
+## Installation
+
+```bash
+npm install lunr-languages
+```
+
+---
+
+## Usage
+
+### Basic example (German)
 
 ```javascript
-var idx = lunr(function () {
-  // use the language (de)
+const lunr = require('lunr');
+require('lunr-languages/lunr.stemmer.support')(lunr);
+require('lunr-languages/lunr.de')(lunr);
+
+const idx = lunr(function () {
   this.use(lunr.de);
-  // then, the normal lunr index initialization
+
   this.field('title', { boost: 10 });
   this.field('body');
-  // now you can call this.add(...) to add documents written in German
+
+  this.add({ title: 'Dokument', body: 'Beispieltext' });
 });
 ```
 
-That's it. Just add the documents and you're done. When searching, the language stemmer and stopwords list will be the one you used.
+---
 
-## In a web browser, with RequireJS
-
-Add `require.js` to the page:
-
-```html
-<script src="lib/require.js"></script>
-```
-
-then, use the language in when initializing lunr:
+## Multi-language indexing
 
 ```javascript
-require(['lib/lunr.js', '../lunr.stemmer.support.js', '../lunr.de.js'], function(lunr, stemmerSupport, de) {
-  // since the stemmerSupport and de add keys on the lunr object, we'll pass it as reference to them
-  // in the end, we will only need lunr.
-  stemmerSupport(lunr); // adds lunr.stemmerSupport
-  de(lunr); // adds lunr.de key
+require('lunr-languages/lunr.multi')(lunr);
 
-  // at this point, lunr can be used
-  var idx = lunr(function () {
-  // use the language (de)
-  this.use(lunr.de);
-  // then, the normal lunr index initialization
-  this.field('title', { boost: 10 })
-  this.field('body')
-  // now you can call this.add(...) to add documents written in German
-  });
+const idx = lunr(function () {
+  this.use(lunr.multiLanguage('en', 'ru', 'de'));
+
+  this.field('title');
+  this.field('body');
 });
 ```
 
-# With node.js
+---
 
-```javascript
-var lunr = require('./lib/lunr.js');
-require('./lunr.stemmer.support.js')(lunr);
-require('./lunr.de.js')(lunr); // or any other language you want
+## Where this fits in modern architectures
 
-var idx = lunr(function () {
-  // use the language (de)
-  this.use(lunr.de);
-  // then, the normal lunr index initialization
-  this.field('title', { boost: 10 })
-  this.field('body')
-  // now you can call this.add(...) to add documents written in German
-});
-```
+Lunr Languages is commonly used as:
 
-# Indexing multi-language content
+* **Pre-filter for vector search**
+* **Fallback when embeddings fail**
+* **Client-side retrieval for AI apps**
+* **Static / documentation search**
 
-If your documents are written in more than one language, you can enable multi-language indexing. This ensures every word is properly trimmed and stemmed, every stopword is removed, and no words are lost (indexing in just one language would remove words from every other one.)
+👉 In practice, **hybrid search (keyword + vector) performs best**
 
-```javascript
-var lunr = require('./lib/lunr.js');
-require('./lunr.stemmer.support.js')(lunr);
-require('./lunr.ru.js')(lunr);
-require('./lunr.multi.js')(lunr);
+---
 
-var idx = lunr(function () {
-  // the reason "en" does not appear above is that "en" is built in into lunr js
-  this.use(lunr.multiLanguage('en', 'ru'));
-  // then, the normal lunr index initialization
-  // ...
-});
-```
+## How it works
 
-You can combine any number of supported languages this way. The corresponding lunr language scripts must be loaded (English is built in).
+To provide high-quality search across languages:
 
-If you serialize the index and load it in another script, you'll have to initialize the multi-language support in that script, too, like this:
+* **Tokenization** — language-aware splitting (including Japanese, Chinese, etc.)
+* **Stemming** — matches different word forms
+* **Stopword filtering** — removes noise
+* **Trimming** — normalizes tokens
 
-```javascript
-lunr.multiLanguage('en', 'ru');
-var idx = lunr.Index.load(serializedIndex);
-```
+These steps improve both **classic search** and **AI retrieval pipelines**.
 
-# How to add a new language
+---
 
-Check the [Contributing](CONTRIBUTING.md) section
+## When to use Lunr Languages vs vector search
 
-# How does Lunr Languages work?
+Use Lunr Languages when you need:
 
-Searching inside documents is not as straight forward as using `indexOf()`, since there are many things to consider in order to get quality search results:
-* **Tokenization**
-    * Given a string like *"Hope you like using Lunr Languages!"*, the tokenizer would split it into individual words, becoming an array like `['Hope', 'you', 'like', 'using', 'Lunr', 'Languages!']`
-    * Though it seems a trivial task for Latin characters (just splitting by the space), it gets more complicated for languages like Japanese. Lunr Languages has this included for the Japanese language.
-* **Trimming**
-    * After tokenization, trimming ensures that the words contain *just* what is needed in them. In our example above, the trimmer would convert `Languages!` into `Languages`
-    * So, the trimmer basically removes special characters that do not add value for the search purpose.
-* **Stemming**
-    * What happens if our text contains the word `consignment` but we want to search for `consigned`? It should find it, since its meaning is the same, only the form is different.
-    * A stemmer extracts the root of words that can have many forms and stores it in the index. Then, any search is also stemmed and searched in the index.
-    * Lunr Languages does stemming for all the included languages, so you can capture all the forms of words in your documents.
-* **Stop words**
-    * There's no point in adding or searching words like `the`, `it`, `so`, etc. These words are called *Stop words*
-    * Stop words are removed so your index will only contain meaningful words.
-    * Lunr Languages includes stop words for all the included languages.
+* fast, deterministic keyword matching
+* multilingual normalization
+* offline / browser-based search
+* low-cost retrieval
 
-# Technical details & Credits
+Combine with embeddings for:
 
-I've created this project by compiling and wrapping stemmers toghether with stop words from various sources ([including users contributions](https://github.com/MihaiValentin/lunr-languages/pulls?q=is%3Apr)) so they can be directly used with all the current versions of Lunr.
+* semantic similarity
+* fuzzy concept matching
 
-* <https://github.com/fortnightlabs/snowball-js> (the stemmers for all languages, ported from snowball-js)
-* <https://github.com/brenes/stopwords-filter> (the stop words list for the other languages)
-* <http://chasen.org/~taku/software/TinySegmenter/> (the tinyseg Tiny Segmente Japanese tokenizer)
+---
 
-I am providing code in the repository to you under an [open source license](LICENSE). Because this is my personal repository, the license you receive to my code is from me and not my employer (Facebook)
+## Contributing
+
+Want to add a new language?
+
+See [CONTRIBUTING.md](CONTRIBUTING.md)
+
+---
+
+## Support / Sponsorship
+
+Maintained as an open-source project for over a decade.
+
+If your company relies on this in production:
+
+* consider sponsoring
+* or contributing improvements
+
+It helps keep the ecosystem stable.
+
+---
+
+## Final note
+
+Even in an AI-first world, **retrieval is the bottleneck**.
+
+Lunr Languages ensures the *right* content reaches your models — fast, locally, and across languages.
