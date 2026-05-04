@@ -34,7 +34,7 @@ Originally built for classic search, it is now widely used as a **lightweight re
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/JP.png) Japanese
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/TH.png) Thai
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IQ.png) Arabic
-* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/CN.png) Chinese
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/CN.png) Chinese<sup>1</sup>
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/VN.png) Vietnamese
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IN.png) Sanskrit
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IN.png) Kannada
@@ -47,6 +47,10 @@ Originally built for classic search, it is now widely used as a **lightweight re
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/GR.png) Greek
 
 → [Contribute a new language](CONTRIBUTING.md)
+
+---
+
+<sup>1</sup> Chinese tokenization uses `Intl.Segmenter` with CJK bigrams by default, which works in modern browsers and Node.js without native dependencies. In Node.js, if `@node-rs/jieba` is installed, Lunr Languages uses it automatically for higher-quality Jieba segmentation. Browsers must support `Intl.Segmenter`; there is no frontend fallback.
 
 ---
 
@@ -136,6 +140,24 @@ const idx = lunr(function () {
   this.field('title');
   this.field('body');
 });
+```
+
+---
+
+## Chinese Tokenization
+
+Chinese support is designed to work without mandatory native binaries:
+
+* In browsers, `lunr.zh` uses `Intl.Segmenter` plus CJK bigrams. If `Intl.Segmenter` is unavailable, it logs an error and throws because there is no bundled browser fallback.
+* In Node.js, `lunr.zh` first tries to load `@node-rs/jieba`. If it is installed, it is used for better Chinese segmentation. If it is not installed, Lunr Languages logs an informational message and falls back to `Intl.Segmenter` plus CJK bigrams.
+* If neither `@node-rs/jieba` nor `Intl.Segmenter` is available in Node.js, Chinese tokenization logs an error and throws.
+
+The `Intl.Segmenter` fallback avoids native package supply-chain risk and works well for lightweight search, but it is not identical to Jieba. Bigrams improve recall for common two-character search terms such as `车主` and `学姐`, while Jieba generally provides better precision and ranking for serious Chinese search.
+
+To opt into Jieba tokenization in Node.js:
+
+```bash
+npm install @node-rs/jieba
 ```
 
 ---
