@@ -62,11 +62,14 @@
       );
 
       // for lunr version 2
-      // this is necessary so that every searched word is also stemmed before
+      // this is necessary so that every searched word is also trimmed and stemmed before
       // in lunr <= 1 this is not needed, as it is done using the normal pipeline
       if (this.searchPipeline) {
         this.searchPipeline.reset();
-        this.searchPipeline.add(lunr.es.stemmer)
+        this.searchPipeline.add(
+          lunr.es.trimmer,
+          lunr.es.stemmer
+        )
       }
     };
 
