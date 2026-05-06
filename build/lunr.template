@@ -39,7 +39,7 @@
             this.pipeline.reset();
             this.pipeline.add(
                 lunr.{{locale}}.trimmer,
-                lunr.{{locale}}.stopWordFilter,
+                lunr.{{locale}}.stopWordFilter,{{pipelineBeforeStemmer}}
                 lunr.{{locale}}.stemmer
             );
 
@@ -49,7 +49,7 @@
             if (this.searchPipeline) {
                 this.searchPipeline.reset();
                 this.searchPipeline.add(
-                    lunr.{{locale}}.trimmer,
+                    lunr.{{locale}}.trimmer,{{pipelineBeforeStemmer}}
                     lunr.{{locale}}.stemmer
                 )
             }

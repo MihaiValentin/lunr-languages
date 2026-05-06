@@ -204,6 +204,38 @@ lunrVersions.forEach(function (lunrVersion) {
                 });
             }
         });
+        describe("should normalize French accented queries", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            require('../lunr.fr.js')(lunr);
+
+            var idx = lunr(function () {
+                this.use(lunr.fr);
+                this.ref('id');
+                this.field('text');
+                this.add({ id: 1, text: "empêchaient maître" });
+            });
+
+            it("should find French words when accents are omitted", function () {
+                assert.equal(idx.search('empechaient').length, 1)
+                assert.equal(idx.search('maitre').length, 1)
+            });
+
+            if (lunrVersion.version[0] === "2") {
+                it("should index folded French stems", function () {
+                    assert.ok(idx.invertedIndex.empech)
+                    assert.ok(idx.invertedIndex.maitr)
+                    assert.equal(idx.invertedIndex['empêch'], undefined)
+                    assert.equal(idx.invertedIndex['maîtr'], undefined)
+                });
+
+                it("should find French words with accented wildcard searches", function () {
+                    assert.equal(idx.search('maîtr*').length, 1)
+                });
+            }
+        });
         Object.keys(testDocuments).forEach(function (language) {
             describe("should be able to correctly find terms in " + language.toUpperCase() + " correctly", function () {
                 // because these tests are asynchronous, we must ensure every load of lunr is fresh

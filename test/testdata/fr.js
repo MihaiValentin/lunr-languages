@@ -18,7 +18,7 @@ module.exports = {
             "id": 2
         }, {
             "title": "Termes accentués",
-            "body": "équipement, barrage rivière",
+            "body": "équipement, barrage rivière empêchaient maître",
             "id": 3
         }
     ],
@@ -54,6 +54,18 @@ module.exports = {
         }, {
             what: "find the word %w",
             search: "rivière",
+            found: 1
+        }, {
+            what: "find an accented French word when accents are omitted %w",
+            search: "riviere",
+            found: 1
+        }, {
+            what: "find an accented French verb when accents are omitted %w",
+            search: "empechaient",
+            found: 1
+        }, {
+            what: "find an accented French noun when accents are omitted %w",
+            search: "maitre",
             found: 1
         }
     ]
