@@ -61,6 +61,23 @@ function accentFoldFunction(locale) {
     ].join('\n');
 }
 
+function germanWildcardNormalizerFunction(locale) {
+    return [
+        '',
+        '        lunr.' + locale + '.wildcardNormalizer = function(term) {',
+        '            return term',
+        '                .replace(/[\\u00DF\\u1E9E]/g, "ss")',
+        '                .replace(/[\\u00E4\\u00C4]/g, "a")',
+        '                .replace(/[\\u00F6\\u00D6]/g, "o")',
+        '                .replace(/[\\u00FC\\u00DC]/g, "u");',
+        '        };',
+        '',
+        '        lunr.' + locale + '.wildcardNormalizer.label = "wildcardNormalizer-' + locale + '";',
+        '        lunr.' + locale + '.wildcardNormalizer.pipelineFunctionLabel = "stemmer-' + locale + '";',
+        '        lunr.stemmerSupport.addQueryParserWildcardNormalizer(lunr, lunr.' + locale + '.wildcardNormalizer);'
+    ].join('\n');
+}
+
 // list mapping between locale, stemmer file, stopwords file, and char pattern
 var list = [
     {
@@ -103,7 +120,8 @@ var list = [
         locale: 'de',
         file: 'GermanStemmer.js',
         stopwords: stopwordsRepoFolder + 'de.csv',
-        wordCharacters: wordCharacters('Latin')
+        wordCharacters: wordCharacters('Latin'),
+        wildcardNormalizer: germanWildcardNormalizerFunction
     }, {
         locale: 'hu',
         file: 'HungarianStemmer.js',
@@ -195,6 +213,15 @@ for (var i = 0; i < list.length; i++) {
     if (fromTemplate) {
         data = fs.readFileSync('build/snowball-js/stemmer/src/ext/' + list[i].file, 'utf8');
         stopWords = fs.readFileSync('build/' + list[i].stopwords, 'utf8');
+        var languageExtras = [];
+
+        if (list[i].accentFolding) {
+            languageExtras.push(accentFoldFunction(list[i].locale));
+        }
+
+        if (list[i].wildcardNormalizer) {
+            languageExtras.push(list[i].wildcardNormalizer(list[i].locale));
+        }
 
         // start replacing the placeholders
         f = tpl;
@@ -205,7 +232,7 @@ for (var i = 0; i < list.length; i++) {
         f = f.replace(/\{\{stopWordsLength\}\}/g, stopWords.split(',').length + 1);
         f = f.replace(/\{\{languageName\}\}/g, list[i].file.replace(/Stemmer\.js/g, ''));
         f = f.replace(/\{\{wordCharacters\}\}/g, list[i].wordCharacters);
-        f = f.replace(/\{\{languageExtras\}\}/g, list[i].accentFolding ? accentFoldFunction(list[i].locale) : '');
+        f = f.replace(/\{\{languageExtras\}\}/g, languageExtras.join('\n'));
 
         f = f.replace(/\{\{consoleWarning\}\}/g, list[i].warningMessage ? '\n\nconsole.warn(' + JSON.stringify(list[i].warningMessage) + ');' : '');
     } else {

@@ -170,6 +170,40 @@ lunrVersions.forEach(function (lunrVersion) {
                 });
             }
         });
+        describe("should normalize German wildcard queries with umlauts", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            require('../lunr.de.js')(lunr);
+
+            var idx = lunr(function () {
+                this.use(lunr.de);
+                this.ref('id');
+                this.field('text');
+                this.add({ id: 1, text: "das ist günstig" });
+            });
+
+            var defaultIdx = lunr(function () {
+                this.ref('id');
+                this.field('text');
+                this.add({ id: 1, text: "das ist günstig" });
+            });
+
+            it("should find German words with umlauts without wildcard searches", function () {
+                assert.equal(idx.search('günstig').length, 1)
+            });
+
+            if (lunrVersion.version[0] === "2") {
+                it("should find German words with umlauts with wildcard searches", function () {
+                    assert.equal(idx.search('günsti*').length, 1)
+                });
+
+                it("should leave non-German indexes unchanged after German is loaded", function () {
+                    assert.equal(defaultIdx.search('günsti*').length, 1)
+                });
+            }
+        });
         Object.keys(testDocuments).forEach(function (language) {
             describe("should be able to correctly find terms in " + language.toUpperCase() + " correctly", function () {
                 // because these tests are asynchronous, we must ensure every load of lunr is fresh
