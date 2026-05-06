@@ -16,6 +16,10 @@ module.exports = {
             "title": "Politique et administration",
             "body": "La France est une démocratie libérale, dont le gouvernement a la forme d’une république. Les fondements de l’organisation politique et administrative actuelle de la France ont été fixés en 1958 par la Constitution de la Cinquième République. Selon l’article premier de cette constitution, « la France est une République indivisible, laïque, démocratique et sociale ». Depuis 2003, ce même article affirme en outre que « son organisation est décentralisée continuelle",
             "id": 2
+        }, {
+            "title": "Termes accentués",
+            "body": "équipement, barrage rivière",
+            "id": 3
         }
     ],
     tests: [
@@ -34,6 +38,22 @@ module.exports = {
         }, {
             what: "find a correctly stemmed word %w",
             search: "continuellement",
+            found: 1
+        }, {
+            what: "find an accented word at the start of a comma-separated value %w",
+            search: "équipement",
+            found: 1
+        }, {
+            what: "trim punctuation around an accented French query %w",
+            search: "équipement,",
+            found: 1
+        }, {
+            what: "find the word %w",
+            search: "barrage",
+            found: 1
+        }, {
+            what: "find the word %w",
+            search: "rivière",
             found: 1
         }
     ]
