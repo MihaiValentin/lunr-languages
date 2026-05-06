@@ -169,5 +169,45 @@ lunrVersions.forEach(function (lunrVersion) {
                 }.bind(this));
             })
         })
+
+        if (lunrVersion.version[0] === "2") {
+            describe("should support opt-in Spanish accent folding", function () {
+                delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+                var lunr = require('./lunr/' + lunrVersion.lunr);
+                require('../lunr.stemmer.support.js')(lunr);
+                require('../lunr.es.js')(lunr);
+
+                var defaultIdx = lunr(function () {
+                    this.use(lunr.es);
+                    this.field('body');
+                    this.add({ "body": "Respiración", "id": 1 });
+                });
+
+                var accentFoldIdx = lunr(function () {
+                    this.use(lunr.es);
+                    this.pipeline.before(lunr.es.stemmer, lunr.es.accentFold);
+                    this.searchPipeline.before(lunr.es.stemmer, lunr.es.accentFold);
+                    this.field('body');
+                    this.add({ "body": "Respiración autonomías hablaré pingüino año", "id": 1 });
+                });
+
+                it("should not fold Spanish accents by default", function () {
+                    assert.equal(defaultIdx.search('respiracion').length, 0)
+                });
+
+                it("should find accented Spanish words when accents are omitted", function () {
+                    assert.equal(accentFoldIdx.search('respiracion').length, 1)
+                    assert.equal(accentFoldIdx.search('autonomias').length, 1)
+                    assert.equal(accentFoldIdx.search('hablare').length, 1)
+                    assert.equal(accentFoldIdx.search('pinguino').length, 1)
+                });
+
+                it("should not fold ene into plain n", function () {
+                    assert.equal(accentFoldIdx.search('ano').length, 0)
+                    assert.equal(accentFoldIdx.search('año').length, 1)
+                });
+            })
+        }
     })
 });
