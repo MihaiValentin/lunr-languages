@@ -32,6 +32,35 @@ function wordCharacters(script) {
     return regexString.slice(2, -2);
 }
 
+function accentFoldFunction(locale) {
+    return [
+        '',
+        '        lunr.' + locale + '.accentFold = function(token) {',
+        '            if (!token || typeof token.clone !== "function") {',
+        '                return token;',
+        '            }',
+        '',
+        '            var str = token.toString();',
+        '            var folded = str',
+        '                .replace(/[\\u00E1\\u00E0\\u00E4\\u00E2]/g, "a")',
+        '                .replace(/[\\u00E9\\u00E8\\u00EB\\u00EA]/g, "e")',
+        '                .replace(/[\\u00ED\\u00EC\\u00EF\\u00EE]/g, "i")',
+        '                .replace(/[\\u00F3\\u00F2\\u00F6\\u00F4]/g, "o")',
+        '                .replace(/[\\u00FA\\u00F9\\u00FC\\u00FB]/g, "u");',
+        '',
+        '            if (folded === str) {',
+        '                return token;',
+        '            }',
+        '',
+        '            return [token, token.clone(function() {',
+        '                return folded;',
+        '            })];',
+        '        };',
+        '',
+        '        lunr.Pipeline.registerFunction(lunr.' + locale + '.accentFold, "accentFold-' + locale + '");'
+    ].join('\n');
+}
+
 // list mapping between locale, stemmer file, stopwords file, and char pattern
 var list = [
     {
@@ -115,7 +144,8 @@ var list = [
         locale: 'es',
         file: 'SpanishStemmer.js',
         stopwords: stopwordsRepoFolder + 'es.csv',
-        wordCharacters: wordCharacters('Latin')
+        wordCharacters: wordCharacters('Latin'),
+        accentFolding: true
     }, {
         locale: 'sa'
     }, {
@@ -175,6 +205,7 @@ for (var i = 0; i < list.length; i++) {
         f = f.replace(/\{\{stopWordsLength\}\}/g, stopWords.split(',').length + 1);
         f = f.replace(/\{\{languageName\}\}/g, list[i].file.replace(/Stemmer\.js/g, ''));
         f = f.replace(/\{\{wordCharacters\}\}/g, list[i].wordCharacters);
+        f = f.replace(/\{\{languageExtras\}\}/g, list[i].accentFolding ? accentFoldFunction(list[i].locale) : '');
 
         f = f.replace(/\{\{consoleWarning\}\}/g, list[i].warningMessage ? '\n\nconsole.warn(' + JSON.stringify(list[i].warningMessage) + ');' : '');
     } else {

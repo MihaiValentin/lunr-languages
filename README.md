@@ -19,7 +19,7 @@ Originally built for classic search, it is now widely used as a **lightweight re
 
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/DE.png) German
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/FR.png) French
-* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/ES.png) Spanish
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/ES.png) Spanish<sup>2</sup>
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IT.png) Italian
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/NL.png) Dutch
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/DK.png) Danish
@@ -51,6 +51,8 @@ Originally built for classic search, it is now widely used as a **lightweight re
 ---
 
 <sup>1</sup> Chinese tokenization uses `Intl.Segmenter` with CJK bigrams by default, which works in modern browsers and Node.js without native dependencies. In Node.js, if `@node-rs/jieba` is installed, Lunr Languages uses it automatically for higher-quality Jieba segmentation. Browsers must support `Intl.Segmenter`; there is no frontend fallback.
+
+<sup>2</sup> Spanish includes an opt-in `lunr.es.accentFold` pipeline function for Lunr 2 indexes that should match user queries with omitted accents, such as `respiracion` matching `Respiración`, without replacing the default Spanish stemmer.
 
 ---
 
@@ -124,6 +126,22 @@ const idx = lunr(function () {
   this.field('body');
 
   this.add({ title: 'Dokument', body: 'Beispieltext' });
+});
+```
+
+For Spanish indexes on Lunr 2, you can opt into accent-insensitive matching by expanding accented tokens before stemming:
+
+```js
+require('lunr-languages/lunr.stemmer.support')(lunr);
+require('lunr-languages/lunr.es')(lunr);
+
+var idx = lunr(function () {
+  this.use(lunr.es);
+  this.pipeline.before(lunr.es.stemmer, lunr.es.accentFold);
+  this.searchPipeline.before(lunr.es.stemmer, lunr.es.accentFold);
+
+  this.field('body');
+  this.add({ id: 1, body: 'Respiración' });
 });
 ```
 
