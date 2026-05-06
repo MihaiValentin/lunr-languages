@@ -134,6 +134,42 @@ lunrVersions.forEach(function (lunrVersion) {
                 assert.equal(idx.search('goddess').length, 1)
             });
         });
+        describe("should keep numeric tokens when language trimmers are active", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            require('../lunr.de.js')(lunr);
+            require('../lunr.ru.js')(lunr);
+
+            var idxDe = lunr(function () {
+                this.use(lunr.de);
+                this.ref('id');
+                this.field('text');
+                this.add({ id: 1, text: "Port 1234 is a good port for testing a problem" });
+            });
+
+            var idxRu = lunr(function () {
+                this.use(lunr.ru);
+                this.ref('id');
+                this.field('text');
+                this.add({ id: 1, text: "Порт 1234 работает" });
+            });
+
+            it("should find numeric-only terms in German documents", function () {
+                assert.equal(idxDe.search('1234').length, 1)
+            });
+
+            it("should find numeric-only terms in Russian documents", function () {
+                assert.equal(idxRu.search('1234').length, 1)
+            });
+
+            if (lunrVersion.version[0] === "2") {
+                it("should keep wildcard searches with numeric prefixes", function () {
+                    assert.equal(idxDe.search('123*').length, 1)
+                });
+            }
+        });
         Object.keys(testDocuments).forEach(function (language) {
             describe("should be able to correctly find terms in " + language.toUpperCase() + " correctly", function () {
                 // because these tests are asynchronous, we must ensure every load of lunr is fresh

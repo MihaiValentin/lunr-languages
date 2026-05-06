@@ -281,8 +281,11 @@
 
         lunr.trimmerSupport = {
             generateTrimmer: function(wordCharacters) {
-                var startRegex = new RegExp("^[^" + wordCharacters + "]+")
-                var endRegex = new RegExp("[^" + wordCharacters + "]+$")
+                // Keep parity with lunr's default trimmer, where ASCII digits
+                // are word characters, without changing any language ranges.
+                var allowedCharacters = wordCharacters + "0-9"
+                var startRegex = new RegExp("^[^" + allowedCharacters + "]+")
+                var endRegex = new RegExp("[^" + allowedCharacters + "]+$")
 
                 return function(token) {
                     // for lunr version 2
