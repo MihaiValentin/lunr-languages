@@ -276,6 +276,99 @@
                         return this.eq_s_b(s.length, s);
                     }
                 };
+            },
+            addQueryParserWildcardNormalizer: function(lunr, normalizer) {
+                if (!lunr.Index || !lunr.Index.prototype || !lunr.Index.prototype.query || !lunr.QueryParser || !lunr.QueryParser.parseTerm || !lunr.QueryLexer) {
+                    return;
+                }
+
+                if (!this.queryParserWildcardNormalizers) {
+                    this.queryParserWildcardNormalizers = [];
+                }
+
+                for (var i = 0; i < this.queryParserWildcardNormalizers.length; i++) {
+                    if (this.queryParserWildcardNormalizers[i].label === normalizer.label) {
+                        return;
+                    }
+                }
+
+                this.queryParserWildcardNormalizers.push(normalizer);
+
+                if (this.queryParserWildcardNormalizerApplied) {
+                    return;
+                }
+
+                var stemmerSupport = this,
+                    originalQuery = lunr.Index.prototype.query,
+                    originalParseTerm = lunr.QueryParser.parseTerm;
+
+                lunr.Index.prototype.query = function(fn) {
+                    var index = this;
+
+                    return originalQuery.call(this, function(query) {
+                        query._lunrLanguagesSearchPipeline = index.pipeline;
+
+                        return fn.call(this, query);
+                    });
+                };
+
+                lunr.QueryParser.parseTerm = function(parser) {
+                    var originalConsumeLexeme = parser.consumeLexeme;
+
+                    parser.consumeLexeme = function() {
+                        var lexeme = originalConsumeLexeme.call(parser);
+
+                        if (lexeme && lexeme.type === lunr.QueryLexer.TERM && lexeme.str.indexOf("*") !== -1) {
+                            return {
+                                type: lexeme.type,
+                                str: stemmerSupport.applyQueryParserWildcardNormalizers(lexeme.str, parser.query),
+                                start: lexeme.start,
+                                end: lexeme.end
+                            };
+                        }
+
+                        return lexeme;
+                    };
+
+                    try {
+                        return originalParseTerm(parser);
+                    } finally {
+                        parser.consumeLexeme = originalConsumeLexeme;
+                    }
+                };
+
+                this.queryParserWildcardNormalizerApplied = true;
+            },
+            applyQueryParserWildcardNormalizers: function(term, query) {
+                var normalizers = this.queryParserWildcardNormalizers || [],
+                    pipeline = query && query._lunrLanguagesSearchPipeline;
+
+                for (var i = 0; i < normalizers.length; i++) {
+                    if (pipeline && !this.pipelineContainsFunction(pipeline, normalizers[i].pipelineFunctionLabel)) {
+                        continue;
+                    }
+
+                    term = normalizers[i](term);
+                }
+
+                return term;
+            },
+            pipelineContainsFunction: function(pipeline, label) {
+                if (!label) {
+                    return true;
+                }
+
+                if (!pipeline._stack) {
+                    return false;
+                }
+
+                for (var i = 0; i < pipeline._stack.length; i++) {
+                    if (pipeline._stack[i].label === label) {
+                        return true;
+                    }
+                }
+
+                return false;
             }
         };
 
