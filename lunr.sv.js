@@ -62,11 +62,14 @@
       );
 
       // for lunr version 2
-      // this is necessary so that every searched word is also stemmed before
+      // this is necessary so that every searched word is also trimmed and stemmed before
       // in lunr <= 1 this is not needed, as it is done using the normal pipeline
       if (this.searchPipeline) {
         this.searchPipeline.reset();
-        this.searchPipeline.add(lunr.sv.stemmer)
+        this.searchPipeline.add(
+          lunr.sv.trimmer,
+          lunr.sv.stemmer
+        )
       }
     };
 
@@ -248,6 +251,7 @@
     })();
 
     lunr.Pipeline.registerFunction(lunr.sv.stemmer, 'stemmer-sv');
+
 
     lunr.sv.stopWordFilter = lunr.generateStopWordFilter('alla allt att av blev bli blir blivit de dem den denna deras dess dessa det detta dig din dina ditt du där då efter ej eller en er era ert ett från för ha hade han hans har henne hennes hon honom hur här i icke ingen inom inte jag ju kan kunde man med mellan men mig min mina mitt mot mycket ni nu när någon något några och om oss på samma sedan sig sin sina sitta själv skulle som så sådan sådana sådant till under upp ut utan vad var vara varför varit varje vars vart vem vi vid vilka vilkas vilken vilket vår våra vårt än är åt över'.split(' '));
 
