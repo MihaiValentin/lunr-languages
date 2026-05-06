@@ -58,6 +58,7 @@
       this.pipeline.add(
         lunr.fr.trimmer,
         lunr.fr.stopWordFilter,
+        lunr.fr.accentFold,
         lunr.fr.stemmer
       );
 
@@ -68,6 +69,7 @@
         this.searchPipeline.reset();
         this.searchPipeline.add(
           lunr.fr.trimmer,
+          lunr.fr.accentFold,
           lunr.fr.stemmer
         )
       }
@@ -699,6 +701,45 @@
 
     lunr.Pipeline.registerFunction(lunr.fr.stemmer, 'stemmer-fr');
 
+    lunr.fr.accentFoldTerm = function(term) {
+      return term
+        .replace(/[\u00E0\u00E1\u00E2\u00E4\u00C0\u00C1\u00C2\u00C4]/g, "a")
+        .replace(/[\u00E7\u00C7]/g, "c")
+        .replace(/[\u00E9\u00E8\u00EA\u00EB\u00C9\u00C8\u00CA\u00CB]/g, "e")
+        .replace(/[\u00EE\u00EF\u00CE\u00CF]/g, "i")
+        .replace(/[\u00F4\u00F6\u00D4\u00D6]/g, "o")
+        .replace(/[\u00F9\u00FB\u00FC\u00D9\u00DB\u00DC]/g, "u")
+        .replace(/[\u0178\u00FF]/g, "y")
+        .replace(/[\u00E6\u00C6]/g, "ae")
+        .replace(/[\u0153\u0152]/g, "oe");
+    };
+    lunr.fr.accentFold = function(token) {
+      if (!token) {
+        return token;
+      }
+
+      if (typeof token.update === "function") {
+        return token.update(function(term) {
+          return lunr.fr.accentFoldTerm(term);
+        });
+      }
+
+      if (typeof token === "string") {
+        return lunr.fr.accentFoldTerm(token);
+      }
+
+      return token;
+    };
+
+    lunr.Pipeline.registerFunction(lunr.fr.accentFold, "accentFold-fr");
+
+    lunr.fr.wildcardNormalizer = function(term) {
+      return lunr.fr.accentFoldTerm(term);
+    };
+
+    lunr.fr.wildcardNormalizer.label = "wildcardNormalizer-fr";
+    lunr.fr.wildcardNormalizer.pipelineFunctionLabel = "stemmer-fr";
+    lunr.stemmerSupport.addQueryParserWildcardNormalizer(lunr, lunr.fr.wildcardNormalizer);
 
     lunr.fr.stopWordFilter = lunr.generateStopWordFilter('ai aie aient aies ait as au aura aurai auraient aurais aurait auras aurez auriez aurions aurons auront aux avaient avais avait avec avez aviez avions avons ayant ayez ayons c ce ceci celà ces cet cette d dans de des du elle en es est et eu eue eues eurent eus eusse eussent eusses eussiez eussions eut eux eûmes eût eûtes furent fus fusse fussent fusses fussiez fussions fut fûmes fût fûtes ici il ils j je l la le les leur leurs lui m ma mais me mes moi mon même n ne nos notre nous on ont ou par pas pour qu que quel quelle quelles quels qui s sa sans se sera serai seraient serais serait seras serez seriez serions serons seront ses soi soient sois soit sommes son sont soyez soyons suis sur t ta te tes toi ton tu un une vos votre vous y à étaient étais était étant étiez étions été étée étées étés êtes'.split(' '));
 

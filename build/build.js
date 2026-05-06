@@ -61,6 +61,62 @@ function accentFoldFunction(locale) {
     ].join('\n');
 }
 
+function accentFoldTermFunction(locale) {
+    return [
+        '',
+        '        lunr.' + locale + '.accentFoldTerm = function(term) {',
+        '            return term',
+        '                .replace(/[\\u00E0\\u00E1\\u00E2\\u00E4\\u00C0\\u00C1\\u00C2\\u00C4]/g, "a")',
+        '                .replace(/[\\u00E7\\u00C7]/g, "c")',
+        '                .replace(/[\\u00E9\\u00E8\\u00EA\\u00EB\\u00C9\\u00C8\\u00CA\\u00CB]/g, "e")',
+        '                .replace(/[\\u00EE\\u00EF\\u00CE\\u00CF]/g, "i")',
+        '                .replace(/[\\u00F4\\u00F6\\u00D4\\u00D6]/g, "o")',
+        '                .replace(/[\\u00F9\\u00FB\\u00FC\\u00D9\\u00DB\\u00DC]/g, "u")',
+        '                .replace(/[\\u0178\\u00FF]/g, "y")',
+        '                .replace(/[\\u00E6\\u00C6]/g, "ae")',
+        '                .replace(/[\\u0153\\u0152]/g, "oe");',
+        '        };'
+    ].join('\n');
+}
+
+function accentFoldTokenFunction(locale) {
+    return accentFoldTermFunction(locale) + [
+        '',
+        '        lunr.' + locale + '.accentFold = function(token) {',
+        '            if (!token) {',
+        '                return token;',
+        '            }',
+        '',
+        '            if (typeof token.update === "function") {',
+        '                return token.update(function(term) {',
+        '                    return lunr.' + locale + '.accentFoldTerm(term);',
+        '                });',
+        '            }',
+        '',
+        '            if (typeof token === "string") {',
+        '                return lunr.' + locale + '.accentFoldTerm(token);',
+        '            }',
+        '',
+        '            return token;',
+        '        };',
+        '',
+        '        lunr.Pipeline.registerFunction(lunr.' + locale + '.accentFold, "accentFold-' + locale + '");'
+    ].join('\n');
+}
+
+function accentFoldWildcardNormalizerFunction(locale) {
+    return [
+        '',
+        '        lunr.' + locale + '.wildcardNormalizer = function(term) {',
+        '            return lunr.' + locale + '.accentFoldTerm(term);',
+        '        };',
+        '',
+        '        lunr.' + locale + '.wildcardNormalizer.label = "wildcardNormalizer-' + locale + '";',
+        '        lunr.' + locale + '.wildcardNormalizer.pipelineFunctionLabel = "stemmer-' + locale + '";',
+        '        lunr.stemmerSupport.addQueryParserWildcardNormalizer(lunr, lunr.' + locale + '.wildcardNormalizer);'
+    ].join('\n');
+}
+
 function germanWildcardNormalizerFunction(locale) {
     return [
         '',
@@ -115,7 +171,9 @@ var list = [
         locale: 'fr',
         file: 'FrenchStemmer.js',
         stopwords: stopwordsRepoFolder + 'fr.csv',
-        wordCharacters: wordCharacters('Latin')
+        wordCharacters: wordCharacters('Latin'),
+        defaultAccentFolding: true,
+        wildcardNormalizer: accentFoldWildcardNormalizerFunction
     }, {
         locale: 'de',
         file: 'GermanStemmer.js',
@@ -219,6 +277,10 @@ for (var i = 0; i < list.length; i++) {
             languageExtras.push(accentFoldFunction(list[i].locale));
         }
 
+        if (list[i].defaultAccentFolding) {
+            languageExtras.push(accentFoldTokenFunction(list[i].locale));
+        }
+
         if (list[i].wildcardNormalizer) {
             languageExtras.push(list[i].wildcardNormalizer(list[i].locale));
         }
@@ -232,6 +294,7 @@ for (var i = 0; i < list.length; i++) {
         f = f.replace(/\{\{stopWordsLength\}\}/g, stopWords.split(',').length + 1);
         f = f.replace(/\{\{languageName\}\}/g, list[i].file.replace(/Stemmer\.js/g, ''));
         f = f.replace(/\{\{wordCharacters\}\}/g, list[i].wordCharacters);
+        f = f.replace(/\{\{pipelineBeforeStemmer\}\}/g, list[i].defaultAccentFolding ? '\n                lunr.' + list[i].locale + '.accentFold,' : '');
         f = f.replace(/\{\{languageExtras\}\}/g, languageExtras.join('\n'));
 
         f = f.replace(/\{\{consoleWarning\}\}/g, list[i].warningMessage ? '\n\nconsole.warn(' + JSON.stringify(list[i].warningMessage) + ');' : '');
