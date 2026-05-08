@@ -16,6 +16,7 @@ function compress(orig_code) {
 var stopwordsRepoFolder = './stopwords-filter/lib/stopwords/snowball/locales/';
 // and, since that repository does not include all the stopwords we want, we add more, custom stopwords lists
 var stopwordsCustomFolder = './stopwords-custom/';
+var stemmersCustomFolder = './custom-stemmers/';
 
 // Use the Unicode library to produce a regex for characters of a particular
 // 'script' (such as Latin), then extract the character ranges from that
@@ -207,6 +208,12 @@ var list = [
         stopwords: stopwordsRepoFolder + 'pt.csv',
         wordCharacters: wordCharacters('Latin')
     }, {
+        locale: 'pl',
+        file: 'PolishStemmer.js',
+        stemmer: stemmersCustomFolder + 'PolishStemmer.js',
+        stopwords: stopwordsCustomFolder + 'pl.csv',
+        wordCharacters: wordCharacters('Latin')
+    }, {
         locale: 'ro',
         file: 'RomanianStemmer.js',
         stopwords: stopwordsCustomFolder + 'ro.csv',
@@ -269,7 +276,7 @@ for (var i = 0; i < list.length; i++) {
     var fromTemplate = list[i].file && list[i].stopwords;
 
     if (fromTemplate) {
-        data = fs.readFileSync('build/snowball-js/stemmer/src/ext/' + list[i].file, 'utf8');
+        data = fs.readFileSync('build/' + (list[i].stemmer || ('snowball-js/stemmer/src/ext/' + list[i].file)), 'utf8');
         stopWords = fs.readFileSync('build/' + list[i].stopwords, 'utf8');
         var languageExtras = [];
 
