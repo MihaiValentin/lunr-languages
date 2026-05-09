@@ -38,6 +38,7 @@ var testDocuments = {
     kn: require('./testdata/kn'),
     ko: require('./testdata/ko'),
     no: require('./testdata/no'),
+    pl: require('./testdata/pl'),
     pt: require('./testdata/pt'),
     ro: require('./testdata/ro'),
     ru: require('./testdata/ru'),
