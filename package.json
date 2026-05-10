@@ -4,7 +4,89 @@
   "author": "Mihai Valentin (http://www.mihaivalentin.com)",
   "version": "1.18.0",
   "license": "MPL-1.1",
+  "type": "commonjs",
+  "types": "./types/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "lunr.*.js": [
+        "types/plugin.d.ts"
+      ],
+      "lunr.*": [
+        "types/plugin.d.ts"
+      ],
+      "min/lunr.*.min.js": [
+        "types/plugin.d.ts"
+      ],
+      "min/lunr.*.min": [
+        "types/plugin.d.ts"
+      ],
+      "tinyseg.js": [
+        "types/plugin.d.ts"
+      ],
+      "tinyseg": [
+        "types/plugin.d.ts"
+      ],
+      "wordcut.js": [
+        "types/wordcut.d.ts"
+      ],
+      "wordcut": [
+        "types/wordcut.d.ts"
+      ]
+    }
+  },
   "engine": "node 0.10.1",
+  "exports": {
+    "./package.json": "./package.json",
+    "./lunr.*.js": {
+      "types": "./types/plugin.d.ts",
+      "import": "./lunr.*.js",
+      "require": "./lunr.*.js",
+      "default": "./lunr.*.js"
+    },
+    "./lunr.*": {
+      "types": "./types/plugin.d.ts",
+      "import": "./lunr.*.js",
+      "require": "./lunr.*.js",
+      "default": "./lunr.*.js"
+    },
+    "./min/lunr.*.min.js": {
+      "types": "./types/plugin.d.ts",
+      "import": "./min/lunr.*.min.js",
+      "require": "./min/lunr.*.min.js",
+      "default": "./min/lunr.*.min.js"
+    },
+    "./min/lunr.*.min": {
+      "types": "./types/plugin.d.ts",
+      "import": "./min/lunr.*.min.js",
+      "require": "./min/lunr.*.min.js",
+      "default": "./min/lunr.*.min.js"
+    },
+    "./tinyseg.js": {
+      "types": "./types/plugin.d.ts",
+      "import": "./tinyseg.js",
+      "require": "./tinyseg.js",
+      "default": "./tinyseg.js"
+    },
+    "./tinyseg": {
+      "types": "./types/plugin.d.ts",
+      "import": "./tinyseg.js",
+      "require": "./tinyseg.js",
+      "default": "./tinyseg.js"
+    },
+    "./wordcut.js": {
+      "types": "./types/wordcut.d.ts",
+      "import": "./wordcut.js",
+      "require": "./wordcut.js",
+      "default": "./wordcut.js"
+    },
+    "./wordcut": {
+      "types": "./types/wordcut.d.ts",
+      "import": "./wordcut.js",
+      "require": "./wordcut.js",
+      "default": "./wordcut.js"
+    },
+    "./*": "./*"
+  },
   "scripts": {
     "build": "node build/build.js",
     "test": "mocha test/*Test.js"
