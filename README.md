@@ -130,6 +130,19 @@ const idx = lunr(function () {
 });
 ```
 
+The existing CommonJS usage is still supported. Modern runtimes and TypeScript projects can import the same subpath modules:
+
+```javascript
+import lunr from 'lunr';
+import stemmerSupport from 'lunr-languages/lunr.stemmer.support';
+import de from 'lunr-languages/lunr.de';
+
+stemmerSupport(lunr);
+de(lunr);
+```
+
+Type declarations are included for the registration modules and the Lunr properties they install, including `lunr.multiLanguage`.
+
 For Spanish indexes on Lunr 2, you can opt into accent-insensitive matching by expanding accented tokens before stemming:
 
 ```js
