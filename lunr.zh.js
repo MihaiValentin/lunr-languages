@@ -42,6 +42,12 @@
    * can return a function as the exported value.
    */
   var nodejieba;
+  var nodejiebaDefaultDict;
+  var nodejiebaDefaultDictResolved = false;
+  var nodejiebaDefaultInstance;
+  var nodejiebaCustomDict;
+  var nodejiebaCustomInstance;
+  var nodejiebaLoadedCustomDict;
   var nodejiebaResolved = false;
   var nodejiebaMissingLogged = false;
   var nodejiebaDictFallbackLogged = false;
@@ -58,6 +64,13 @@
     return typeof module !== 'undefined' && module.exports && typeof requireFn === 'function'
   }
 
+  var logNodeJiebaUnavailable = function() {
+    if (!nodejiebaMissingLogged && typeof console !== 'undefined' && console.info) {
+      console.info('[Lunr Languages] @node-rs/jieba is not installed or could not be loaded; falling back to Intl.Segmenter for Chinese tokenization.')
+      nodejiebaMissingLogged = true
+    }
+  }
+
   var getNodeJieba = function() {
     if (nodejiebaResolved) return nodejieba
 
@@ -69,12 +82,90 @@
       nodejieba = requireFn('@node-rs/jieba')
       return nodejieba
     } catch (e) {
-      if (!nodejiebaMissingLogged && typeof console !== 'undefined' && console.info) {
-        console.info('[Lunr Languages] @node-rs/jieba is not installed or could not be loaded; falling back to Intl.Segmenter for Chinese tokenization.')
-        nodejiebaMissingLogged = true
-      }
+      logNodeJiebaUnavailable()
       return null
     }
+  }
+
+  var getNodeJiebaDefaultDict = function() {
+    if (nodejiebaDefaultDictResolved) return nodejiebaDefaultDict
+
+    nodejiebaDefaultDictResolved = true
+
+    try {
+      var defaultDictModule = requireFn('@node-rs/jieba/dict')
+      nodejiebaDefaultDict = defaultDictModule && (defaultDictModule.dict || defaultDictModule.default || defaultDictModule)
+      return nodejiebaDefaultDict
+    } catch (e) {
+      logNodeJiebaUnavailable()
+      return null
+    }
+  }
+
+  var createNodeJiebaV2 = function(jieba, nodejiebaDictJson) {
+    if (!jieba.Jieba || typeof jieba.Jieba.withDict !== 'function') return null
+
+    if (nodejiebaDictJson) {
+      if (nodejiebaCustomInstance && nodejiebaCustomDict === nodejiebaDictJson) return nodejiebaCustomInstance
+
+      var defaultDictForCustom = getNodeJiebaDefaultDict()
+
+      try {
+        if (defaultDictForCustom) {
+          nodejiebaCustomInstance = jieba.Jieba.withDict(defaultDictForCustom)
+          if (typeof nodejiebaCustomInstance.loadDict === 'function') {
+            nodejiebaCustomInstance.loadDict(nodejiebaDictJson)
+          } else {
+            nodejiebaCustomInstance = jieba.Jieba.withDict(nodejiebaDictJson)
+          }
+        } else {
+          nodejiebaCustomInstance = jieba.Jieba.withDict(nodejiebaDictJson)
+        }
+
+        nodejiebaCustomDict = nodejiebaDictJson
+        return nodejiebaCustomInstance
+      } catch (e) {
+        logNodeJiebaUnavailable()
+        return null
+      }
+    }
+
+    if (nodejiebaDefaultInstance) return nodejiebaDefaultInstance
+
+    var defaultDict = getNodeJiebaDefaultDict()
+    if (!defaultDict) return null
+
+    try {
+      nodejiebaDefaultInstance = jieba.Jieba.withDict(defaultDict)
+      return nodejiebaDefaultInstance
+    } catch (e) {
+      logNodeJiebaUnavailable()
+      return null
+    }
+  }
+
+  var getNodeJiebaTokenizer = function(nodejiebaDictJson) {
+    var jieba = getNodeJieba()
+
+    if (!jieba) return null
+
+    if (typeof jieba.cut === 'function') {
+      if (nodejiebaDictJson && nodejiebaLoadedCustomDict !== nodejiebaDictJson) {
+        if (typeof jieba.loadDict === 'function') {
+          jieba.loadDict(nodejiebaDictJson)
+        } else if (typeof jieba.load === 'function') {
+          jieba.load(nodejiebaDictJson)
+        }
+        nodejiebaLoadedCustomDict = nodejiebaDictJson
+      }
+      return jieba
+    }
+
+    var jiebaV2 = createNodeJiebaV2(jieba, nodejiebaDictJson)
+    if (jiebaV2) return jiebaV2
+
+    logNodeJiebaUnavailable()
+    return null
   }
 
   var getIntlSegmenter = function() {
@@ -151,7 +242,7 @@
   }
 
   var nodejiebaCut = function(str, nodejiebaDictJson) {
-    var jieba = getNodeJieba()
+    var jieba = getNodeJiebaTokenizer(nodejiebaDictJson)
 
     if (!jieba) {
       if (nodejiebaDictJson && !nodejiebaDictFallbackLogged && typeof console !== 'undefined' && console.info) {
@@ -161,8 +252,6 @@
 
       return intlSegmenterCut(str)
     }
-
-    nodejiebaDictJson && jieba.load(nodejiebaDictJson)
 
     var tokens = []
     var fromIndex = 0
