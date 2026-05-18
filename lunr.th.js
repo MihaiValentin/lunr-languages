@@ -84,7 +84,7 @@
     lunr.Pipeline.registerFunction(lunr.th.trimmer, 'trimmer-th');
 
     var segmenter = lunr.wordcut;
-    segmenter.init();
+    //segmenter.init();
     lunr.th.tokenizer = function(obj) {
       //console.log(obj);
       if (!arguments.length || obj == null || obj == undefined) return []
