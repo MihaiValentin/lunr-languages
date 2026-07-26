@@ -171,6 +171,30 @@ lunrVersions.forEach(function (lunrVersion) {
                 });
             }
         });
+        describe("should trim punctuation around locale words in language trimmers", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            require('../lunr.ko.js')(lunr);
+            require('../lunr.hy.js')(lunr);
+            require('../lunr.vi.js')(lunr);
+
+            it("should trim Korean punctuation", function () {
+                assert.equal(lunr.ko.trimmer('(한국어)'), '한국어')
+                assert.equal(lunr.ko.trimmer('한국어,'), '한국어')
+            });
+
+            it("should trim Armenian punctuation", function () {
+                assert.equal(lunr.hy.trimmer('(միսը)'), 'միսը')
+                assert.equal(lunr.hy.trimmer('միսը,'), 'միսը')
+            });
+
+            it("should trim Vietnamese punctuation", function () {
+                assert.equal(lunr.vi.trimmer('(đình)'), 'đình')
+                assert.equal(lunr.vi.trimmer('đình,'), 'đình')
+            });
+        });
         describe("should normalize German wildcard queries with umlauts", function () {
             delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
 
