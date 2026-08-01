@@ -62,7 +62,7 @@
     };
 
     /* lunr trimmer function */
-    lunr.vi.wordCharacters = "[" +
+    lunr.vi.wordCharacters =
       "A-Za-z" +
       "\u0300\u0350" + // dấu huyền
       "\u0301\u0351" + // dấu sắc
@@ -75,8 +75,7 @@
       "\u0102-\u0103" + // Ă
       "\u0110-\u0111" + // Đ
       "\u01A0-\u01A1" + // Ơ
-      "\u01AF-\u01B0" + // Ư
-      "]";
+      "\u01AF-\u01B0"; // Ư
     lunr.vi.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.vi.wordCharacters);
     lunr.Pipeline.registerFunction(lunr.vi.trimmer, 'trimmer-vi');
     lunr.vi.stopWordFilter = lunr.generateStopWordFilter('là cái nhưng mà'.split(' '));
