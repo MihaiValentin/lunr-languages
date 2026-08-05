@@ -78,6 +78,7 @@
       "\u01AF-\u01B0"; // Ư
     lunr.vi.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.vi.wordCharacters);
     lunr.Pipeline.registerFunction(lunr.vi.trimmer, 'trimmer-vi');
-    lunr.vi.stopWordFilter = lunr.generateStopWordFilter('là cái nhưng mà'.split(' '));
+    lunr.vi.stopWordFilter = lunr.generateStopWordFilter("nhưng những mà hoặc đó đây này nọ kia kìa nào đâu vậy tại vì gì".split());
+    lunr.Pipeline.registerFunction(lunr.vi.stopWordFilter, 'stopWordFilter-vi');
   };
 }))
