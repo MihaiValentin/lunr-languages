@@ -1,3 +1,6 @@
+var test = require('node:test');
+var describe = test.describe;
+var it = test.it;
 var assert = require('assert');
 
 var lunrVersions = [
