@@ -4,6 +4,13 @@
   "author": "Mihai Valentin (http://www.mihaivalentin.com)",
   "version": "1.21.0",
   "license": "MPL-1.1",
+  "files": [
+    "lunr.*.js",
+    "min/lunr.*.min.js",
+    "tinyseg.js",
+    "wordcut.js",
+    "types"
+  ],
   "type": "commonjs",
   "types": "./types/index.d.ts",
   "typesVersions": {
