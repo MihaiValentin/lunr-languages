@@ -30,17 +30,248 @@
      * only CommonJS-like environments that support module.exports,
      * like Node.
      */
-    module.exports = factory(require('@node-rs/jieba'))
+    module.exports = factory(root, typeof require === 'function' ? require : undefined)
   } else {
     // Browser globals (root is window)
-    factory()(root.lunr);
+    factory(root)(root.lunr);
   }
-}(this, function(nodejieba) {
+}(this, function(root, requireFn) {
   /**
    * Just return a value to define the module export.
    * This example returns an object, but the module
    * can return a function as the exported value.
    */
+  var nodejieba;
+  var nodejiebaDefaultDict;
+  var nodejiebaDefaultDictResolved = false;
+  var nodejiebaDefaultInstance;
+  var nodejiebaCustomDict;
+  var nodejiebaCustomInstance;
+  var nodejiebaLoadedCustomDict;
+  var nodejiebaResolved = false;
+  var nodejiebaMissingLogged = false;
+  var nodejiebaDictFallbackLogged = false;
+  var intlSegmenter;
+
+  var getGlobal = function() {
+    if (typeof globalThis !== 'undefined') return globalThis
+    if (typeof window !== 'undefined') return window
+    if (typeof global !== 'undefined') return global
+    return root
+  }
+
+  var isNode = function() {
+    return typeof module !== 'undefined' && module.exports && typeof requireFn === 'function'
+  }
+
+  var logNodeJiebaUnavailable = function() {
+    if (!nodejiebaMissingLogged && typeof console !== 'undefined' && console.info) {
+      console.info('[Lunr Languages] @node-rs/jieba is not installed or could not be loaded; falling back to Intl.Segmenter for Chinese tokenization.')
+      nodejiebaMissingLogged = true
+    }
+  }
+
+  var getNodeJieba = function() {
+    if (nodejiebaResolved) return nodejieba
+
+    nodejiebaResolved = true
+
+    if (!isNode()) return null
+
+    try {
+      nodejieba = requireFn('@node-rs/jieba')
+      return nodejieba
+    } catch (e) {
+      logNodeJiebaUnavailable()
+      return null
+    }
+  }
+
+  var getNodeJiebaDefaultDict = function() {
+    if (nodejiebaDefaultDictResolved) return nodejiebaDefaultDict
+
+    nodejiebaDefaultDictResolved = true
+
+    try {
+      var defaultDictModule = requireFn('@node-rs/jieba/dict')
+      nodejiebaDefaultDict = defaultDictModule && (defaultDictModule.dict || defaultDictModule.default || defaultDictModule)
+      return nodejiebaDefaultDict
+    } catch (e) {
+      logNodeJiebaUnavailable()
+      return null
+    }
+  }
+
+  var createNodeJiebaV2 = function(jieba, nodejiebaDictJson) {
+    if (!jieba.Jieba || typeof jieba.Jieba.withDict !== 'function') return null
+
+    if (nodejiebaDictJson) {
+      if (nodejiebaCustomInstance && nodejiebaCustomDict === nodejiebaDictJson) return nodejiebaCustomInstance
+
+      var defaultDictForCustom = getNodeJiebaDefaultDict()
+
+      try {
+        if (defaultDictForCustom) {
+          nodejiebaCustomInstance = jieba.Jieba.withDict(defaultDictForCustom)
+          if (typeof nodejiebaCustomInstance.loadDict === 'function') {
+            nodejiebaCustomInstance.loadDict(nodejiebaDictJson)
+          } else {
+            nodejiebaCustomInstance = jieba.Jieba.withDict(nodejiebaDictJson)
+          }
+        } else {
+          nodejiebaCustomInstance = jieba.Jieba.withDict(nodejiebaDictJson)
+        }
+
+        nodejiebaCustomDict = nodejiebaDictJson
+        return nodejiebaCustomInstance
+      } catch (e) {
+        logNodeJiebaUnavailable()
+        return null
+      }
+    }
+
+    if (nodejiebaDefaultInstance) return nodejiebaDefaultInstance
+
+    var defaultDict = getNodeJiebaDefaultDict()
+    if (!defaultDict) return null
+
+    try {
+      nodejiebaDefaultInstance = jieba.Jieba.withDict(defaultDict)
+      return nodejiebaDefaultInstance
+    } catch (e) {
+      logNodeJiebaUnavailable()
+      return null
+    }
+  }
+
+  var getNodeJiebaTokenizer = function(nodejiebaDictJson) {
+    var jieba = getNodeJieba()
+
+    if (!jieba) return null
+
+    if (typeof jieba.cut === 'function') {
+      if (nodejiebaDictJson && nodejiebaLoadedCustomDict !== nodejiebaDictJson) {
+        if (typeof jieba.loadDict === 'function') {
+          jieba.loadDict(nodejiebaDictJson)
+        } else if (typeof jieba.load === 'function') {
+          jieba.load(nodejiebaDictJson)
+        }
+        nodejiebaLoadedCustomDict = nodejiebaDictJson
+      }
+      return jieba
+    }
+
+    var jiebaV2 = createNodeJiebaV2(jieba, nodejiebaDictJson)
+    if (jiebaV2) return jiebaV2
+
+    logNodeJiebaUnavailable()
+    return null
+  }
+
+  var getIntlSegmenter = function() {
+    if (intlSegmenter) return intlSegmenter
+
+    var globalObj = getGlobal()
+
+    if (globalObj.Intl && globalObj.Intl.Segmenter) {
+      intlSegmenter = new globalObj.Intl.Segmenter('zh', {
+        granularity: 'word'
+      })
+      return intlSegmenter
+    }
+
+    return null
+  }
+
+  var addToken = function(tokens, seen, token, start) {
+    if (!token) return
+
+    var key = token + '@' + start
+    if (seen[key]) return
+
+    seen[key] = true
+    tokens.push({
+      token: token,
+      start: start
+    })
+  }
+
+  var intlSegmenterCut = function(str) {
+    var segmenter = getIntlSegmenter()
+
+    if (!segmenter) {
+      var message
+
+      if (isNode()) {
+        message = '[Lunr Languages] Chinese tokenization requires either @node-rs/jieba or Intl.Segmenter support.'
+      } else {
+        message = '[Lunr Languages] Chinese tokenization requires a browser with Intl.Segmenter support. No frontend fallback is available.'
+      }
+
+      if (typeof console !== 'undefined' && console.error) console.error(message)
+      throw new Error(message)
+    }
+
+    var tokens = []
+    var seen = {}
+
+    var iterator = segmenter.segment(str)[Symbol.iterator]()
+    var current
+
+    while (!(current = iterator.next()).done) {
+      var segment = current.value
+      if (segment.isWordLike) addToken(tokens, seen, segment.segment, segment.index)
+    }
+
+    var cjkRegex = /[\u3400-\u9fff\uf900-\ufaff]+/g
+    var match
+
+    while ((match = cjkRegex.exec(str))) {
+      var run = match[0]
+
+      for (var i = 0; i < run.length - 1; i++) {
+        addToken(tokens, seen, run.slice(i, i + 2), match.index + i)
+      }
+    }
+
+    tokens.sort(function(a, b) {
+      return a.start - b.start
+    })
+
+    return tokens
+  }
+
+  var nodejiebaCut = function(str, nodejiebaDictJson) {
+    var jieba = getNodeJiebaTokenizer(nodejiebaDictJson)
+
+    if (!jieba) {
+      if (nodejiebaDictJson && !nodejiebaDictFallbackLogged && typeof console !== 'undefined' && console.info) {
+        console.info('[Lunr Languages] Custom Chinese dictionaries require @node-rs/jieba and are ignored by the Intl.Segmenter fallback.')
+        nodejiebaDictFallbackLogged = true
+      }
+
+      return intlSegmenterCut(str)
+    }
+
+    var tokens = []
+    var fromIndex = 0
+
+    jieba.cut(str, true).forEach(function(seg) {
+      seg.split(' ').forEach(function(token) {
+        if (!token) return
+
+        var start = str.indexOf(token, fromIndex)
+        tokens.push({
+          token: token,
+          start: start
+        })
+        fromIndex = start
+      })
+    })
+
+    return tokens
+  }
+
   return function(lunr, nodejiebaDictJson) {
     /* throw error if lunr is not yet included */
     if ('undefined' === typeof lunr) {
@@ -90,34 +321,18 @@
         return isLunr2 ? new lunr.Token(t.toLowerCase()) : t.toLowerCase()
       })
 
-      nodejiebaDictJson && nodejieba.load(nodejiebaDictJson)
-
       var str = obj.toString().trim().toLowerCase();
-      var tokens = [];
-
-      nodejieba.cut(str, true).forEach(function(seg) {
-        tokens = tokens.concat(seg.split(' '))
-      })
-
-      tokens = tokens.filter(function(token) {
-        return !!token;
-      });
-
-      var fromIndex = 0
+      var tokens = nodejiebaCut(str, nodejiebaDictJson);
 
       return tokens.map(function(token, index) {
         if (isLunr2) {
-          var start = str.indexOf(token, fromIndex)
-
           var tokenMetadata = {}
-          tokenMetadata["position"] = [start, token.length]
+          tokenMetadata["position"] = [token.start, token.token.length]
           tokenMetadata["index"] = index
 
-          fromIndex = start
-
-          return new lunr.Token(token, tokenMetadata);
+          return new lunr.Token(token.token, tokenMetadata);
         } else {
-          return token
+          return token.token
         }
       });
     }

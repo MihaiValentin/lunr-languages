@@ -20,29 +20,82 @@ module.exports = {
             "title":"ایـــــــــــــــران",
             "body": "جمهوی اسلامی ایران در جنوب غرب آسیا واقع شده است.",
             "id": 3
+        }, {
+            "title": "بازار کتاب",
+            "body": "این کتاب‌ها را از بازار خریدم. گوشی Samsung من خاموش شد و آب سرد خوردم.",
+            "id": 4
+        }, {
+            // typed with an Arabic keyboard: Arabic yeh (ي) and kaf (ك)
+            "title": "ميز كار",
+            "body": "اين ميز براي كار در خانه است.",
+            "id": 5
+        }, {
+            "title": "گوش",
+            "body": "گوش اندام شنوایی است.",
+            "id": 6
         }
     ],
     tests: [
         {
             what: "find the word %w",
             search: "فارسی",
-            found: 3
-        }, {
-            what: "find the word %w",
-            search: "استعمال",
             found: 1
+        }, {
+            what: "never find a word that does not exist, like %w",
+            search: "استعمال",
+            found: 0
         }, {
             what: "never find a word that does not exist, like %w",
             search: "بطيخ",
             found: 0
-        },{
-            what: "find a correctly stemmed word %w",
-            search: "كتب",
-            found: 2
         }, {
             what: "find a word regardless of the differences in the number of expansions it has between it in the search and in the document, like %w",
             search: "ایــــــــران",
             found: 1
+        }, {
+            what: "find a word typed with Arabic kaf, like %w, in Persian documents",
+            search: "كتاب",
+            found: 2
+        }, {
+            what: "find a word typed with Persian yeh, like %w, in documents typed with Arabic yeh",
+            search: "میز",
+            found: 1
+        }, {
+            what: "find the singular from a plural with a half-space, like %w",
+            search: "کتاب‌ها",
+            found: 2
+        }, {
+            what: "find the plural with a half-space from a plural without one, like %w",
+            search: "کتابها",
+            found: 2
+        }, {
+            what: "find a word with alef madda when it is typed without, like %w",
+            search: "اسیا",
+            found: 1
+        }, {
+            what: "find a word with alef madda when it is typed with it, like %w",
+            search: "آسیا",
+            found: 1
+        }, {
+            what: "find the word %w",
+            search: "بازار",
+            found: 1
+        }, {
+            what: "not stem a word into an unrelated word, so that %w does not find بازار",
+            search: "زار",
+            found: 0
+        }, {
+            what: "keep %w (phone) apart from گوش (ear)",
+            search: "گوشی",
+            found: 1
+        }, {
+            what: "find an English word in a Persian document, like %w",
+            search: "samsung",
+            found: 1
+        }, {
+            what: "find a word with a wildcard typed with Arabic kaf, like %w",
+            search: "كتا*",
+            found: 2
         }
     ]
 }

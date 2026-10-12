@@ -4,20 +4,42 @@
  *
  * Copyright 2023, Seyed Masih Sajadi
  * http://www.mozilla.org/MPL/
- *
- * NOTE: the file has been forked from `lunr.ar.js` file
  */
 /*!
- * based on
- * Kazem Taghva, Rania Elkhoury, and Jeffrey Coombs (2005)
- * Meryeme Hadni, Abdelmonaime Lachkar, and S. Alaoui Ouatik (2012)
+ * The stemmer is Snowball's Persian stemmer, generated from persian.sbl by
+ * Snowball 3.1.1 (https://github.com/snowballstem/snowball, tag v3.1.1, commit
+ * cd195b5) and its base-stemmer.js, ported by hand to ES5 so it runs without
+ * classes or imports. The rules and tables are unchanged.
  *
- * Snowball JavaScript Library v0.3
- * http://code.google.com/p/urim/
- * http://snowball.tartarus.org/
+ * Copyright (c) 2001, Dr Martin Porter
+ * Copyright (c) 2004,2005, Richard Boulton
+ * Copyright (c) 2013, Yoshiki Shibukawa
+ * Copyright (c) 2006-2025, Olly Betts
+ * All rights reserved.
  *
- * Copyright 2010, Oleg Mazko
- * http://www.mozilla.org/MPL/
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *   1. Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *   2. Redistributions in binary form must reproduce the above copyright notice,
+ *      this list of conditions and the following disclaimer in the documentation
+ *      and/or other materials provided with the distribution.
+ *   3. Neither the name of the Snowball project nor the names of its contributors
+ *      may be used to endorse or promote products derived from this software
+ *      without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -65,274 +87,672 @@
       this.pipeline.reset();
       this.pipeline.add(
         lunr.fa.trimmer,
+        lunr.fa.normalizer,
         lunr.fa.stopWordFilter,
         lunr.fa.stemmer
       );
 
       // for lunr version 2
-      // this is necessary so that every searched word is also stemmed before
-      // in lunr <= 1 this is not needed, as it is done using the normal pipeline
+      // this is necessary so that every searched word is also trimmed, normalized
+      // and stemmed before; in lunr <= 1 this is done by the normal pipeline
       if (this.searchPipeline) {
         this.searchPipeline.reset();
-        this.searchPipeline.add(lunr.fa.stemmer);
+        this.searchPipeline.add(
+          lunr.fa.trimmer,
+          lunr.fa.normalizer,
+          lunr.fa.stemmer
+        );
       }
     };
 
-    const wordCharacters =
-      '\u0621-\u06ef\u0671\u0688-\u069A\u06A9\u06AF\u06CC\u0640';
-
     /* lunr trimmer function */
-    lunr.fa.wordCharacters = wordCharacters;
+    // Arabic-script letters and digits, plus ZWNJ (U+200C, the Persian
+    // half-space) so it stays inside words: «می‌کنند», «کتاب‌ها». The stemmer
+    // uses it to find prefixes and suffixes. Latin letters too: Persian pages
+    // mix in English names and models («گوشی Samsung Galaxy»).
+    lunr.fa.wordCharacters =
+      '\u0621-\u065F\u0660-\u0669\u066E-\u06D3\u06D5\u06EE-\u06FF\u0640\u0670\u200C' +
+      'A-Za-z\u00C0-\u024F';
     lunr.fa.trimmer = lunr.trimmerSupport.generateTrimmer(
       lunr.fa.wordCharacters
     );
 
     lunr.Pipeline.registerFunction(lunr.fa.trimmer, 'trimmer-fa');
 
-    // Refernece: https://github.com/kharazi/persian-stopwords
-    const stopWords =
-      'و در به از كه مي اين است را با هاي براي آن يك شود شده خود ها كرد شد اي تا كند بر بود گفت نيز وي هم كنند دارد ما كرده يا اما بايد دو اند هر خواهد او مورد آنها باشد ديگر مردم نمي بين پيش پس اگر همه صورت يكي هستند بي من دهد هزار نيست استفاده داد داشته راه داشت چه همچنين كردند داده بوده دارند همين ميليون سوي شوند بيشتر بسيار روي گرفته هايي تواند اول نام هيچ چند جديد بيش شدن كردن كنيم نشان حتي اينكه ولی توسط چنين برخي نه ديروز دوم درباره بعد مختلف گيرد شما گفته آنان بار طور گرفت دهند گذاري بسياري طي بودند ميليارد بدون تمام كل تر  براساس شدند ترين امروز باشند ندارد چون قابل گويد ديگري همان خواهند قبل آمده اكنون تحت طريق گيري جاي هنوز چرا البته كنيد سازي سوم كنم بلكه زير توانند ضمن فقط بودن حق آيد وقتي اش يابد نخستين مقابل خدمات امسال تاكنون مانند تازه آورد فكر آنچه نخست نشده شايد چهار جريان پنج ساخته زيرا نزديك برداري كسي ريزي رفت گردد مثل آمد ام بهترين دانست كمتر دادن تمامي جلوگيري بيشتري ايم ناشي چيزي آنكه بالا بنابراين ايشان بعضي دادند داشتند برخوردار نخواهد هنگام نبايد غير نبود ديده وگو داريم چگونه بندي خواست فوق ده نوعي هستيم ديگران همچنان سراسر ندارند گروهي سعي روزهاي آنجا يكديگر كردم بيست بروز سپس رفته آورده نمايد باشيم گويند زياد خويش همواره گذاشته شش  نداشته شناسي خواهيم آباد داشتن نظير همچون باره نكرده شان سابق هفت دانند جايي بی جز زیرِ رویِ سریِ تویِ جلویِ پیشِ عقبِ بالایِ خارجِ وسطِ بیرونِ سویِ کنارِ پاعینِ نزدِ نزدیکِ دنبالِ حدودِ برابرِ طبقِ مانندِ ضدِّ هنگامِ برایِ مثلِ بارة اثرِ تولِ علّتِ سمتِ عنوانِ قصدِ روب جدا کی که چیست هست کجا کجاست کَی چطور کدام آیا مگر چندین یک چیزی دیگر کسی بعری هیچ چیز جا کس هرگز یا تنها بلکه خیاه بله بلی آره آری مرسی البتّه لطفاً ّه انکه وقتیکه همین پیش مدّتی هنگامی مان تان';
+    /* lunr normalizer function */
+    // Persian text is typed with Arabic keyboards and fonts too, so the same
+    // word comes in several spellings. Fold them to one:
+    // - Arabic yeh and kaf (ي ى ك) to Persian (ی ک), teh marbuta and heh
+    //   forms (ة ۀ ہ) to ه, hamza on alef and waw (أ إ ٱ ؤ) to ا and و
+    // - drop harakat, superscript alef and tatweel (ـ), ZWJ and bidi marks
+    // - keep ZWNJ only between letters, one at a time
+    // آ is folded to ا after stemming (see lunr.fa.stemmer).
+    var foldMap = {
+      '\u064A': '\u06CC',
+      '\u0649': '\u06CC',
+      '\u0643': '\u06A9',
+      '\u06AA': '\u06A9',
+      '\u0629': '\u0647',
+      '\u06C0': '\u0647',
+      '\u06C1': '\u0647',
+      '\u06C2': '\u0647',
+      '\u0623': '\u0627',
+      '\u0625': '\u0627',
+      '\u0671': '\u0627',
+      '\u0624': '\u0648'
+    };
+    var foldRegex = /[\u064A\u0649\u0643\u06AA\u0629\u06C0\u06C1\u06C2\u0623\u0625\u0671\u0624]/g;
+    var removeRegex = /[\u064B-\u065F\u0670\u0640\u200D-\u200F\u202A-\u202E\u2066-\u2069\u061C\uFEFF]/g;
+
+    function normalize(word) {
+      return word
+        .replace(removeRegex, '')
+        .replace(foldRegex, function(ch) {
+          return foldMap[ch];
+        })
+        .replace(/\u200B/g, '\u200C')
+        .replace(/\u200C{2,}/g, '\u200C')
+        .replace(/^\u200C+|\u200C+$/g, '');
+    }
+
+    lunr.fa.normalize = normalize;
+    lunr.fa.normalizer = function(token) {
+      // for lunr version 2
+      if (typeof token.update === 'function') {
+        var normalized = normalize(token.toString());
+        if (normalized === '') return undefined;
+        return token.update(function() {
+          return normalized;
+        });
+      } else {
+        // for lunr version <= 1
+        return normalize(token);
+      }
+    };
+
+    lunr.Pipeline.registerFunction(lunr.fa.normalizer, 'normalizer-fa');
 
     /* lunr stemmer function */
     lunr.fa.stemmer = (function() {
-      var self = this;
-      var word = '';
-      self.result = false;
-      self.preRemoved = false;
-      self.sufRemoved = false;
+      var st = new PersianStemmer();
 
-      // prefix data
-      // Reference: https://fa.wikipedia.org/wiki/%D9%BE%DB%8C%D8%B4%D9%88%D9%86%D8%AF
-      self.pre = {
-        pre1: 'آ ا ب پ ز س ش گ ن',
-        pre2: 'ان آف ان با بر بس بی پت پس پی پر تک خر در دژ هز اف آز سر اس دش اش فر نا وا ور هم هن ان هو خو',
-        pre3: 'ارد ابر باز بیش ابی ترا پاد پرا پسا پیش ریز فرا فرو',
-        pre4: 'اندر ارتا پارا پیرا',
-      };
-
-      // Suffix data
-      // Reference: https://fa.wikipedia.org/wiki/%D9%BE%D8%B3%D9%88%D9%86%D8%AF
-      self.suf = {
-        suf1: 'ا ش ک ک ه ی م',
-        suf2: 'او اد ار اک ال ان بد پد تر چه ژه گر نا ند ور وش فش ان',
-        suf3: 'آسا اور اده اله انه ایک این بار باز بان دان دیس زار سار سان سرا سیر فام کار کده کنت گار گان گاه گرد گری گون لاخ مان مند ناک نده وار وند',
-        suf4: 'آگین اینه ترین ستان گانه گانی واره وانه',
-        suf5: 'اومند اومند',
-      };
-
-      self.execArray = [
-        'cleanWord',
-        'removeDiacritics',
-        'cleanAlef',
-        'removeStopWords',
-        'removePre432',
-        'wordCheck',
-      ];
-
-      self.stem = function() {
-        var counter = 0;
-        self.result = false;
-        self.preRemoved = false;
-        self.sufRemoved = false;
-        while (counter < self.execArray.length && self.result != true) {
-          self.result = self[self.execArray[counter]]();
-          counter++;
-        }
-      };
-
-      self.setCurrent = function(word) {
-        self.word = word;
-      };
-
-      self.getCurrent = function() {
-        return self.word;
-      };
-
-      /*remove elongating character and test that the word does not contain non-arabic characters.
-      If the word contains special characters, don't stem. */
-      self.cleanWord = function() {
-        var testRegex = new RegExp('[^' + wordCharacters + ']');
-        self.word = self.word.replace(new RegExp('\u0640', 'g'), '');
-        if (testRegex.test(word)) {
-          return true;
-        }
-        return false;
-      };
-
-      self.removeDiacritics = function() {
-        self.word = self.word.replace(/[\u064b-\u065b]/gi, '');
-        return false;
-      };
-
-      /*Replace all variations of alef (آأإٱى) to a plain alef (ا)*/
-      self.cleanAlef = function() {
-        var alefRegex = new RegExp('[\u0622\u0623\u0625\u0671\u0649]');
-        self.word = self.word.replace(alefRegex, '\u0627');
-        return false;
-      };
-
-      /* if the word is a stop word, don't stem*/
-      self.removeStopWords = function() {
-        stopWords.split(' ');
-        if (stopWords.indexOf(self.word) >= 0) {
-          return true;
-        }
-      };
-
-      /* remove prefixes of size 4, 3 and 2 characters  */
-      self.removePre432 = function() {
-        var word = self.word;
-        if (self.word.length >= 7) {
-          var pre4Regex = new RegExp(
-            '^(' + self.pre.pre4.split(' ').join('|') + ')'
-          );
-          self.word = self.word.replace(pre4Regex, '');
-        }
-        if (self.word == word && self.word.length >= 6) {
-          var pre3Regex = new RegExp(
-            '^(' + self.pre.pre3.split(' ').join('|') + ')'
-          );
-          self.word = self.word.replace(pre3Regex, '');
-        }
-        if (self.word == word && self.word.length >= 5) {
-          var pre2Regex = new RegExp(
-            '^(' + self.pre.pre2.split(' ').join('|') + ')'
-          );
-          self.word = self.word.replace(pre2Regex, '');
-        }
-        if (word != self.word) self.preRemoved = true;
-        return false;
-      };
-
-      /* remove prefixes of size 1 char*/
-      self.removePre1 = function() {
-        var word = self.word;
-        if (self.preRemoved == false)
-          if (self.word.length > 3) {
-            var pre1Regex = new RegExp(
-              '^(' + self.pre.pre1.split(' ').join('|') + ')'
-            );
-            self.word = self.word.replace(pre1Regex, '');
-          }
-        if (word != self.word) self.preRemoved = true;
-        return false;
-      };
-
-      /*remove suffixes of size 1 char */
-      self.removeSuf1 = function() {
-        var word = self.word;
-        if (self.sufRemoved == false)
-          if (self.word.length > 3) {
-            var suf1Regex = new RegExp(
-              '(' + self.suf.suf1.split(' ').join('|') + ')$'
-            );
-            self.word = self.word.replace(suf1Regex, '');
-          }
-        if (word != self.word) self.sufRemoved = true;
-        return false;
-      };
-
-      /*remove suffixes of size 5, 4, 3 and 2 chars*/
-      self.removeSuf5432 = function() {
-        var word = self.word;
-        if (self.word.length >= 7) {
-          var suf5Regex = new RegExp(
-            '(' + self.suf.suf5.split(' ').join('|') + ')$'
-          );
-          self.word = self.word.replace(suf5Regex, '');
-        }
-        if (self.word.length >= 6) {
-          var suf4Regex = new RegExp(
-            '(' + self.suf.suf4.split(' ').join('|') + ')$'
-          );
-          self.word = self.word.replace(suf4Regex, '');
-        }
-        if (self.word == word && self.word.length >= 5) {
-          var suf3Regex = new RegExp(
-            '(' + self.suf.suf3.split(' ').join('|') + ')$'
-          );
-          self.word = self.word.replace(suf3Regex, '');
-        }
-        if (self.word == word && self.word.length >= 4) {
-          var suf2Regex = new RegExp(
-            '(' + self.suf.suf2.split(' ').join('|') + ')$'
-          );
-          self.word = self.word.replace(suf2Regex, '');
-        }
-        if (word != self.word) self.sufRemoved = true;
-        return false;
-      };
-
-      /*check the word length and decide what is the next step accordingly*/
-      self.wordCheck = function() {
-        var word = self.word;
-        var word7Exec = [self.removeSuf5432, self.removeSuf1, self.removePre1];
-        var counter = 0;
-        while (
-          self.word.length >= 7 &&
-          !self.result &&
-          counter < word7Exec.length
-        ) {
-          word7Exec[counter]();
-          counter++;
-        }
-
-        var word6Exec = [self.removeSuf5432, self.removeSuf1, self.removePre1];
-        counter = 0;
-        while (
-          self.word.length == 6 &&
-          !self.result &&
-          counter < word6Exec.length
-        ) {
-          word6Exec[counter]();
-          counter++;
-        }
-
-        var word5Exec = [self.removeSuf5432, self.removeSuf1, self.removePre1];
-        counter = 0;
-        while (
-          self.word.length == 5 &&
-          !self.result &&
-          counter < word5Exec.length
-        ) {
-          word5Exec[counter]();
-          counter++;
-        }
-
-        var word4Exec = [self.removeSuf1, self.removePre1, self.removeSuf5432];
-        counter = 0;
-        while (
-          self.word.length == 4 &&
-          !self.result &&
-          counter < word4Exec.length
-        ) {
-          word4Exec[counter]();
-          counter++;
-        }
-        return true;
-      };
+      function stem(word) {
+        st.setCurrent(word);
+        st.stem();
+        return st.getCurrent().replace(/\u0622/g, '\u0627');
+      }
 
       /* and return a function that stems a word for the current locale */
       return function(token) {
         // for lunr version 2
         if (typeof token.update === 'function') {
-          return token.update(function(word) {
-            self.setCurrent(word);
-            self.stem();
-            return self.getCurrent();
-          });
+          return token.update(stem);
         } else {
           // for lunr version <= 1
-          self.setCurrent(token);
-          self.stem();
-          return self.getCurrent();
+          return stem(token);
         }
       };
     })();
 
     lunr.Pipeline.registerFunction(lunr.fa.stemmer, 'stemmer-fa');
 
-    lunr.fa.stopWordFilter = lunr.generateStopWordFilter(stopWords.split(' '));
+    /* wildcard searches skip the search pipeline in lunr 2; fold them too */
+    lunr.fa.wildcardNormalizer = function(term) {
+      return normalize(term).replace(/\u0622/g, '\u0627');
+    };
+    lunr.fa.wildcardNormalizer.label = 'wildcardNormalizer-fa';
+    lunr.fa.wildcardNormalizer.pipelineFunctionLabel = 'stemmer-fa';
+    lunr.stemmerSupport.addQueryParserWildcardNormalizer(
+      lunr,
+      lunr.fa.wildcardNormalizer
+    );
+
+    /* stop words */
+    // Function words only (prepositions, conjunctions, particles), taken from
+    // https://github.com/kharazi/persian-stopwords. The full list also drops
+    // content words (خدمات, نام, راه, جدید...) and verbs, which cost recall
+    // when measured on 60,000 Persian pages; this short list does not.
+    var stopWords = 'و در به از که را با برای این آن تا یا اما هم نیز بر اگر پس چه ای ها های می نمی'.split(' ');
+
+    lunr.fa.stopWordFilter = lunr.generateStopWordFilter(stopWords);
     lunr.Pipeline.registerFunction(lunr.fa.stopWordFilter, 'stopWordFilter-fa');
+
+    /* Snowball's Persian stemmer (ES5 port of the generated code, see header) */
+    function Among(s, result, substring_i) {
+      return [s, result, substring_i];
+    }
+
+    var a_0 = [
+      Among('', 7),
+      Among(' ', 6, 1),
+      Among('\u0623', 4, 2),
+      Among('\u0624', 5, 3),
+      Among('\u0625', 4, 4),
+      Among('\u0626', 2, 5),
+      Among('\u0629', 3, 6),
+      Among('\u0643', 1, 7),
+      Among('\u064A', 2, 8),
+      Among('\u06C1', 3, 9),
+      Among('\u200D', 6, 10)
+    ];
+
+    var a_1 = [
+      Among('\u0645\u06CC\u200C', 2),
+      Among('\u0646\u0645\u06CC\u200C', 1)
+    ];
+
+    var a_2 = [
+      Among('\u0633\u062A\u0627\u0646', -1),
+      Among('\u0631\u0627\u0646', -1),
+      Among('\u0633\u0627\u0646', -1),
+      Among('\u0648\u0627\u0646', -1)
+    ];
+
+    var a_3 = [
+      Among('\u0622\u0630\u0631\u0628\u0627\u06CC\u062C\u0627\u0646', 1),
+      Among('\u0647\u0645\u062F\u0627\u0646', 1),
+      Among('\u062E\u0627\u0646\u062F\u0627\u0646', 1),
+      Among('\u0632\u0646\u062F\u0627\u0646', 1),
+      Among('\u0645\u06CC\u0632\u0627\u0646', 1),
+      Among('\u062F\u0631\u062E\u0634\u0627\u0646', 1),
+      Among('\u0622\u062A\u0634\u0641\u0634\u0627\u0646', 1),
+      Among('\u0646\u0634\u0627\u0646', 1),
+      Among('\u06A9\u0647\u06A9\u0634\u0627\u0646', 1),
+      Among('\u0627\u06CC\u0634\u0627\u0646', 1),
+      Among('\u067E\u0631\u06CC\u0634\u0627\u0646', 1),
+      Among('\u0633\u0644\u0637\u0627\u0646', 1),
+      Among('\u06AF\u06CC\u0644\u0627\u0646', 1),
+      Among('\u0633\u0627\u062E\u062A\u0645\u0627\u0646', 1),
+      Among('\u0631\u0645\u0627\u0646', 1),
+      Among('\u062F\u0631\u0645\u0627\u0646', 1, 1),
+      Among('\u0642\u0647\u0631\u0645\u0627\u0646', 1, 2),
+      Among('\u06A9\u0631\u0645\u0627\u0646', 1, 3),
+      Among('\u0633\u0627\u0632\u0645\u0627\u0646', 1),
+      Among('\u0647\u0645\u0632\u0645\u0627\u0646', 1),
+      Among('\u0622\u0633\u0645\u0627\u0646', 1),
+      Among('\u0622\u0644\u0645\u0627\u0646', 1),
+      Among('\u0645\u0633\u0644\u0645\u0627\u0646', 1),
+      Among('\u0627\u06CC\u0645\u0627\u0646', 1),
+      Among('\u0633\u0644\u06CC\u0645\u0627\u0646', 1),
+      Among('\u067E\u06CC\u0645\u0627\u0646', 1),
+      Among('\u0644\u0628\u0646\u0627\u0646', 1),
+      Among('\u06CC\u0648\u0646\u0627\u0646', 1),
+      Among('\u0627\u0635\u0641\u0647\u0627\u0646', 1),
+      Among('\u0627\u0645\u06A9\u0627\u0646', 1),
+      Among('\u067E\u0627\u06CC\u0627\u0646', 1),
+      Among('\u0628\u06CC\u0627\u0646', 1),
+      Among('\u062C\u0631\u06CC\u0627\u0646', 1)
+    ];
+
+    var a_4 = [
+      Among('\u0627\u0633\u0627\u062A\u06CC\u062F', 2),
+      Among('\u0627\u062E\u0628\u0627\u0631', 1)
+    ];
+
+    var as_4 = ['\u062E\u0628\u0631', '\u0627\u0633\u062A\u0627\u062F'];
+
+    var a_5 = [
+      Among('\u0647\u0627', 1),
+      Among('\u0627\u062A', 1),
+      Among('\u06CC\u062A', 1),
+      Among('\u0645\u0646\u062F', 1),
+      Among('\u0648\u0627\u0631', 1),
+      Among('\u06AF\u0627\u0631', 1),
+      Among('\u062A\u0631', 2),
+      Among('\u0627\u0634', 1),
+      Among('\u0627\u0645', 1),
+      Among('\u0627\u0646', 1),
+      Among('\u0628\u0627\u0646', 1, 1),
+      Among('\u06AF\u0627\u0646', 1, 2),
+      Among('\u06CC\u0627\u0646', 1, 3),
+      Among('\u06CC\u0646', 1),
+      Among('\u062A\u0631\u06CC\u0646', 1, 1),
+      Among('\u06AF\u0627\u0647', 1),
+      Among('\u0627\u0646\u0647', 1),
+      Among('\u0646\u0627\u06A9', 1),
+      Among('\u0647\u0627\u06CC', 1),
+      Among('\u0627\u0646\u06CC', 1),
+      Among('\u06AF\u06CC', 1),
+      Among('\u06CC\u06CC', 1)
+    ];
+
+    var a_6 = [
+      Among('\u0627\u0633\u062A', 1),
+      Among('\u0627\u0646\u062F', 1),
+      Among('\u06CC\u062F', 1),
+      Among('\u0627\u06CC\u062F', 1, 1),
+      Among('\u0627\u0633', 1),
+      Among('\u06CC\u0645', 1),
+      Among('\u0627\u06CC\u0645', 1, 1),
+      Among('\u0627\u06CC', 1)
+    ];
+
+    var a_7 = [
+      Among('\u062F', 1),
+      Among('\u0627\u0646\u062F', 1, 1),
+      Among('\u0631\u0641\u062A\u0627\u0646\u062F', 2, 1),
+      Among('\u06CC\u062F', 1, 3),
+      Among('\u0631\u0641\u062A\u06CC\u062F', 2, 1),
+      Among('\u0645', 1),
+      Among('\u0627\u0645', 1, 1),
+      Among('\u0631\u0641\u062A\u0645', 2, 2),
+      Among('\u06CC\u0645', 1, 3),
+      Among('\u0631\u0641\u062A\u06CC\u0645', 2, 1),
+      Among('\u0627\u0646', 3),
+      Among('\u062A\u0647', 5),
+      Among('\u062F\u0647', 4),
+      Among('\u0646\u062F\u0647', 3, 1),
+      Among('\u0631\u0641\u062A\u06CC', 2)
+    ];
+
+    function PersianStemmer() {
+      // base-stemmer.js state
+      var current = '',
+        c = 0,
+        limit = 0,
+        limit_backward = 0,
+        bra = 0,
+        ket = 0;
+      // persian.sbl state
+      var I_p1 = 0,
+        B_remove_verb_person_endings = false,
+        B_saw_present_prefix = false;
+
+      this.setCurrent = function(value) {
+        current = value;
+        c = 0;
+        limit = current.length;
+        limit_backward = 0;
+        bra = c;
+        ket = limit;
+      };
+
+      this.getCurrent = function() {
+        return current;
+      };
+
+      /* base-stemmer.js */
+
+      function eq_s(s) {
+        if (limit - c < s.length) return false;
+        if (current.slice(c, c + s.length) !== s) return false;
+        c += s.length;
+        return true;
+      }
+
+      function find_among(v) {
+        var i = 0,
+          j = v.length,
+          c0 = c,
+          l = limit,
+          common_i = 0,
+          common_j = 0,
+          first_key_inspected = false,
+          k, diff, common, w, i2;
+        while (true) {
+          k = i + ((j - i) >>> 1);
+          diff = 0;
+          common = common_i < common_j ? common_i : common_j;
+          w = v[k];
+          for (i2 = common; i2 < w[0].length; i2++) {
+            if (c0 + common === l) {
+              diff = -1;
+              break;
+            }
+            diff = current.charCodeAt(c0 + common) - w[0].charCodeAt(i2);
+            if (diff !== 0) break;
+            common++;
+          }
+          if (diff < 0) {
+            j = k;
+            common_j = common;
+          } else {
+            i = k;
+            common_i = common;
+          }
+          if (j - i <= 1) {
+            if (i > 0) break;
+            if (j === i) break;
+            if (first_key_inspected) break;
+            first_key_inspected = true;
+          }
+        }
+        while (true) {
+          w = v[i];
+          if (common_i >= w[0].length) {
+            c = c0 + w[0].length;
+            return w[1];
+          }
+          if (!w[2]) return 0;
+          i -= w[2];
+        }
+      }
+
+      function find_among_b(v) {
+        var i = 0,
+          j = v.length,
+          c0 = c,
+          lb = limit_backward,
+          common_i = 0,
+          common_j = 0,
+          first_key_inspected = false,
+          k, diff, common, w, i2;
+        while (true) {
+          k = i + ((j - i) >> 1);
+          diff = 0;
+          common = common_i < common_j ? common_i : common_j;
+          w = v[k];
+          for (i2 = w[0].length - 1 - common; i2 >= 0; i2--) {
+            if (c0 - common === lb) {
+              diff = -1;
+              break;
+            }
+            diff = current.charCodeAt(c0 - 1 - common) - w[0].charCodeAt(i2);
+            if (diff !== 0) break;
+            common++;
+          }
+          if (diff < 0) {
+            j = k;
+            common_j = common;
+          } else {
+            i = k;
+            common_i = common;
+          }
+          if (j - i <= 1) {
+            if (i > 0) break;
+            if (j === i) break;
+            if (first_key_inspected) break;
+            first_key_inspected = true;
+          }
+        }
+        while (true) {
+          w = v[i];
+          if (common_i >= w[0].length) {
+            c = c0 - w[0].length;
+            return w[1];
+          }
+          if (!w[2]) return 0;
+          i -= w[2];
+        }
+      }
+
+      function replace_s(c_bra, c_ket, s) {
+        var adjustment = s.length - (c_ket - c_bra);
+        current = current.slice(0, c_bra) + s + current.slice(c_ket);
+        limit += adjustment;
+        if (c >= c_ket) c += adjustment;
+        else if (c > c_bra) c = c_bra;
+        return adjustment;
+      }
+
+      function slice_from(s) {
+        replace_s(bra, ket, s);
+        ket = bra + s.length;
+      }
+
+      function slice_del() {
+        slice_from('');
+      }
+
+      /* persian.sbl */
+
+      function r_Normalize_Characters() {
+        var a, v_1;
+        while (true) {
+          v_1 = c;
+          lab0: {
+            bra = c;
+            a = find_among(a_0);
+            ket = c;
+            switch (a) {
+              case 1:
+                slice_from('\u06A9');
+                break;
+              case 2:
+                slice_from('\u06CC');
+                break;
+              case 3:
+                slice_from('\u0647');
+                break;
+              case 4:
+                slice_from('\u0627');
+                break;
+              case 5:
+                slice_from('\u0648');
+                break;
+              case 6:
+                slice_del();
+                break;
+              case 7:
+                if (c >= limit) break lab0;
+                c++;
+                break;
+            }
+            continue;
+          }
+          c = v_1;
+          break;
+        }
+        return true;
+      }
+
+      function r_Prefixes() {
+        var a;
+        bra = c;
+        a = find_among(a_1);
+        if (a === 0) return false;
+        ket = c;
+        switch (a) {
+          case 1:
+            if (c + 2 > limit) return false;
+            c += 2;
+            B_saw_present_prefix = true;
+            break;
+          case 2:
+            if (c + 2 > limit) return false;
+            c += 2;
+            slice_del();
+            B_saw_present_prefix = true;
+            break;
+        }
+        return true;
+      }
+
+      function r_Delete_ZWNJ() {
+        var v_1, v_2;
+        while (true) {
+          v_1 = c;
+          lab0: {
+            golab1: while (true) {
+              v_2 = c;
+              lab2: {
+                bra = c;
+                if (!eq_s('\u200C')) break lab2;
+                ket = c;
+                slice_del();
+                c = v_2;
+                break golab1;
+              }
+              c = v_2;
+              if (c >= limit) break lab0;
+              c++;
+            }
+            continue;
+          }
+          c = v_1;
+          break;
+        }
+        return true;
+      }
+
+      function r_R1() {
+        return I_p1 <= c;
+      }
+
+      function r_Protect_Lexical_AN() {
+        var v_1 = limit - c;
+        lab0: {
+          if (!r_AN_Exception()) break lab0;
+          return false;
+        }
+        c = limit - v_1;
+        var v_2 = limit - c;
+        lab1: {
+          if (find_among_b(a_2) === 0) break lab1;
+          return false;
+        }
+        c = limit - v_2;
+        return true;
+      }
+
+      function r_AN_Exception() {
+        if (find_among_b(a_3) === 0) return false;
+        if (c > limit_backward) return false;
+        return true;
+      }
+
+      function r_Irregular_Noun() {
+        var a;
+        ket = c;
+        a = find_among_b(a_4);
+        if (a === 0) return false;
+        bra = c;
+        slice_from(as_4[a - 1]);
+        return true;
+      }
+
+      function r_Stem_Noun_or_Adjective() {
+        var a, v_1, v_2;
+        lab0: {
+          v_1 = limit - c;
+          lab1: {
+            if (!r_Irregular_Noun()) break lab1;
+            break lab0;
+          }
+          c = limit - v_1;
+          if (c < I_p1) return false;
+          v_2 = limit_backward;
+          limit_backward = I_p1;
+          ket = c;
+          a = find_among_b(a_5);
+          if (a === 0) {
+            limit_backward = v_2;
+            return false;
+          }
+          bra = c;
+          switch (a) {
+            case 1:
+              slice_del();
+              break;
+            case 2:
+              if (c <= limit_backward) {
+                limit_backward = v_2;
+                return false;
+              }
+              slice_del();
+              break;
+          }
+          limit_backward = v_2;
+        }
+        return true;
+      }
+
+      function r_Stem_Verb() {
+        var a, v_1;
+        lab0: {
+          v_1 = limit - c;
+          lab1: {
+            ket = c;
+            if (find_among_b(a_6) === 0) break lab1;
+            bra = c;
+            if (!r_R1()) break lab1;
+            slice_del();
+            break lab0;
+          }
+          c = limit - v_1;
+          ket = c;
+          a = find_among_b(a_7);
+          if (a === 0) return false;
+          bra = c;
+          switch (a) {
+            case 1:
+              if (!B_remove_verb_person_endings) return false;
+              if (!r_R1()) return false;
+              slice_del();
+              break;
+            case 2:
+              slice_from('\u0631\u0641\u062A');
+              break;
+            case 3:
+              if (!r_R1()) return false;
+              slice_del();
+              B_remove_verb_person_endings = true;
+              break;
+            case 4:
+              if (c <= limit_backward) return false;
+              slice_from('\u062F');
+              B_remove_verb_person_endings = true;
+              break;
+            case 5:
+              if (c <= limit_backward) return false;
+              slice_from('\u062A');
+              B_remove_verb_person_endings = true;
+              break;
+          }
+        }
+        return true;
+      }
+
+      this.stem = function() {
+        var v_1, v_2, v_3, v_4, v_5, v_6, v_7;
+        B_saw_present_prefix = false;
+        v_1 = c;
+        r_Normalize_Characters();
+        c = v_1;
+        v_2 = c;
+        r_Prefixes();
+        c = v_2;
+        v_3 = c;
+        r_Delete_ZWNJ();
+        c = v_3;
+        I_p1 = limit;
+        v_4 = c;
+        lab0: {
+          if (c + 3 > limit) break lab0;
+          c += 3;
+          I_p1 = c;
+        }
+        c = v_4;
+        limit_backward = c;
+        c = limit;
+        while (true) {
+          v_5 = limit - c;
+          lab1: {
+            v_6 = limit - c;
+            B_remove_verb_person_endings = false;
+            lab2: {
+              if (!B_saw_present_prefix) break lab2;
+              B_remove_verb_person_endings = true;
+            }
+            if (!r_Protect_Lexical_AN()) break lab1;
+            lab3: {
+              v_7 = limit - c;
+              lab4: {
+                if (!r_Stem_Noun_or_Adjective()) break lab4;
+                break lab3;
+              }
+              c = limit - v_7;
+              if (!r_Stem_Verb()) break lab1;
+            }
+            c = limit - v_6;
+            continue;
+          }
+          c = limit - v_5;
+          break;
+        }
+        c = limit_backward;
+        return true;
+      };
+    }
   };
 });

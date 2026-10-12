@@ -1,3 +1,6 @@
+var test = require('node:test');
+var describe = test.describe;
+var it = test.it;
 var assert = require('assert');
 
 var lunrVersions = [
@@ -38,6 +41,7 @@ var testDocuments = {
     kn: require('./testdata/kn'),
     ko: require('./testdata/ko'),
     no: require('./testdata/no'),
+    pl: require('./testdata/pl'),
     pt: require('./testdata/pt'),
     ro: require('./testdata/ro'),
     ru: require('./testdata/ru'),
@@ -106,6 +110,161 @@ lunrVersions.forEach(function (lunrVersion) {
                 assert.equal(idxMulti.search('languages').length, 1)
             });
         });
+        describe("should be able to use language tokenizers in multi-language indexes", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            require('../lunr.zh.js')(lunr);
+            require('../lunr.de.js')(lunr);
+            require('../lunr.multi.js')(lunr);
+
+            var idx = lunr(function () {
+                this.ref('id');
+                this.use(lunr.multiLanguage('en', 'zh', 'de'));
+                this.field('name', { boost: 10 });
+                this.add({ name: "Göttin des Sieges", id: 1 });
+                this.add({ name: "goddess of victory", id: 2 });
+                this.add({ name: "校花学姐", id: 3 });
+            });
+
+            it("should find Chinese terms segmented by a language tokenizer", function () {
+                assert.equal(idx.search('学姐').length, 1)
+            });
+
+            it("should keep finding German terms with the default tokenizer", function () {
+                assert.equal(idx.search('Göttin').length, 1)
+            });
+
+            it("should keep finding English terms with the default tokenizer", function () {
+                assert.equal(idx.search('goddess').length, 1)
+            });
+        });
+        describe("should keep numeric tokens when language trimmers are active", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            require('../lunr.de.js')(lunr);
+            require('../lunr.ru.js')(lunr);
+
+            var idxDe = lunr(function () {
+                this.use(lunr.de);
+                this.ref('id');
+                this.field('text');
+                this.add({ id: 1, text: "Port 1234 is a good port for testing a problem" });
+            });
+
+            var idxRu = lunr(function () {
+                this.use(lunr.ru);
+                this.ref('id');
+                this.field('text');
+                this.add({ id: 1, text: "Порт 1234 работает" });
+            });
+
+            it("should find numeric-only terms in German documents", function () {
+                assert.equal(idxDe.search('1234').length, 1)
+            });
+
+            it("should find numeric-only terms in Russian documents", function () {
+                assert.equal(idxRu.search('1234').length, 1)
+            });
+
+            if (lunrVersion.version[0] === "2") {
+                it("should keep wildcard searches with numeric prefixes", function () {
+                    assert.equal(idxDe.search('123*').length, 1)
+                });
+            }
+        });
+        describe("should trim punctuation around locale words in language trimmers", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            require('../lunr.ko.js')(lunr);
+            require('../lunr.hy.js')(lunr);
+            require('../lunr.vi.js')(lunr);
+
+            it("should trim Korean punctuation", function () {
+                assert.equal(lunr.ko.trimmer('(한국어)'), '한국어')
+                assert.equal(lunr.ko.trimmer('한국어,'), '한국어')
+            });
+
+            it("should trim Armenian punctuation", function () {
+                assert.equal(lunr.hy.trimmer('(միսը)'), 'միսը')
+                assert.equal(lunr.hy.trimmer('միսը,'), 'միսը')
+            });
+
+            it("should trim Vietnamese punctuation", function () {
+                assert.equal(lunr.vi.trimmer('(đình)'), 'đình')
+                assert.equal(lunr.vi.trimmer('đình,'), 'đình')
+            });
+        });
+        describe("should normalize German wildcard queries with umlauts", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            require('../lunr.de.js')(lunr);
+
+            var idx = lunr(function () {
+                this.use(lunr.de);
+                this.ref('id');
+                this.field('text');
+                this.add({ id: 1, text: "das ist günstig" });
+            });
+
+            var defaultIdx = lunr(function () {
+                this.ref('id');
+                this.field('text');
+                this.add({ id: 1, text: "das ist günstig" });
+            });
+
+            it("should find German words with umlauts without wildcard searches", function () {
+                assert.equal(idx.search('günstig').length, 1)
+            });
+
+            if (lunrVersion.version[0] === "2") {
+                it("should find German words with umlauts with wildcard searches", function () {
+                    assert.equal(idx.search('günsti*').length, 1)
+                });
+
+                it("should leave non-German indexes unchanged after German is loaded", function () {
+                    assert.equal(defaultIdx.search('günsti*').length, 1)
+                });
+            }
+        });
+        describe("should normalize French accented queries", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            require('../lunr.fr.js')(lunr);
+
+            var idx = lunr(function () {
+                this.use(lunr.fr);
+                this.ref('id');
+                this.field('text');
+                this.add({ id: 1, text: "empêchaient maître" });
+            });
+
+            it("should find French words when accents are omitted", function () {
+                assert.equal(idx.search('empechaient').length, 1)
+                assert.equal(idx.search('maitre').length, 1)
+            });
+
+            if (lunrVersion.version[0] === "2") {
+                it("should index folded French stems", function () {
+                    assert.ok(idx.invertedIndex.empech)
+                    assert.ok(idx.invertedIndex.maitr)
+                    assert.equal(idx.invertedIndex['empêch'], undefined)
+                    assert.equal(idx.invertedIndex['maîtr'], undefined)
+                });
+
+                it("should find French words with accented wildcard searches", function () {
+                    assert.equal(idx.search('maîtr*').length, 1)
+                });
+            }
+        });
         Object.keys(testDocuments).forEach(function (language) {
             describe("should be able to correctly find terms in " + language.toUpperCase() + " correctly", function () {
                 // because these tests are asynchronous, we must ensure every load of lunr is fresh
@@ -141,5 +300,45 @@ lunrVersions.forEach(function (lunrVersion) {
                 }.bind(this));
             })
         })
+
+        if (lunrVersion.version[0] === "2") {
+            describe("should support opt-in Spanish accent folding", function () {
+                delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+                var lunr = require('./lunr/' + lunrVersion.lunr);
+                require('../lunr.stemmer.support.js')(lunr);
+                require('../lunr.es.js')(lunr);
+
+                var defaultIdx = lunr(function () {
+                    this.use(lunr.es);
+                    this.field('body');
+                    this.add({ "body": "Respiración", "id": 1 });
+                });
+
+                var accentFoldIdx = lunr(function () {
+                    this.use(lunr.es);
+                    this.pipeline.before(lunr.es.stemmer, lunr.es.accentFold);
+                    this.searchPipeline.before(lunr.es.stemmer, lunr.es.accentFold);
+                    this.field('body');
+                    this.add({ "body": "Respiración autonomías hablaré pingüino año", "id": 1 });
+                });
+
+                it("should not fold Spanish accents by default", function () {
+                    assert.equal(defaultIdx.search('respiracion').length, 0)
+                });
+
+                it("should find accented Spanish words when accents are omitted", function () {
+                    assert.equal(accentFoldIdx.search('respiracion').length, 1)
+                    assert.equal(accentFoldIdx.search('autonomias').length, 1)
+                    assert.equal(accentFoldIdx.search('hablare').length, 1)
+                    assert.equal(accentFoldIdx.search('pinguino').length, 1)
+                });
+
+                it("should not fold ene into plain n", function () {
+                    assert.equal(accentFoldIdx.search('ano').length, 0)
+                    assert.equal(accentFoldIdx.search('año').length, 1)
+                });
+            })
+        }
     })
 });

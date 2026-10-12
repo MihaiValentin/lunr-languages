@@ -62,11 +62,14 @@
       );
 
       // for lunr version 2
-      // this is necessary so that every searched word is also stemmed before
+      // this is necessary so that every searched word is also trimmed and stemmed before
       // in lunr <= 1 this is not needed, as it is done using the normal pipeline
       if (this.searchPipeline) {
         this.searchPipeline.reset();
-        this.searchPipeline.add(lunr.da.stemmer)
+        this.searchPipeline.add(
+          lunr.da.trimmer,
+          lunr.da.stemmer
+        )
       }
     };
 
@@ -276,6 +279,7 @@
     })();
 
     lunr.Pipeline.registerFunction(lunr.da.stemmer, 'stemmer-da');
+
 
     lunr.da.stopWordFilter = lunr.generateStopWordFilter('ad af alle alt anden at blev blive bliver da de dem den denne der deres det dette dig din disse dog du efter eller en end er et for fra ham han hans har havde have hende hendes her hos hun hvad hvis hvor i ikke ind jeg jer jo kunne man mange med meget men mig min mine mit mod ned noget nogle nu når og også om op os over på selv sig sin sine sit skal skulle som sådan thi til ud under var vi vil ville vor være været'.split(' '));
 

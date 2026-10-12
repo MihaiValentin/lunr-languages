@@ -64,11 +64,14 @@
       );
 
       // for lunr version 2
-      // this is necessary so that every searched word is also stemmed before
+      // this is necessary so that every searched word is also trimmed and stemmed before
       // in lunr <= 1 this is not needed, as it is done using the normal pipeline
       if (this.searchPipeline) {
         this.searchPipeline.reset();
-        this.searchPipeline.add(lunr.du.stemmer)
+        this.searchPipeline.add(
+          lunr.du.trimmer,
+          lunr.du.stemmer
+        )
       }
     };
 
@@ -442,6 +445,7 @@
     })();
 
     lunr.Pipeline.registerFunction(lunr.du.stemmer, 'stemmer-du');
+
 
     lunr.du.stopWordFilter = lunr.generateStopWordFilter(' aan al alles als altijd andere ben bij daar dan dat de der deze die dit doch doen door dus een eens en er ge geen geweest haar had heb hebben heeft hem het hier hij hoe hun iemand iets ik in is ja je kan kon kunnen maar me meer men met mij mijn moet na naar niet niets nog nu of om omdat onder ons ook op over reeds te tegen toch toen tot u uit uw van veel voor want waren was wat werd wezen wie wil worden wordt zal ze zelf zich zij zijn zo zonder zou'.split(' '));
 
