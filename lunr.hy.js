@@ -63,11 +63,10 @@
 
     /* lunr trimmer function */
     // http://www.unicode.org/charts/
-    lunr.hy.wordCharacters = "[" +
+    lunr.hy.wordCharacters =
       "A-Za-z" +
       "\u0530-\u058F" + // armenian alphabet
-      "\uFB00-\uFB4F" + // armenian ligatures
-      "]";
+      "\uFB00-\uFB4F"; // armenian ligatures
     lunr.hy.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.hy.wordCharacters);
 
     lunr.Pipeline.registerFunction(lunr.hy.trimmer, 'trimmer-hy');
