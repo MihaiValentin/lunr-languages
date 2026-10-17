@@ -12,6 +12,13 @@ function compress(orig_code) {
     return UglifyJS.minify(orig_code, { fromString: true, comments: true }).code;
 }
 
+// the leading /*! ... */ blocks of a hand-written file, kept in its minified
+// version when bundled third-party code requires its notice there
+function licenseHeader(code) {
+    var match = code.match(/^(\s*\/\*![\s\S]*?\*\/)+/);
+    return match ? match[0].trim() + '\n' : '';
+}
+
 // take some of the stop words list from the stopwords-filter repo
 var stopwordsRepoFolder = './stopwords-filter/lib/stopwords/snowball/locales/';
 // and, since that repository does not include all the stopwords we want, we add more, custom stopwords lists
@@ -259,6 +266,10 @@ var list = [
         locale: 'he',
     }, {
         locale: 'el',
+    },
+    {
+        locale: 'fa',
+        licenseHeader: true // bundles Snowball's Persian stemmer (BSD-3-Clause)
     }
 ];
 
@@ -314,7 +325,8 @@ for (var i = 0; i < list.length; i++) {
     fs.writeFileSync('lunr.' + list[i].locale + '.js', beautify(f, { indent_size: 2 }));
     // and the minified version
     fs.writeFileSync('min/lunr.' + list[i].locale + '.min.js',
-        fromTemplate ? cm.replace(/\{\{languageName\}\}/g, list[i].file.replace(/Stemmer\.js/g, '')) + compress(f) : compress(f)
+        fromTemplate ? cm.replace(/\{\{languageName\}\}/g, list[i].file.replace(/Stemmer\.js/g, '')) + compress(f) :
+            (list[i].licenseHeader ? licenseHeader(f) : '') + compress(f)
     );
 }
 

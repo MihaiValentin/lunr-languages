@@ -46,6 +46,7 @@ Originally built for classic search, it is now widely used as a **lightweight re
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/AM.png) Armenian
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IL.png) Hebrew
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/GR.png) Greek
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IR.png) Farsi (Persian)
 
 → [Contribute a new language](CONTRIBUTING.md)
 
