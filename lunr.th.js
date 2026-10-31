@@ -79,7 +79,7 @@
     };
 
     /* lunr trimmer function */
-    lunr.th.wordCharacters = "[\u0e00-\u0e7f]";
+    lunr.th.wordCharacters = "A-Za-z\u0e00-\u0e7f";
     lunr.th.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.th.wordCharacters);
     lunr.Pipeline.registerFunction(lunr.th.trimmer, 'trimmer-th');
 
