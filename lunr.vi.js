@@ -75,7 +75,11 @@
       "\u0102-\u0103" + // Ă
       "\u0110-\u0111" + // Đ
       "\u01A0-\u01A1" + // Ơ
-      "\u01AF-\u01B0"; // Ư
+      "\u01AF-\u01B0" + // Ư
+      "\u00C0-\u00C3\u00C8-\u00CA\u00CC\u00CD\u00D2-\u00D5\u00D9\u00DA\u00DD" + // À Á Â Ã È É Ê Ì Í Ò Ó Ô Õ Ù Ú Ý
+      "\u00E0-\u00E3\u00E8-\u00EA\u00EC\u00ED\u00F2-\u00F5\u00F9\u00FA\u00FD" + // à á â ã è é ê ì í ò ó ô õ ù ú ý
+      "\u0128\u0129\u0168\u0169" + // Ĩ ĩ Ũ ũ
+      "\u1EA0-\u1EF9"; // Ạ ạ … Ỹ ỹ, the composed letters with tone marks
     lunr.vi.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.vi.wordCharacters);
     lunr.Pipeline.registerFunction(lunr.vi.trimmer, 'trimmer-vi');
     lunr.vi.stopWordFilter = lunr.generateStopWordFilter('là cái nhưng mà'.split(' '));
