@@ -199,6 +199,33 @@ lunrVersions.forEach(function (lunrVersion) {
                 assert.equal(lunr.vi.trimmer('đình,'), 'đình')
             });
         });
+        describe("should filter Hindi stop words written in NFC", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            lunr.wordcut = require('../wordcut');
+            require('../lunr.hi.js')(lunr);
+
+            // NFC writes the nukta letters of these stop words decomposed
+            var kaafi = 'काफ़ी'.normalize('NFC');
+            var vagairah = 'वग़ैरह'.normalize('NFC');
+
+            var idx = lunr(function () {
+                this.use(lunr.hi);
+                this.ref('id');
+                this.field('text');
+                this.add({ id: 1, text: 'यह ' + kaafi + ' अच्छा है ' + vagairah });
+            });
+
+            it("should not find the stop word %w written in NFC".replace('%w', kaafi), function () {
+                assert.equal(idx.search(kaafi).length, 0)
+            });
+
+            it("should not find the stop word %w written in NFC".replace('%w', vagairah), function () {
+                assert.equal(idx.search(vagairah).length, 0)
+            });
+        });
         describe("should normalize German wildcard queries with umlauts", function () {
             delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
 
