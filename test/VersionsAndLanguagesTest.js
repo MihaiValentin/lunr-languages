@@ -199,6 +199,23 @@ lunrVersions.forEach(function (lunrVersion) {
                 assert.equal(lunr.vi.trimmer('đình,'), 'đình')
             });
         });
+        describe("should trim punctuation around Thai words", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            lunr.wordcut = require('../wordcut');
+            require('../lunr.th.js')(lunr);
+
+            it("should trim Thai punctuation", function () {
+                assert.equal(lunr.th.trimmer('(สวัสดี)'), 'สวัสดี')
+                assert.equal(lunr.th.trimmer('สวัสดี,'), 'สวัสดี')
+            });
+
+            it("should keep Latin words in Thai text", function () {
+                assert.equal(lunr.th.trimmer('(iPhone)'), 'iPhone')
+            });
+        });
         describe("should normalize German wildcard queries with umlauts", function () {
             delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
 
