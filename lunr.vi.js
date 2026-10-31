@@ -56,8 +56,8 @@
     lunr.vi = function() {
       this.pipeline.reset();
       this.pipeline.add(
-        lunr.vi.stopWordFilter,
-        lunr.vi.trimmer
+        lunr.vi.trimmer,
+        lunr.vi.stopWordFilter
       );
     };
 
@@ -83,5 +83,6 @@
     lunr.vi.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.vi.wordCharacters);
     lunr.Pipeline.registerFunction(lunr.vi.trimmer, 'trimmer-vi');
     lunr.vi.stopWordFilter = lunr.generateStopWordFilter('là cái nhưng mà'.split(' '));
+    lunr.Pipeline.registerFunction(lunr.vi.stopWordFilter, 'stopWordFilter-vi');
   };
 }))
