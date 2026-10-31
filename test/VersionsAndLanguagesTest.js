@@ -210,7 +210,7 @@ lunrVersions.forEach(function (lunrVersion) {
                 this.use(lunr.vi);
                 this.ref('id');
                 this.field('text');
-                this.add({ id: 1, text: "Hà Nội là, thủ đô." });
+                this.add({ id: 1, text: "Hà Nội mà, thủ đô." });
             });
 
             it("should keep composed letters at the end of a word", function () {
@@ -234,8 +234,8 @@ lunrVersions.forEach(function (lunrVersion) {
 
             if (lunrVersion.version[0] === "2") {
                 it("should not index a stop word followed by punctuation", function () {
-                    assert.equal(idx.invertedIndex['là'], undefined)
-                    assert.equal(idx.invertedIndex['l'], undefined)
+                    assert.equal(idx.invertedIndex['mà'], undefined)
+                    assert.equal(idx.invertedIndex['m'], undefined)
                 });
             }
         });
