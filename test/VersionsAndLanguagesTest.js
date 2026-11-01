@@ -216,6 +216,73 @@ lunrVersions.forEach(function (lunrVersion) {
                 assert.equal(lunr.th.trimmer('(iPhone)'), 'iPhone')
             });
         });
+        describe("should keep Vietnamese words written with composed letters", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            require('../lunr.vi.js')(lunr);
+
+            var idx = lunr(function () {
+                this.use(lunr.vi);
+                this.ref('id');
+                this.field('text');
+                this.add({ id: 1, text: "Hà Nội mà, thủ đô." });
+            });
+
+            it("should keep composed letters at the end of a word", function () {
+                assert.equal(lunr.vi.trimmer('là'), 'là')
+                assert.equal(lunr.vi.trimmer('thủ'), 'thủ')
+                assert.equal(lunr.vi.trimmer('(đó)'), 'đó')
+            });
+
+            it("should keep decomposed letters at the end of a word", function () {
+                assert.equal(lunr.vi.trimmer('là'.normalize('NFD')), 'là'.normalize('NFD'))
+            });
+
+            it("should find a word ending in a composed letter", function () {
+                assert.equal(idx.search('hà').length, 1)
+                assert.equal(idx.search('thủ').length, 1)
+            });
+
+            it("should register the stop word filter", function () {
+                assert.equal(lunr.Pipeline.registeredFunctions['stopWordFilter-vi'], lunr.vi.stopWordFilter)
+            });
+
+            if (lunrVersion.version[0] === "2") {
+                it("should not index a stop word followed by punctuation", function () {
+                    assert.equal(idx.invertedIndex['mà'], undefined)
+                    assert.equal(idx.invertedIndex['m'], undefined)
+                });
+            }
+        });
+        describe("should filter Hindi stop words written in NFC", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            lunr.wordcut = require('../wordcut');
+            require('../lunr.hi.js')(lunr);
+
+            // NFC writes the nukta letters of these stop words decomposed
+            var kaafi = 'काफ़ी'.normalize('NFC');
+            var vagairah = 'वग़ैरह'.normalize('NFC');
+
+            var idx = lunr(function () {
+                this.use(lunr.hi);
+                this.ref('id');
+                this.field('text');
+                this.add({ id: 1, text: 'यह ' + kaafi + ' अच्छा है ' + vagairah });
+            });
+
+            it("should not find the stop word %w written in NFC".replace('%w', kaafi), function () {
+                assert.equal(idx.search(kaafi).length, 0)
+            });
+
+            it("should not find the stop word %w written in NFC".replace('%w', vagairah), function () {
+                assert.equal(idx.search(vagairah).length, 0)
+            });
+        });
         describe("should normalize German wildcard queries with umlauts", function () {
             delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
 
@@ -358,4 +425,48 @@ lunrVersions.forEach(function (lunrVersion) {
             })
         }
     })
+});
+
+describe("should write the stop words of every language in Unicode NFC", function () {
+    var languages = require('fs').readdirSync(require('path').join(__dirname, '..'))
+        .map(function (file) {
+            var match = file.match(/^lunr\.([a-z]+)\.js$/);
+            return match && match[1];
+        })
+        .filter(function (language) {
+            return language && language !== 'multi';
+        });
+
+    languages.forEach(function (language) {
+        it("should write the stop words of " + language.toUpperCase() + " in NFC", function () {
+            delete require.cache[require.resolve('./lunr/lunr-2.3.5')];
+            delete require.cache[require.resolve('../lunr.' + language + '.js')];
+
+            var lunr = require('./lunr/lunr-2.3.5');
+            require('../lunr.stemmer.support.js')(lunr);
+            if (language === 'ja' || language === 'jp') {
+                require('../tinyseg')(lunr);
+            }
+            if (language === 'th' || language === 'hi' || language === 'ta' || language === 'sa' || language === 'kn' || language === 'te') {
+                lunr.wordcut = require('../wordcut');
+            }
+
+            // collect every stop word list the language hands to Lunr
+            var stopWords = [];
+            var generateStopWordFilter = lunr.generateStopWordFilter;
+            lunr.generateStopWordFilter = function (words) {
+                stopWords = stopWords.concat(words);
+                return generateStopWordFilter.apply(this, arguments);
+            };
+            if (language === 'jp') {
+                require('../lunr.ja.js')(lunr);
+            }
+            require('../lunr.' + language + '.js')(lunr);
+            lunr.generateStopWordFilter = generateStopWordFilter;
+
+            assert.deepEqual(stopWords.filter(function (word) {
+                return word !== word.normalize('NFC');
+            }), []);
+        });
+    });
 });
