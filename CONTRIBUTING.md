@@ -17,6 +17,7 @@ Wonderful! Here are the changes you need to do, then Open a *Pull request*. Make
         - [ ] You need a stemmer file
         - [ ] You need a stop words file
     - [ ] If `lunr.template` does not fit your needs (for example for non-latin characters), just copy any `lunr.<language>.js` file and start modifying
+- [ ] write stop words, word characters and stemming rules for text in Unicode NFC, the form all languages expect their input in; the test suite checks that every stop word is in NFC
 - [ ] you must also test your new language
     - [ ] go to `test/testdata` and create a new file, then link it to `VersionsAndLanguagesTest.js`
     - [ ] make sure you cover many testcases (wildcard, stemming)

@@ -410,3 +410,47 @@ lunrVersions.forEach(function (lunrVersion) {
         }
     })
 });
+
+describe("should write the stop words of every language in Unicode NFC", function () {
+    var languages = require('fs').readdirSync(require('path').join(__dirname, '..'))
+        .map(function (file) {
+            var match = file.match(/^lunr\.([a-z]+)\.js$/);
+            return match && match[1];
+        })
+        .filter(function (language) {
+            return language && language !== 'multi';
+        });
+
+    languages.forEach(function (language) {
+        it("should write the stop words of " + language.toUpperCase() + " in NFC", function () {
+            delete require.cache[require.resolve('./lunr/lunr-2.3.5')];
+            delete require.cache[require.resolve('../lunr.' + language + '.js')];
+
+            var lunr = require('./lunr/lunr-2.3.5');
+            require('../lunr.stemmer.support.js')(lunr);
+            if (language === 'ja' || language === 'jp') {
+                require('../tinyseg')(lunr);
+            }
+            if (language === 'th' || language === 'hi' || language === 'ta' || language === 'sa' || language === 'kn' || language === 'te') {
+                lunr.wordcut = require('../wordcut');
+            }
+
+            // collect every stop word list the language hands to Lunr
+            var stopWords = [];
+            var generateStopWordFilter = lunr.generateStopWordFilter;
+            lunr.generateStopWordFilter = function (words) {
+                stopWords = stopWords.concat(words);
+                return generateStopWordFilter.apply(this, arguments);
+            };
+            if (language === 'jp') {
+                require('../lunr.ja.js')(lunr);
+            }
+            require('../lunr.' + language + '.js')(lunr);
+            lunr.generateStopWordFilter = generateStopWordFilter;
+
+            assert.deepEqual(stopWords.filter(function (word) {
+                return word !== word.normalize('NFC');
+            }), []);
+        });
+    });
+});

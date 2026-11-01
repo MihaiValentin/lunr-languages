@@ -160,6 +160,22 @@ var idx = lunr(function () {
 });
 ```
 
+### Text in Unicode NFC
+
+All languages expect text in Unicode Normalization Form C (NFC), the form text on the web is normally written in: an accented letter like `é` is one character, not `e` followed by a combining accent. Stop words, word characters and stemmers are written for NFC, so text in another form may be trimmed, filtered or stemmed wrongly.
+
+If your text or your users' queries may arrive in another form, for example copied from a source that writes decomposed text, normalize both before indexing and searching:
+
+```js
+var idx = lunr(function () {
+  this.use(lunr.de);
+  this.field('body');
+  this.add({ id: 1, body: body.normalize('NFC') });
+});
+
+idx.search(query.normalize('NFC'));
+```
+
 ---
 
 ## Multi-language indexing
