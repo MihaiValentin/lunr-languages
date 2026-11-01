@@ -1,3 +1,4 @@
+
 var test = require('node:test');
 var describe = test.describe;
 var it = test.it;
@@ -198,6 +199,46 @@ lunrVersions.forEach(function (lunrVersion) {
                 assert.equal(lunr.vi.trimmer('(đình)'), 'đình')
                 assert.equal(lunr.vi.trimmer('đình,'), 'đình')
             });
+        });
+        describe("should keep Vietnamese words written with composed letters", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            require('../lunr.vi.js')(lunr);
+
+            var idx = lunr(function () {
+                this.use(lunr.vi);
+                this.ref('id');
+                this.field('text');
+                this.add({ id: 1, text: "Hà Nội mà, thủ đô." });
+            });
+
+            it("should keep composed letters at the end of a word", function () {
+                assert.equal(lunr.vi.trimmer('là'), 'là')
+                assert.equal(lunr.vi.trimmer('thủ'), 'thủ')
+                assert.equal(lunr.vi.trimmer('(đó)'), 'đó')
+            });
+
+            it("should keep decomposed letters at the end of a word", function () {
+                assert.equal(lunr.vi.trimmer('là'.normalize('NFD')), 'là'.normalize('NFD'))
+            });
+
+            it("should find a word ending in a composed letter", function () {
+                assert.equal(idx.search('hà').length, 1)
+                assert.equal(idx.search('thủ').length, 1)
+            });
+
+            it("should register the stop word filter", function () {
+                assert.equal(lunr.Pipeline.registeredFunctions['stopWordFilter-vi'], lunr.vi.stopWordFilter)
+            });
+
+            if (lunrVersion.version[0] === "2") {
+                it("should not index a stop word followed by punctuation", function () {
+                    assert.equal(idx.invertedIndex['mà'], undefined)
+                    assert.equal(idx.invertedIndex['m'], undefined)
+                });
+            }
         });
         describe("should filter Hindi stop words written in NFC", function () {
             delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
