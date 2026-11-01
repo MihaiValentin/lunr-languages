@@ -1,4 +1,3 @@
-
 var test = require('node:test');
 var describe = test.describe;
 var it = test.it;
@@ -198,6 +197,23 @@ lunrVersions.forEach(function (lunrVersion) {
             it("should trim Vietnamese punctuation", function () {
                 assert.equal(lunr.vi.trimmer('(đình)'), 'đình')
                 assert.equal(lunr.vi.trimmer('đình,'), 'đình')
+            });
+        });
+        describe("should trim punctuation around Thai words", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            lunr.wordcut = require('../wordcut');
+            require('../lunr.th.js')(lunr);
+
+            it("should trim Thai punctuation", function () {
+                assert.equal(lunr.th.trimmer('(สวัสดี)'), 'สวัสดี')
+                assert.equal(lunr.th.trimmer('สวัสดี,'), 'สวัสดี')
+            });
+
+            it("should keep Latin words in Thai text", function () {
+                assert.equal(lunr.th.trimmer('(iPhone)'), 'iPhone')
             });
         });
         describe("should keep Vietnamese words written with composed letters", function () {
