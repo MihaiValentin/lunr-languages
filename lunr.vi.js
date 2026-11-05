@@ -77,7 +77,11 @@
       "\u1EA0-\u1EF9"; // Ạ ạ … Ỹ ỹ, the composed letters with tone marks
     lunr.vi.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.vi.wordCharacters);
     lunr.Pipeline.registerFunction(lunr.vi.trimmer, 'trimmer-vi');
-    lunr.vi.stopWordFilter = lunr.generateStopWordFilter('là cái nhưng mà'.split(' '));
+    /* single-syllable function words from stopwords-iso/stopwords-vi (MIT, see THIRD-PARTY-NOTICES.md); lunr splits
+     * Vietnamese at spaces, so a word of several syllables can't be a stop word, and syllables that are also
+     * common content words (người, năm, có, một, từ, không) stay searchable */
+    lunr.vi.stopWordFilter = lunr.generateStopWordFilter(('các những cái và hoặc nhưng mà nếu vì rằng tuy là thì được bị ' +
+      'đã đang sẽ của với để này đó ấy cũng vẫn rất đều').split(' '));
     lunr.Pipeline.registerFunction(lunr.vi.stopWordFilter, 'stopWordFilter-vi');
   };
 }))

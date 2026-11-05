@@ -191,4 +191,5 @@
 ### Vietnamese (vi)
 
 - The file header credits its author (Bill Moyers, 2019); it was copied from the Thai file and named Keerati Thiwanruk and Snowball, which `lunr.vi.js` doesn't use.
+- Stop words: 28 single-syllable function words from stopwords-iso (MIT) instead of 4 words of unrecorded origin (`là cái nhưng mà`): plural markers, conjunctions, copula, passive and tense markers, prepositions, demonstratives (`các`, `của`, `được`, `đã`, `này`, …). Syllables that are also common content words (`người`, `năm`, `có`, `một`, `từ`, `không`) stay searchable. They remove 13% of the syllables of Vietnamese Wikipedia text (was 1.6%); the index gets 5% smaller.
 - Searches no longer go through lunr's English stemmer: a Latin word in a Vietnamese index (`running`) is found by itself again.

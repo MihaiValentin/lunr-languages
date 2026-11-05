@@ -290,6 +290,14 @@ lunrVersions.forEach(function (lunrVersion) {
                     assert.equal(idx.invertedIndex['m'], undefined)
                 });
             }
+
+            it("should drop function words and keep syllables that are also content words", function () {
+                var words = function (text) {
+                    return lunr.vi.stopWordFilter(new lunr.Token(text)) === undefined ? null : text;
+                };
+                assert.deepEqual(['của', 'và', 'được', 'những', 'đã'].map(words), [null, null, null, null, null]);
+                assert.deepEqual(['người', 'năm', 'có', 'một', 'từ', 'không'].map(words), ['người', 'năm', 'có', 'một', 'từ', 'không']);
+            });
         });
         describe("should filter Hindi stop words written in NFC", function () {
             delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]

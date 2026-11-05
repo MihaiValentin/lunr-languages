@@ -13,6 +13,7 @@ package.
 | [TinySegmenter](http://chasen.org/~taku/software/TinySegmenter/) | 0.1 | BSD-3-Clause | `lunr.ja.tinyseg.js` | full text in the file's header; [`licenses/TinySegmenter-BSD-3-Clause.txt`](licenses/TinySegmenter-BSD-3-Clause.txt) |
 | [wordcut](https://github.com/veer66/wordcut), with its Thai dictionary | 0.9.1 | LGPL-3.0 | `lunr.th.wordcut.js` | notice in the file's header; [`licenses/wordcut-LGPL-3.0.txt`](licenses/wordcut-LGPL-3.0.txt), [`licenses/GPL-3.0.txt`](licenses/GPL-3.0.txt) |
 | [CLDR](https://cldr.unicode.org/) `Latin-ASCII` transform (data the accent folding maps are derived from) | release-49 | Unicode License V3 | `lunr.<locale>.js` with accent folding: es, fr, hu, it, nl, pl, pt, ro, tr | notice in each file's header; [`licenses/Unicode-3.0.txt`](licenses/Unicode-3.0.txt) |
+| [stopwords-iso/stopwords-vi](https://github.com/stopwords-iso/stopwords-vi) | commit `0bf911e` | MIT | 28 single-syllable function words of it as the stop words of `lunr.vi.js` | [`licenses/stopwords-iso-MIT.txt`](licenses/stopwords-iso-MIT.txt) |
 | [lunr](https://lunrjs.com/)'s English stop words | 2.3.9 | MIT | the words added to Snowball's list in `lunr.en.js` (`build/stopwords-add/en.txt`) | [`licenses/lunr-MIT.txt`](licenses/lunr-MIT.txt) |
 | [UMD](https://github.com/umdjs/umd) `returnExports` pattern | – | MIT | the module wrapper of every file | [`licenses/UMD-MIT.txt`](licenses/UMD-MIT.txt) |
 
@@ -39,4 +40,4 @@ Installed separately, only when a segmenter plugin is used; their licenses apply
 | fa | 24 function words of Jacques Savoy's Persian stop word list, [as shipped in Lucene](https://github.com/apache/lucene/blob/main/lucene/analysis/common/src/resources/org/apache/lucene/analysis/fa/stopwords.txt), in Persian spelling (Lucene writes them normalized: Arabic ي and ك, ا for آ) | BSD (per the list's header) |
 | ja, zh | [ranks.nl](https://www.ranks.nl/stopwords) | not stated |
 | ar, el, hi, hy, ta, pl, ro, tr, and the words of `build/stopwords-add/ru.txt` | not recorded; they come from the hand-written language files of lunr-languages 1.x | unknown |
-| he, ko, vi, kn, te, sa | not recorded (hand-written language files) | unknown |
+| he, ko, kn, te, sa | not recorded (hand-written language files) | unknown |
