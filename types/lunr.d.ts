@@ -14,7 +14,11 @@ declare namespace lunr {
     stemmer?: LunrLanguagesPipelineFunction;
     stopWordFilter?: LunrLanguagesPipelineFunction;
     tokenizer?: (obj?: any, metadata?: any) => any[];
-    accentFold?: LunrLanguagesPipelineFunction;
+    accentFold?: LunrLanguagesAccentFold;
+    wildcardNormalizer?: LunrLanguagesWildcardNormalizer;
+    specialCasing?: LunrLanguagesSpecialCasing;
+    normalizer?: LunrLanguagesNormalizer;
+    normalize?: LunrLanguagesFold;
     [key: string]: any;
   }
 
@@ -52,7 +56,71 @@ declare namespace lunr {
   var vi: LunrLanguagesLanguage;
   var zh: LunrLanguagesLanguage;
 
-  var stemmerSupport: any;
+  /** Snowball's base class of the generated stemmers (base-stemmer.js). */
+  interface LunrLanguagesBaseStemmer {
+    setCurrent(value: string): void;
+    getCurrent(): string;
+    stemWord?(word: string): string;
+    [key: string]: any;
+  }
+
+  /** A fold from a map; `^` keys apply only at the start of the word. */
+  type LunrLanguagesFold = (word: string) => string;
+
+  interface LunrLanguagesAccentFold extends LunrLanguagesPipelineFunction {
+    /** The letter map, also used by the wildcard normalizer. */
+    map: { [from: string]: string };
+    /** Whether lunr.<locale> puts it into its pipelines (accent folding on by default). */
+    isDefault?: boolean;
+  }
+
+  interface LunrLanguagesWildcardNormalizer {
+    (term: string, pipeline?: any): string;
+    /** The raw fold of the map. */
+    fold: LunrLanguagesFold;
+    label?: string;
+    pipelineFunctionLabel?: string;
+  }
+
+  interface LunrLanguagesNormalizer extends LunrLanguagesPipelineFunction {
+    map: { [from: string]: string };
+    /** The fold on strings, applied until nothing changes. */
+    normalize: LunrLanguagesFold;
+  }
+
+  interface LunrLanguagesSpecialCasing {
+    (str: string): string;
+    map: { [from: string]: string };
+    label?: string;
+    pipelineFunctionLabel?: string;
+  }
+
+  interface LunrLanguagesStemmerSupport {
+    BaseStemmer: new () => LunrLanguagesBaseStemmer;
+    generateFold(map: { [from: string]: string }): LunrLanguagesFold;
+    generateAccentFold(map: { [from: string]: string }): LunrLanguagesAccentFold;
+    generateWildcardNormalizer(
+      map: { [from: string]: string },
+      accent?: { label: string; accentFold: { [from: string]: string }; map: { [from: string]: string } }
+    ): LunrLanguagesWildcardNormalizer;
+    /** A pipeline function folding a token to one spelling before the stop words and the stemmer. */
+    generateNormalizer(map: { [from: string]: string }): LunrLanguagesNormalizer;
+    generateSpecialCasing(map: { [from: string]: string }): LunrLanguagesSpecialCasing;
+    generateSpecialCasingTokenizer(specialCasing: LunrLanguagesSpecialCasing): (obj?: any, metadata?: any) => any[];
+    /** Registers the tokenizer a language indexes with, found by tokenizerFor() from `-<locale>` labels. */
+    addTokenizer(locale: string, tokenizer: (obj?: any, metadata?: any) => any[]): void;
+    combineTokenizers(tokenizers: Array<(obj?: any, metadata?: any) => any[]>): (obj?: any, metadata?: any) => any[];
+    /** Adds the words of `text` to the query, split and prepared for the index like the query parser does. */
+    addQueryTerms(query: any, text: string, options?: any): any;
+    /** A term (or terms) prepared for query.term(): special casing, wildcard folding, lowercasing. */
+    normalizeQueryTerm(term: any[], source: any): string[];
+    normalizeQueryTerm(term: any, source: any): string;
+    /** The tokenizer for query text of an index with this search pipeline. */
+    tokenizerFor(pipeline: any): (obj?: any, metadata?: any) => any[];
+    [key: string]: any;
+  }
+
+  var stemmerSupport: LunrLanguagesStemmerSupport;
   var trimmerSupport: any;
   var TinySegmenter: any;
   var wordcut: any;
