@@ -422,6 +422,22 @@ var list = [
         locale: 'he',
     }, {
         locale: 'el',
+        snowball: 'greek',
+        copyright: '2023, Panos Bariamis',
+        // the stop words are written without accents and with σ for the final sigma, like Snowball's stems
+        stopWords: { custom: 'el.csv' },
+        script: ['Greek', 'Latin'],
+        // Snowball's stemmer drops tonos and dialytika and folds ς itself; doing it before the stop word
+        // filter too lets the stop words match accented words (αυτές). ϊ and ΐ stay for the stemmer, which
+        // folds them to η, not ι (549 stems of Snowball's word list would change)
+        normalize: {
+            map: {
+                'ά': 'α', 'έ': 'ε', 'ή': 'η', 'ί': 'ι', // ά έ ή ί
+                'ό': 'ο', 'ύ': 'υ', 'ώ': 'ω',                     // ό ύ ώ
+                'ϋ': 'υ', 'ΰ': 'υ',                                         // ϋ ΰ
+                'ς': 'σ'                                                              // ς
+            }
+        }
     },
     {
         locale: 'fa',

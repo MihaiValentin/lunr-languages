@@ -86,6 +86,9 @@ describe("Wildcard searches", function () {
         // fa: می‌خوانند (ZWNJ after the prefix می), found with and without the prefix, and typed with Arabic yeh
         ['fa', 'می‌خوانند',
             ['می‌خوا*', 'خوا*', 'مي‌خوا*']],
+        // el: σπίτια found with and without the accent; αθεΐα, whose ΐ Snowball folds to η
+        ['el', 'σπίτια', ['σπίτ*', 'σπιτ*']],
+        ['el', 'αθεΐα', ['αθεΐ*']],
         // ar: الكتابة (with the article ال), found without it; أحمد found typed without the hamza
         ['ar', 'الكتابة', ['كتا*', 'الكتا*']],
         ['ar', 'أحمد', ['أحم*', 'احم*']],

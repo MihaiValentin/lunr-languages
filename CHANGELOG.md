@@ -57,6 +57,13 @@
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change. It treats `ae`, `oe`, `ue` like `ä`, `ö`, `ü` (Snowball 3.0.0's german2), so `Kaese` and `Käse` share a stem.
 - Wildcard terms are folded by a map derived from the stemmer instead of a hand-written one; it also folds `ae`, `oe`, `ue`.
 
+### Greek (el)
+
+- Stemmed for the first time under lunr 2: 1.x's stemmer expected uppercase words and returned lowercase ones unchanged. Generated from Snowball 3.2.0's Greek stemmer; `Ελλάδας` finds `Ελλάδα` (stem `ελλαδ`).
+- Accented stop words (`από`, `αλλά`, `ή`) are dropped now: a normalizer (tonos, `ϋ`, `ΰ`, final `ς`) runs before the stop word filter. The trimmer is in the pipeline now.
+- Wildcard terms are folded like the index: `σπιτ*` finds `σπίτια`.
+- `lunr.el.normilizer` (never in the pipeline) is replaced by `lunr.el.normalizer` (label `normalizer-el`).
+
 ### Hindi (hi)
 
 - Loads without `wordcut.js`; loading failed with a TypeError unless it was attached first. `lunr.hi.tokenizer` (a Thai segmenter that was never used for indexing) is removed.

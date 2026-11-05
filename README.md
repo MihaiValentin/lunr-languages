@@ -215,6 +215,7 @@ An index built with lunr's built-in English must be rebuilt for `lunr.en`. In `l
 * Hindi, Kannada, Sanskrit, Tamil and Telugu no longer need `wordcut.js`; `lunr.hi.tokenizer` and its siblings are removed.
 * Accent folding is on by default for French, Spanish, Portuguese, Italian, Dutch, Romanian, Polish, Turkish and Hungarian (see [Accent folding](#accent-folding)). French used to fold accents before the stemmer, and Spanish had it opt-in; to keep an index without the accent-free forms, remove `lunr.xx.accentFold` from both pipelines.
 * `lunr.stemmerSupport.Among` and `SnowballProgram` are removed. A third-party stemmer built on them has to extend `lunr.stemmerSupport.BaseStemmer` (Snowball 3.x) instead.
+* Greek: `lunr.el.normilizer` is replaced by `lunr.el.normalizer`, which is in the pipeline now.
 * `du` is removed: use `nl` (`lunr-languages/lunr.nl`) for Dutch.
 * `jp` is removed: use `ja` (`lunr-languages/lunr.ja`) for Japanese. Its pipeline labels were `stemmer-jp`, `trimmer-jp` and `stopWordFilter-jp`; indexes saved with them must be rebuilt with `ja`.
 

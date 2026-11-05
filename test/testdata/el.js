@@ -20,8 +20,14 @@ module.exports = {
     ],
     tests: [
         {
+            // Snowball stems Ελλάδα and Ελλάδας to ελλαδ; a wildcard matches stems, so it is a prefix of the stem
+            // (the stemmer of lunr-languages 1.x did not stem at all under lunr 2, so Ελλάδα* matched the words)
             what: "find the word %w",
-            search: "Ελλάδα*",
+            search: "Ελλάδ*",
+            found: 2
+        }, {
+            what: "find an inflected form of a word, like %w for Ελλάδα",
+            search: "Ελλάδας",
             found: 2
         }, {
             what: "find the word %w",
