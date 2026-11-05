@@ -16,6 +16,7 @@
 - The deprecated `du` locale is removed; use `nl`.
 - Stemmer: Snowball 3.2.0's `dutch`, Kraaij-Pohlmann (Snowball's default since 3.0.0), instead of the Porter-based stemmer; stems change.
 - Wildcard terms are folded like the stemmer folds the index (`ideeë*` finds `ideeën`).
+- Accent folding on by default: `ideeen` finds `ideeën`, wildcards too. Opt-out: remove `lunr.nl.accentFold` from both pipelines.
 
 ### English (en)
 
@@ -31,6 +32,7 @@
 
 - Stop words: Snowball's current list (154 words, was 163); adds `cela`, drops `as`, `aura`, `auras`, `avions`, `est`, `fût`, `son`, `sommes`, `été`, `étés`.
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change.
+- Accent folding on by default: each word is indexed as written and accent-free (`rivière`, `riviere`), so searches with and without accents find it, wildcards too. Replaces 1.x's folding before the stemmer, which indexed only the accent-free form. Opt-out: remove `lunr.fr.accentFold` from both pipelines.
 
 ### German (de)
 
@@ -41,11 +43,13 @@
 
 - Stop words: Snowball's current list; `ő` instead of the mis-encoded `õ` (`elő`, `ők`, …), so these words are filtered now.
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change.
+- Accent folding on by default: `haz` finds `ház`, wildcards too. Opt-out: remove `lunr.hu.accentFold` from both pipelines.
 
 ### Italian (it)
 
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change.
 - Wildcard terms are folded like the stemmer folds the index (`é` as `è`, elisions like `d'`).
+- Accent folding on by default: `citta` finds `città`, wildcards too. Opt-out: remove `lunr.it.accentFold` from both pipelines.
 
 ### Japanese (ja)
 
@@ -59,15 +63,18 @@
 
 - Stemmer: Snowball 3.2.0's Polish stemmer instead of a hand-written one; stems change.
 - Wildcard terms are folded like the stemmer folds the index.
+- Accent folding on by default: `zolw` finds `żółw`, wildcards too (`ł` as `l`). Opt-out: remove `lunr.pl.accentFold` from both pipelines.
 
 ### Portuguese (pt)
 
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change.
+- Accent folding on by default: `coracao` finds `coração`, wildcards too. Opt-out: remove `lunr.pt.accentFold` from both pipelines.
 
 ### Romanian (ro)
 
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change.
 - Wildcard terms are folded like the stemmer folds the index (`ş`, `ţ` as `ș`, `ț`).
+- Accent folding on by default: `tara` finds `țară`, wildcards too. Opt-out: remove `lunr.ro.accentFold` from both pipelines.
 
 ### Russian (ru)
 
@@ -79,6 +86,7 @@
 
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change. It also removes unaccented suffixes (`respiracion` → `respir`, like `respiración`).
 - Wildcard terms are folded like the stemmer folds the index.
+- Accent folding on by default (was opt-in): `respiracion` finds `Respiración`; `ñ` stays a letter of its own. Opt-out: remove `lunr.es.accentFold` from both pipelines.
 
 ### Swedish (sv)
 
@@ -89,3 +97,4 @@
 
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change.
 - Wildcard terms are folded like the stemmer folds the index.
+- Accent folding on by default: `kiz` finds `kız`, wildcards too (`ı` as `i`). Opt-out: remove `lunr.tr.accentFold` from both pipelines.

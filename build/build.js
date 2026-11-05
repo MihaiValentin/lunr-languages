@@ -167,83 +167,6 @@ function updateStemmerSupport(support, version) {
         });
 }
 
-function accentFoldTermFunction(locale) {
-    return [
-        '',
-        '        lunr.' + locale + '.accentFoldTerm = function(term) {',
-        '            return term',
-        '                .replace(/[\\u00E0\\u00E1\\u00E2\\u00E4\\u00C0\\u00C1\\u00C2\\u00C4]/g, "a")',
-        '                .replace(/[\\u00E7\\u00C7]/g, "c")',
-        '                .replace(/[\\u00E9\\u00E8\\u00EA\\u00EB\\u00C9\\u00C8\\u00CA\\u00CB]/g, "e")',
-        '                .replace(/[\\u00EE\\u00EF\\u00CE\\u00CF]/g, "i")',
-        '                .replace(/[\\u00F4\\u00F6\\u00D4\\u00D6]/g, "o")',
-        '                .replace(/[\\u00F9\\u00FB\\u00FC\\u00D9\\u00DB\\u00DC]/g, "u")',
-        '                .replace(/[\\u0178\\u00FF]/g, "y")',
-        '                .replace(/[\\u00E6\\u00C6]/g, "ae")',
-        '                .replace(/[\\u0153\\u0152]/g, "oe");',
-        '        };'
-    ].join('\n');
-}
-
-function accentFoldTokenFunction(locale) {
-    return accentFoldTermFunction(locale) + [
-        '',
-        '        lunr.' + locale + '.accentFold = function(token) {',
-        '            if (!token) {',
-        '                return token;',
-        '            }',
-        '',
-        '            return token.update(function(term) {',
-        '                return lunr.' + locale + '.accentFoldTerm(term);',
-        '            });',
-        '        };',
-        '',
-        '        lunr.Pipeline.registerFunction(lunr.' + locale + '.accentFold, "accentFold-' + locale + '");'
-    ].join('\n');
-}
-
-function accentFoldWildcardNormalizerFunction(locale) {
-    return [
-        '',
-        '        lunr.' + locale + '.wildcardNormalizer = function(term) {',
-        '            return lunr.' + locale + '.accentFoldTerm(term);',
-        '        };',
-        '',
-        '        lunr.' + locale + '.wildcardNormalizer.label = "wildcardNormalizer-' + locale + '";',
-        '        lunr.' + locale + '.wildcardNormalizer.pipelineFunctionLabel = "stemmer-' + locale + '";',
-        '        lunr.stemmerSupport.addQueryParserWildcardNormalizer(lunr, lunr.' + locale + '.wildcardNormalizer);'
-    ].join('\n');
-}
-
-function optInAccentFoldFunction(locale) {
-    return [
-        '',
-        '        lunr.' + locale + '.accentFold = function(token) {',
-        '            if (!token) {',
-        '                return token;',
-        '            }',
-        '',
-        '            var str = token.toString();',
-        '            var folded = str',
-        '                .replace(/[\\u00E1\\u00E0\\u00E4\\u00E2]/g, "a")',
-        '                .replace(/[\\u00E9\\u00E8\\u00EB\\u00EA]/g, "e")',
-        '                .replace(/[\\u00ED\\u00EC\\u00EF\\u00EE]/g, "i")',
-        '                .replace(/[\\u00F3\\u00F2\\u00F6\\u00F4]/g, "o")',
-        '                .replace(/[\\u00FA\\u00F9\\u00FC\\u00FB]/g, "u");',
-        '',
-        '            if (folded === str) {',
-        '                return token;',
-        '            }',
-        '',
-        '            return [token, token.clone(function() {',
-        '                return folded;',
-        '            })];',
-        '        };',
-        '',
-        '        lunr.Pipeline.registerFunction(lunr.' + locale + '.accentFold, "accentFold-' + locale + '");'
-    ].join('\n');
-}
-
 /*
  * The configuration of every language. Everything else is driven by it: the build, and for Snowball
  * languages also build/fetch-snowball.js and build/derive-fold-maps.js.
@@ -255,8 +178,6 @@ function optInAccentFoldFunction(locale) {
  *   script         Unicode script of the word characters (unicode-8.0.0 package), for the trimmer and
  *                  for probing letters in the wildcard map derivation
  *   stopWords      the source of the stop word list, see stopWordsFile()
- *   accentFolding  adds the opt-in lunr.<locale>.accentFold
- *   defaultAccentFolding  folds accents before the stemmer (fr, as in 1.x), with its own wildcard normalizer
  *   accentFold     { default, keep? }: adds lunr.<locale>.accentFold, which indexes each token and its
  *                  accent-free form. The map comes from CLDR's Latin-ASCII for the letters of the
  *                  language's word list, without the letters in `keep`. With `default: true`,
@@ -279,7 +200,8 @@ var list = [
         locale: 'nl',
         snowball: 'dutch',
         stopWords: { snowball: 'dutch' },
-        script: 'Latin'
+        script: 'Latin',
+        accentFold: { default: true }
     }, {
         locale: 'en',
         snowball: 'english',
@@ -295,7 +217,7 @@ var list = [
         snowball: 'french',
         stopWords: { snowball: 'french' },
         script: 'Latin',
-        defaultAccentFolding: true
+        accentFold: { default: true }
     }, {
         locale: 'de',
         snowball: 'german',
@@ -305,12 +227,14 @@ var list = [
         locale: 'hu',
         snowball: 'hungarian',
         stopWords: { snowball: 'hungarian' },
-        script: 'Latin'
+        script: 'Latin',
+        accentFold: { default: true }
     }, {
         locale: 'it',
         snowball: 'italian',
         stopWords: { snowball: 'italian' },
-        script: 'Latin'
+        script: 'Latin',
+        accentFold: { default: true }
     }, {
         locale: 'ja'
     }, {
@@ -324,17 +248,20 @@ var list = [
         locale: 'pt',
         snowball: 'portuguese',
         stopWords: { snowball: 'portuguese' },
-        script: 'Latin'
+        script: 'Latin',
+        accentFold: { default: true }
     }, {
         locale: 'pl',
         snowball: 'polish',
         stopWords: { custom: 'pl.csv' },
-        script: 'Latin'
+        script: 'Latin',
+        accentFold: { default: true }
     }, {
         locale: 'ro',
         snowball: 'romanian',
         stopWords: { custom: 'ro.csv' },
-        script: 'Latin'
+        script: 'Latin',
+        accentFold: { default: true }
     }, {
         locale: 'ru',
         snowball: 'russian',
@@ -345,7 +272,7 @@ var list = [
         snowball: 'spanish',
         stopWords: { snowball: 'spanish' },
         script: 'Latin',
-        accentFolding: true
+        accentFold: { default: true, keep: 'ñ' }
     }, {
         locale: 'sa'
     }, {
@@ -361,7 +288,8 @@ var list = [
         locale: 'tr',
         snowball: 'turkish',
         stopWords: { custom: 'tr.csv' },
-        script: 'Latin'
+        script: 'Latin',
+        accentFold: { default: true }
     }, {
         locale: 'th',
     }, {
@@ -402,16 +330,6 @@ function build() {
             var languageName = name.charAt(0).toUpperCase() + name.slice(1);
             var stopWords = readStopWords(stopWordsFile(list[i]));
             var accentFold = list[i].accentFold;
-            var languageExtras = [];
-
-            if (list[i].accentFolding) {
-                languageExtras.push(optInAccentFoldFunction(list[i].locale));
-            }
-
-            if (list[i].defaultAccentFolding) {
-                languageExtras.push(accentFoldTokenFunction(list[i].locale));
-            }
-
             header = cm
                 .replace(/\{\{languageName\}\}/g, languageName)
                 .replace(/\{\{snowballLicense\}\}/g, snowballLicense('The stemmer is generated from ' + name +
@@ -426,13 +344,10 @@ function build() {
                 // inside '…' in the template; English has apostrophes (aren't)
                 stopWords: stopWords.sort().join(' ').replace(/[\\']/g, '\\$&'),
                 wordCharacters: wordCharacters(list[i].script),
-                // French's 1.x folding, or accentFold on by default, runs right before the stemmer in both pipelines
-                pipelineBeforeStemmer: list[i].defaultAccentFolding || (accentFold && accentFold.default) ? '\n                lunr.' + list[i].locale + '.accentFold,' : '',
+                // with accentFold on by default, it runs right before the stemmer in both pipelines
+                pipelineBeforeStemmer: accentFold && accentFold.default ? '\n                lunr.' + list[i].locale + '.accentFold,' : '',
                 accentFold: accentFold ? accentFoldFunction(list[i], wildcardMaps) : '',
-                // the derived map doesn't fit an index folded before the stemmer
-                wildcardNormalizer: list[i].defaultAccentFolding ? accentFoldWildcardNormalizerFunction(list[i].locale) :
-                    wildcardNormalizerFunction(list[i], wildcardMaps),
-                languageExtras: languageExtras.join('\n')
+                wildcardNormalizer: wildcardNormalizerFunction(list[i], wildcardMaps)
             };
             f = header + tpl.replace(/\{\{(\w+)\}\}/g, function(all, key) {
                 if (!Object.prototype.hasOwnProperty.call(values, key)) {

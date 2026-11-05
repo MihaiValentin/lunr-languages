@@ -370,15 +370,116 @@ lunrVersions.forEach(function (lunrVersion) {
                 assert.equal(idx.search('maitre').length, 1)
             });
 
-            it("should index folded French stems", function () {
+            it("should index the stems of both forms", function () {
+                assert.ok(idx.invertedIndex['empêch'])
                 assert.ok(idx.invertedIndex.empech)
+                assert.ok(idx.invertedIndex['maîtr'])
                 assert.ok(idx.invertedIndex.maitr)
-                assert.equal(idx.invertedIndex['empêch'], undefined)
-                assert.equal(idx.invertedIndex['maîtr'], undefined)
             });
 
-            it("should find French words with accented wildcard searches", function () {
+            it("should find French words with accented and accent-free wildcard searches", function () {
                 assert.equal(idx.search('maîtr*').length, 1)
+                assert.equal(idx.search('maitr*').length, 1)
+                assert.equal(idx.search('empêch*').length, 1)
+            });
+        });
+        describe("should let accent folding be switched off (opt-out)", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            require('../lunr.fr.js')(lunr);
+
+            var idx = lunr(function () {
+                this.use(lunr.fr);
+                this.pipeline.remove(lunr.fr.accentFold);
+                this.searchPipeline.remove(lunr.fr.accentFold);
+                this.ref('id');
+                this.field('text');
+                this.add({ id: 1, text: "rivière" });
+            });
+
+            it("should only index the original stem", function () {
+                assert.ok(idx.invertedIndex.rivi)
+                assert.equal(idx.invertedIndex.rivier, undefined)
+            });
+
+            it("should find the accented word, but not the accent-free one", function () {
+                assert.equal(idx.search('rivière').length, 1)
+                assert.equal(idx.search('riviere').length, 0)
+            });
+
+            it("should not accent fold wildcard terms", function () {
+                assert.equal(idx.search('rivi*').length, 1)
+                assert.equal(idx.search('rivière*').length, 0)
+            });
+
+            it("should still accent fold wildcard terms in an index that has accent folding", function () {
+                var folding = lunr(function () {
+                    this.use(lunr.fr);
+                    this.ref('id');
+                    this.field('text');
+                    this.add({ id: 1, text: "rivière" });
+                });
+                assert.equal(folding.search('rivier*').length, 1)
+                assert.equal(folding.search('riviè*').length, 1)
+            });
+        });
+        describe("should fold accents in other languages by default", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            ['pl', 'ro', 'tr', 'hu', 'pt', 'de', 'sv'].forEach(function (locale) {
+                require('../lunr.' + locale + '.js')(lunr);
+            });
+
+            var index = function (locale, text) {
+                return lunr(function () {
+                    this.use(lunr[locale]);
+                    this.ref('id');
+                    this.field('text');
+                    this.add({ id: 1, text: text });
+                });
+            };
+
+            it("should fold letters without a Unicode decomposition (Polish ł, Turkish ı)", function () {
+                assert.equal(index('pl', 'żółw').search('zolw').length, 1)
+                assert.equal(index('pl', 'łódź').search('lodz').length, 1)
+                assert.equal(index('tr', 'ılık').search('ilik').length, 1)
+            });
+
+            it("should fold Romanian, Hungarian and Portuguese diacritics", function () {
+                assert.equal(index('ro', 'învățământ').search('invatamant').length, 1)
+                assert.equal(index('hu', 'gyönyörű').search('gyonyoru').length, 1)
+                assert.equal(index('pt', 'coração').search('coracao').length, 1)
+            });
+
+            it("should not have accent folding where the marked letters are letters of their own", function () {
+                assert.equal(lunr.de.accentFold, undefined)
+                assert.equal(lunr.sv.accentFold, undefined)
+                assert.equal(index('sv', 'här').search('har').length, 0)
+            });
+        });
+        describe("should fold accents in multi-language indexes", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            require('../lunr.fr.js')(lunr);
+            require('../lunr.de.js')(lunr);
+            require('../lunr.multi.js')(lunr);
+
+            var idx = lunr(function () {
+                this.use(lunr.multiLanguage('de', 'fr'));
+                this.ref('id');
+                this.field('text');
+                this.add({ id: 1, text: "rivière Häuser" });
+            });
+
+            it("should find French words without accents and German words without umlauts", function () {
+                assert.equal(idx.search('riviere').length, 1)
+                assert.equal(idx.search('hauser').length, 1)
             });
         });
         Object.keys(testDocuments).forEach(function (language) {
@@ -417,42 +518,29 @@ lunrVersions.forEach(function (lunrVersion) {
             })
         })
 
-        describe("should support opt-in Spanish accent folding", function () {
+        describe("should fold Spanish accents by default", function () {
             delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
 
             var lunr = require('./lunr/' + lunrVersion.lunr);
             require('../lunr.stemmer.support.js')(lunr);
             require('../lunr.es.js')(lunr);
 
-            var defaultIdx = lunr(function () {
+            var idx = lunr(function () {
                 this.use(lunr.es);
-                this.field('body');
-                this.add({ "body": "Respiración", "id": 1 });
-            });
-
-            var accentFoldIdx = lunr(function () {
-                this.use(lunr.es);
-                this.pipeline.before(lunr.es.stemmer, lunr.es.accentFold);
-                this.searchPipeline.before(lunr.es.stemmer, lunr.es.accentFold);
                 this.field('body');
                 this.add({ "body": "Respiración autonomías hablaré pingüino año", "id": 1 });
             });
 
-            // Snowball 3.2.0 also removes the unaccented suffix: respiracion and respiración both stem to respir
-            it("should stem the accent-free form like the accented one", function () {
-                assert.equal(defaultIdx.search('respiracion').length, 1)
-            });
-
             it("should find accented Spanish words when accents are omitted", function () {
-                assert.equal(accentFoldIdx.search('respiracion').length, 1)
-                assert.equal(accentFoldIdx.search('autonomias').length, 1)
-                assert.equal(accentFoldIdx.search('hablare').length, 1)
-                assert.equal(accentFoldIdx.search('pinguino').length, 1)
+                assert.equal(idx.search('respiracion').length, 1)
+                assert.equal(idx.search('autonomias').length, 1)
+                assert.equal(idx.search('hablare').length, 1)
+                assert.equal(idx.search('pinguino').length, 1)
             });
 
             it("should not fold ene into plain n", function () {
-                assert.equal(accentFoldIdx.search('ano').length, 0)
-                assert.equal(accentFoldIdx.search('año').length, 1)
+                assert.equal(idx.search('ano').length, 0)
+                assert.equal(idx.search('año').length, 1)
             });
         })
     })

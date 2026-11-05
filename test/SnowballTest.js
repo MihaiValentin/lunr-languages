@@ -71,14 +71,15 @@ describe("Wildcard searches", function () {
         ['de', 'Käse', ['käs*', 'kas*', 'kaes*']],
         ['de', 'Straße', ['straß*', 'strass*']],
         ['ru', 'ёлка', ['ёлк*', 'елк*']],
-        ['nl', 'ideeën', ['ideeë*']],
+        ['nl', 'ideeën', ['ideeë*', 'ideee*']],
         ['fr', 'élève', ['élèv*', 'elev*']],
         ['es', 'acción', ['acció*', 'accio*']],
-        ['it', "d'Orléans", ['orlé*', 'orlè*', "d'orlé*"]],
+        ['it', "d'Orléans", ['orlé*', 'orlè*', 'orle*', "d'orlé*"]],
         ['en', 'classify', ['classify*', 'classif*']],
-        ['ro', 'ţară', ['ţar*', 'țar*']],
-        ['pl', 'żółw', ['żółw*']],
-        ['tr', 'kızlar', ['kız*']]
+        ['pt', 'coração', ['coraç*', 'corac*']],
+        ['ro', 'ţară', ['ţar*', 'țar*', 'tar*']],
+        ['pl', 'żółw', ['żółw*', 'zolw*']],
+        ['tr', 'kızlar', ['kız*', 'kiz*']]
     ];
 
     cases.forEach(function (c) {
