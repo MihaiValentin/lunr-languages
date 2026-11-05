@@ -46,7 +46,7 @@ Should you decide to make mass-modifications (add stopwords, change stemming rul
 
 `build/snowball/` holds the Snowball release lunr-languages is built from (stemmers, `base-stemmer.js`, its license and NEWS), so building needs no network. `npm run fetch-data` downloads it again from the pinned release (`build/fetch-snowball.js`: version and SHA-256) and caches Snowball's word lists in `build/cache/snowball-data/` (not committed). To update Snowball, change the pinned version and checksum, run it, and review the diff of `build/snowball/`.
 
-A language's stop words are named in its entry of the list in `build/build.js`: `stopWords: { snowball: '<name>' }` for Snowball's list (fetched from snowball-website into `build/snowball/stopwords/`; Snowball names them by language, so `dutch_porter` would use `'dutch'`), or `stopWords: { custom: '<file>' }` for a comma-separated list in `build/stopwords-custom/`.
+A language's stop words are named in its entry of the list in `build/build.js`: `stopWords: { snowball: '<name>' }` for Snowball's list (fetched from snowball-website into `build/snowball/stopwords/`; Snowball names them by language, so `dutch_porter` would use `'dutch'`), or `stopWords: { custom: '<file>' }` for a comma-separated list in `build/stopwords-custom/`. Either can take `add: '<file>'`: more words from `build/stopwords-add/<file>` (one per line, `#` starts a comment), merged into the list without duplicates; the build lists added words that are in the list already.
 
 ## CLDR
 

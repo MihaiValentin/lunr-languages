@@ -32,6 +32,8 @@ function licenseHeader(code) {
  *                           for dutch_porter is 'dutch'.
  *   { custom: '<file>' }    build/stopwords-custom/<file> (comma-separated), for languages Snowball has
  *                           no list for
+ * Either can take `add: '<file>'`: further words from build/stopwords-add/<file> (one word per line,
+ * `#` starts a comment), merged into the list. Words already in the list are dropped.
  */
 function stopWordsFile(language) {
     var source = language.stopWords || {};
@@ -47,6 +49,29 @@ function stopWordsFile(language) {
 function readStopWords(file) {
     var text = fs.readFileSync(file, 'utf8');
     return /\.txt$/.test(file) ? text.split(/\r?\n/).filter(Boolean) : text.split(',');
+}
+
+// one word per line; `#` starts a comment, blank lines are ignored
+function readAddedStopWords(file) {
+    return fs.readFileSync(file, 'utf8').split(/\r?\n/).map(function(line) {
+        return line.replace(/#.*/, '').trim();
+    }).filter(Boolean);
+}
+
+// the stop words of a language: its list plus the added words, sorted and without duplicates
+function stopWordsOf(language) {
+    var words = readStopWords(stopWordsFile(language));
+    var add = language.stopWords.add;
+    if (add) {
+        var file = 'build/stopwords-add/' + add;
+        var added = readAddedStopWords(file);
+        var known = added.filter(function(word) { return words.indexOf(word) !== -1; });
+        if (known.length) {
+            console.log('  ' + file + ': already in the list: ' + known.join(' '));
+        }
+        words = words.concat(added);
+    }
+    return words.filter(function(word, i) { return words.indexOf(word) === i; }).sort();
 }
 
 // Use the Unicode library to produce a regex for characters of a particular
@@ -177,7 +202,7 @@ function updateStemmerSupport(support, version) {
  *                  lunr.<locale>.js is generated from build/lunr.template
  *   script         Unicode script of the word characters (unicode-8.0.0 package), for the trimmer and
  *                  for probing letters in the wildcard map derivation
- *   stopWords      the source of the stop word list, see stopWordsFile()
+ *   stopWords      the source of the stop word list and optional added words, see stopWordsFile()
  *   accentFold     { default, keep? }: adds lunr.<locale>.accentFold, which indexes each token and its
  *                  accent-free form. The map comes from CLDR's Latin-ASCII for the letters of the
  *                  language's word list, without the letters in `keep`. With `default: true`,
@@ -328,7 +353,7 @@ function build() {
         if (list[i].snowball) {
             var name = list[i].snowball;
             var languageName = name.charAt(0).toUpperCase() + name.slice(1);
-            var stopWords = readStopWords(stopWordsFile(list[i]));
+            var stopWords = stopWordsOf(list[i]);
             var accentFold = list[i].accentFold;
             header = cm
                 .replace(/\{\{languageName\}\}/g, languageName)
@@ -342,7 +367,7 @@ function build() {
                 snowballVersion: version,
                 stemmerBody: indent(snowball.stemmerBody(name).trim(), 16),
                 // inside '…' in the template; English has apostrophes (aren't)
-                stopWords: stopWords.sort().join(' ').replace(/[\\']/g, '\\$&'),
+                stopWords: stopWords.join(' ').replace(/[\\']/g, '\\$&'),
                 wordCharacters: wordCharacters(list[i].script),
                 // with accentFold on by default, it runs right before the stemmer in both pipelines
                 pipelineBeforeStemmer: accentFold && accentFold.default ? '\n                lunr.' + list[i].locale + '.accentFold,' : '',
