@@ -9,7 +9,7 @@
 - New `lunr.stemmerSupport.addQueryTerms(query, text, options)` and `normalizeQueryTerm(term, idx)` prepare terms for `query.term()` like the query parser does for search strings: split with the index's tokenizer, special casing, wildcard folding, lowercasing; stop words the index dropped are left out.
 - Required words (`+word`) are found with accent folding: `+kızı` finds `kızlar`, `+rivière` an unaccented `riviere`. A required word kept every form the search pipeline made of it, and matched nothing if one form was missing from the index.
 - Required stop words are left out (`+und`, `+the`): they matched nothing, because the index dropped them. This also applies to lunr's built-in English once `lunr.stemmer.support.js` is loaded.
-- A wildcard term finds the words whose stem is shorter than what was typed: `häuser*` finds `Häuser` (stem `haus`), `Ελλάδα*` finds `Ελλάδα` (`ελλαδ`). lunr does not stem wildcard terms, so in 1.x the full word with `*` found itself in only about 5–45% of the words; now 79–100%. The term only gets shorter, so it finds everything it found before. Applies to every language stemmed with Snowball.
+- A wildcard term finds the words whose stem is shorter than what was typed: `häuser*` finds `Häuser` (stem `haus`), `Ελλάδα*` finds `Ελλάδα` (`ελλαδ`). lunr does not stem wildcard terms, so in 1.x the full word with `*` found itself in only about 5–45% of the words; now 88–100%. If the stemmer changes the last letter of the stem (Turkish `kullanıcı` → `kullanıç`, English `happy` → `happi`), the prefix before that letter is searched (`kullani*`, `happ*`). The term only gets shorter, so it finds everything it found before. Applies to every language stemmed with Snowball.
 - `THIRD-PARTY-NOTICES.md` lists the third-party code and data the files include or are generated from, with version and license; `licenses/` ships the full texts. Files with accent folding carry a notice for the CLDR data.
 
 ### Arabic (ar)
@@ -185,6 +185,7 @@
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change.
 - Wildcard terms are folded like the stemmer folds the index.
 - Accent folding on by default: `kiz` finds `kız`, wildcards too (`ı` as `i`). Opt-out: remove `lunr.tr.accentFold` from both pipelines.
+- `kullanıcı*` finds `kullanıcı` (#69): the stemmer ends the stem in `ç`, which wildcard terms didn't match.
 - `I` and `İ` are lowercased the Turkish way (`ı`, `i`) in indexed text and searches, before lunr lowercases: `İSTANBUL` finds `istanbul`, `KIZLAR` stems like `kızlar`. lunr's `toLowerCase()` gave `i̇` (with a combining dot) and `i`, so such words were not found.
 
 ### Vietnamese (vi)

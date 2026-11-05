@@ -109,7 +109,10 @@ describe("Wildcard searches", function () {
         ['sv', 'flickorna', ['flickorna*']],
         ['en', 'generously', ['generously*', 'generous*']],
         ['tr', 'KIZLARIN', ['KIZLARIN*', 'kızların*']],
-        ['hu', 'házakban', ['házakban*', 'hazakban*']]
+        ['hu', 'házakban', ['házakban*', 'hazakban*']],
+        // the stemmer changes the last letter of the stem (kullanıç, happi): the prefix before it
+        ['tr', 'kullanıcı', ['kullanıcı*', 'kullanici*']],
+        ['en', 'happy', ['happy*']]
     ];
 
     cases.concat(fullWords).forEach(function (c) {

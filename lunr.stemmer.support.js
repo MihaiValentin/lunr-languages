@@ -603,7 +603,8 @@
              * stem ελλαδ). For a term `prefix*`, the prefix is therefore also run through the index's search
              * pipeline, and a folded stem is used instead if it is a prefix of the folded term: the term only
              * gets shorter, so it finds everything it found before, plus the words whose stem is shorter
-             * than what was typed (häuser* -> haus*).
+             * than what was typed (häuser* -> haus*). If the stemmer changed the stem's last letter
+             * (kullanıcı -> kullanıç, happy -> happi), the prefix before that letter is used (kullani*, happ*).
              * `.fold` is the raw fold of `map`, which the derivation uses too.
              */
             generateWildcardNormalizer: function(map, accent, normalize) {
@@ -626,10 +627,29 @@
                     var prefix = /^([^*]+)\*$/.exec(lower);
                     if (prefix && pipeline && pipeline.run && /^[^*]+\*$/.test(folded)) {
                         var best = folded.slice(0, -1);
-                        pipeline.run([new lunr.Token(prefix[1])]).forEach(function(token) {
-                            var stem = foldTerm(token.toString(), pipeline);
-                            if (stem && stem.length < best.length && best.indexOf(stem) === 0) {
-                                best = stem;
+                        var shorten = function(candidate) {
+                            if (candidate && candidate.length < best.length && best.indexOf(candidate) === 0) {
+                                best = candidate;
+                            }
+                        };
+                        var typed = best;
+                        var tokens = pipeline.run([new lunr.Token(prefix[1])]).map(String);
+                        tokens.forEach(function(raw) {
+                            shorten(foldTerm(raw, pipeline));
+                        });
+                        // a stemmer may change the last letter (Turkish kullanıcı -> kullanıç, which the accent
+                        // fold would turn into c): unless a token as indexed is a prefix of the term already,
+                        // the common prefix without that letter
+                        var indexed = tokens.some(function(raw) {
+                            return raw && typed.indexOf(raw) === 0;
+                        });
+                        tokens.forEach(function(raw) {
+                            var common = 0;
+                            while (common < raw.length && common < best.length && raw[common] === best[common]) {
+                                common++;
+                            }
+                            if (!indexed && common > 0 && common === raw.length - 1) {
+                                shorten(raw.slice(0, common));
                             }
                         });
                         folded = best + '*';
