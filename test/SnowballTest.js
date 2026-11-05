@@ -86,6 +86,9 @@ describe("Wildcard searches", function () {
         // fa: می‌خوانند (ZWNJ after the prefix می), found with and without the prefix, and typed with Arabic yeh
         ['fa', 'می‌خوانند',
             ['می‌خوا*', 'خوا*', 'مي‌خوا*']],
+        // ar: الكتابة (with the article ال), found without it; أحمد found typed without the hamza
+        ['ar', 'الكتابة', ['كتا*', 'الكتا*']],
+        ['ar', 'أحمد', ['أحم*', 'احم*']],
         // fa: كتاب‌ها typed with Arabic kaf, found with Persian kaf
         ['fa', 'كتاب‌ها', ['کتا*', 'كتا*']]
     ];

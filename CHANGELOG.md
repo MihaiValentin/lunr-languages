@@ -10,6 +10,12 @@
 - Required words (`+word`) are found with accent folding: `+kızı` finds `kızlar`, `+rivière` an unaccented `riviere`. A required word kept every form the search pipeline made of it, and matched nothing if one form was missing from the index.
 - Required stop words are left out (`+und`, `+the`): they matched nothing, because the index dropped them. This also applies to lunr's built-in English once `lunr.stemmer.support.js` is loaded.
 
+### Arabic (ar)
+
+- Generated from Snowball 3.2.0's Arabic light stemmer instead of the hand-written root stemmer (Taghva et al.). Stems keep the root pattern, so some forms no longer conflate: `يكتبون` stems to `يكتب` (was `كتب`). Hamza and alef forms, diacritics and tatweel are folded by the stemmer.
+- Wildcard terms drop the prefixes the stemmer drops and fold hamza forms: `كتا*` finds `الكتابة`, `احم*` finds `أحمد`. 1.x indexed roots, so a word with `*` rarely found itself.
+- The stop words are unchanged (434 words; an empty word and duplicates dropped); the trimmer keeps the whole Arabic script.
+
 ### Armenian (hy)
 
 - Searches no longer go through lunr's English stemmer: a Latin word in an Armenian index (`running`) is found by itself again.

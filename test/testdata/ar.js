@@ -36,9 +36,11 @@ module.exports = {
             search: "بطيخ",
             found: 0
         },{
+            // كتبت in document 1; Snowball's light stemmer keeps the verb prefix of يكتبون (document 2) as يكتب,
+            // the root stemmer of lunr-languages 1.x stripped it to كتب
             what: "find a correctly stemmed word %w",
             search: "كتب",
-            found: 2
+            found: 1
         }, {
             what: "find a word regardless of the differences in the number of expansions it has between it in the search and in the document, like %w",
             search: "عـمـان",

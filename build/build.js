@@ -302,6 +302,10 @@ function updateStemmerSupport(support, version) {
 var list = [
     {
         locale: 'ar',
+        snowball: 'arabic',
+        copyright: '2018, Dalia Al-Shahrabi',
+        stopWords: { custom: 'ar.csv' },
+        script: 'Arabic'
     }, {
         locale: 'hi'
     }, {
