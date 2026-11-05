@@ -48,7 +48,9 @@ function stopWordsFile(language) {
 
 function readStopWords(file) {
     var text = fs.readFileSync(file, 'utf8');
-    return /\.txt$/.test(file) ? text.split(/\r?\n/).filter(Boolean) : text.split(',');
+    return (/\.txt$/.test(file) ? text.split(/\r?\n/) : text.split(',')).map(function(word) {
+        return word.trim();
+    }).filter(Boolean);
 }
 
 // one word per line; `#` starts a comment, blank lines are ignored

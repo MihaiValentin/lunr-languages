@@ -76,6 +76,7 @@
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change.
 - Wildcard terms are folded like the stemmer folds the index (`ş`, `ţ` as `ș`, `ț`).
 - Accent folding on by default: `tara` finds `țară`, wildcards too. Opt-out: remove `lunr.ro.accentFold` from both pipelines.
+- Stop words: `în` ("in") is filtered now; the list had it with a trailing space.
 
 ### Russian (ru)
 
