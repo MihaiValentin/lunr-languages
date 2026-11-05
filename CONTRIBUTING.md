@@ -12,11 +12,8 @@ Even better! Open a *Pull request*. Make sure you include everything needed in t
 
 Wonderful! Here are the changes you need to do, then Open a *Pull request*. Make sure you include everything needed in the pull request (check below)
 
-- [ ] except Japanese, all the `lunr.<language>.js` files are built from `build/lunr.template`
-    - [ ] If `lunr.template` fits your needs in terms of code/template, go to `build/build.js` and add your language
-        - [ ] You need a stemmer file
-        - [ ] You need a stop words file
-    - [ ] If `lunr.template` does not fit your needs (for example for non-latin characters), just copy any `lunr.<language>.js` file and start modifying
+- [ ] If [Snowball](https://snowballstem.org/algorithms/) has a stemmer for your language, add an entry to the list in `build/build.js`: `locale`, `snowball` (the algorithm's name), `stopWords` and `script` (the Unicode script of its letters). `npm run fetch-data` then fetches the stemmer and derives its wildcard map, and `npm run build` generates `lunr.<locale>.js` from `build/lunr.template`. The comment above the list describes every option.
+- [ ] Otherwise, write `lunr.<locale>.js` by hand (copy a similar language) and add an entry with only `locale`; the build beautifies and minifies it.
 - [ ] write stop words, word characters and stemming rules for text in Unicode NFC, the form all languages expect their input in; the test suite checks that every stop word is in NFC
 - [ ] you must also test your new language
     - [ ] go to `test/testdata` and create a new file, then link it to `VersionsAndLanguagesTest.js`
@@ -38,10 +35,10 @@ Wonderful! Here are the changes you need to do, then Open a *Pull request*. Make
 The `lunr.<locale>.js` files are the result of a build process that concatenates a stemmer and a stop word list and add functionality to become lunr.js-compatible.
 Should you decide to make mass-modifications (add stopwords, change stemming rules, reorganize the code) and build a new set of files, you should do follow these steps:
 
-* `git clone --recursive https://github.com/MihaiValentin/lunr-languages.git` (make sure you use the `--recursive` flag to also clone the repos needed to build `lunr-languages`)
+* `git clone https://github.com/MihaiValentin/lunr-languages.git`
 * `cd path/to/lunr-languages`
 * `npm install` to install the dependencies needed for building
-* change the `build/*.template` files
+* change the `build/*.template` files or the list in `build/build.js`
 * run `node build/build.js` to generate the `lunr.<locale>.js` files (and the minified versions as well) and the `lunr.stemmer.support.js` file
 
 ## Snowball

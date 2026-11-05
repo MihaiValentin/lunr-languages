@@ -6,15 +6,38 @@
  * http://www.mozilla.org/MPL/
  */
 /*!
- * based on
- * Snowball JavaScript Library v0.3
- * http://code.google.com/p/urim/
- * http://snowball.tartarus.org/
+ * The stemmer is generated from turkish.sbl by Snowball 3.2.0 (https://snowballstem.org/).
  *
- * Copyright 2010, Oleg Mazko
- * http://www.mozilla.org/MPL/
+ * Copyright (c) 2001, Dr Martin Porter
+ * Copyright (c) 2004,2005, Richard Boulton
+ * Copyright (c) 2013, Yoshiki Shibukawa
+ * Copyright (c) 2006-2025, Olly Betts
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *   1. Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *   2. Redistributions in binary form must reproduce the above copyright notice,
+ *      this list of conditions and the following disclaimer in the documentation
+ *      and/or other materials provided with the distribution.
+ *   3. Neither the name of the Snowball project nor the names of its contributors
+ *      may be used to endorse or promote products derived from this software
+ *      without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 /**
  * export the module via AMD, CommonJS or as a browser global
  * Export code from https://github.com/umdjs/umd/blob/master/returnExports.js
@@ -75,1002 +98,1541 @@
 
     lunr.Pipeline.registerFunction(lunr.tr.trimmer, 'trimmer-tr');
 
+    /* throw error if lunr stemmer support is older than this file */
+    if ('function' !== typeof lunr.stemmerSupport.BaseStemmer) {
+      throw new Error('Lunr stemmer support is outdated. Please update lunr.stemmer.support.js to the same version as this script.');
+    }
+
     /* lunr stemmer function */
     lunr.tr.stemmer = (function() {
-      /* create the wrapped stemmer object */
-      var Among = lunr.stemmerSupport.Among,
-        SnowballProgram = lunr.stemmerSupport.SnowballProgram,
-        st = new function TurkishStemmer() {
-          var a_0 = [new Among("m", -1, -1), new Among("n", -1, -1),
-              new Among("miz", -1, -1), new Among("niz", -1, -1),
-              new Among("muz", -1, -1), new Among("nuz", -1, -1),
-              new Among("m\u00FCz", -1, -1), new Among("n\u00FCz", -1, -1),
-              new Among("m\u0131z", -1, -1), new Among("n\u0131z", -1, -1)
-            ],
-            a_1 = [
-              new Among("leri", -1, -1), new Among("lar\u0131", -1, -1)
-            ],
-            a_2 = [
-              new Among("ni", -1, -1), new Among("nu", -1, -1),
-              new Among("n\u00FC", -1, -1), new Among("n\u0131", -1, -1)
-            ],
-            a_3 = [
-              new Among("in", -1, -1), new Among("un", -1, -1),
-              new Among("\u00FCn", -1, -1), new Among("\u0131n", -1, -1)
-            ],
-            a_4 = [
-              new Among("a", -1, -1), new Among("e", -1, -1)
-            ],
-            a_5 = [
-              new Among("na", -1, -1), new Among("ne", -1, -1)
-            ],
-            a_6 = [
-              new Among("da", -1, -1), new Among("ta", -1, -1),
-              new Among("de", -1, -1), new Among("te", -1, -1)
-            ],
-            a_7 = [
-              new Among("nda", -1, -1), new Among("nde", -1, -1)
-            ],
-            a_8 = [
-              new Among("dan", -1, -1), new Among("tan", -1, -1),
-              new Among("den", -1, -1), new Among("ten", -1, -1)
-            ],
-            a_9 = [
-              new Among("ndan", -1, -1), new Among("nden", -1, -1)
-            ],
-            a_10 = [
-              new Among("la", -1, -1), new Among("le", -1, -1)
-            ],
-            a_11 = [
-              new Among("ca", -1, -1), new Among("ce", -1, -1)
-            ],
-            a_12 = [
-              new Among("im", -1, -1), new Among("um", -1, -1),
-              new Among("\u00FCm", -1, -1), new Among("\u0131m", -1, -1)
-            ],
-            a_13 = [
-              new Among("sin", -1, -1), new Among("sun", -1, -1),
-              new Among("s\u00FCn", -1, -1), new Among("s\u0131n", -1, -1)
-            ],
-            a_14 = [
-              new Among("iz", -1, -1), new Among("uz", -1, -1),
-              new Among("\u00FCz", -1, -1), new Among("\u0131z", -1, -1)
-            ],
-            a_15 = [
-              new Among("siniz", -1, -1), new Among("sunuz", -1, -1),
-              new Among("s\u00FCn\u00FCz", -1, -1),
-              new Among("s\u0131n\u0131z", -1, -1)
-            ],
-            a_16 = [
-              new Among("lar", -1, -1), new Among("ler", -1, -1)
-            ],
-            a_17 = [
-              new Among("niz", -1, -1), new Among("nuz", -1, -1),
-              new Among("n\u00FCz", -1, -1), new Among("n\u0131z", -1, -1)
-            ],
-            a_18 = [
-              new Among("dir", -1, -1), new Among("tir", -1, -1),
-              new Among("dur", -1, -1), new Among("tur", -1, -1),
-              new Among("d\u00FCr", -1, -1), new Among("t\u00FCr", -1, -1),
-              new Among("d\u0131r", -1, -1), new Among("t\u0131r", -1, -1)
-            ],
-            a_19 = [
-              new Among("cas\u0131na", -1, -1), new Among("cesine", -1, -1)
-            ],
-            a_20 = [
-              new Among("di", -1, -1), new Among("ti", -1, -1),
-              new Among("dik", -1, -1), new Among("tik", -1, -1),
-              new Among("duk", -1, -1), new Among("tuk", -1, -1),
-              new Among("d\u00FCk", -1, -1), new Among("t\u00FCk", -1, -1),
-              new Among("d\u0131k", -1, -1), new Among("t\u0131k", -1, -1),
-              new Among("dim", -1, -1), new Among("tim", -1, -1),
-              new Among("dum", -1, -1), new Among("tum", -1, -1),
-              new Among("d\u00FCm", -1, -1), new Among("t\u00FCm", -1, -1),
-              new Among("d\u0131m", -1, -1), new Among("t\u0131m", -1, -1),
-              new Among("din", -1, -1), new Among("tin", -1, -1),
-              new Among("dun", -1, -1), new Among("tun", -1, -1),
-              new Among("d\u00FCn", -1, -1), new Among("t\u00FCn", -1, -1),
-              new Among("d\u0131n", -1, -1), new Among("t\u0131n", -1, -1),
-              new Among("du", -1, -1), new Among("tu", -1, -1),
-              new Among("d\u00FC", -1, -1), new Among("t\u00FC", -1, -1),
-              new Among("d\u0131", -1, -1), new Among("t\u0131", -1, -1)
-            ],
-            a_21 = [
-              new Among("sa", -1, -1), new Among("se", -1, -1),
-              new Among("sak", -1, -1), new Among("sek", -1, -1),
-              new Among("sam", -1, -1), new Among("sem", -1, -1),
-              new Among("san", -1, -1), new Among("sen", -1, -1)
-            ],
-            a_22 = [
-              new Among("mi\u015F", -1, -1), new Among("mu\u015F", -1, -1),
-              new Among("m\u00FC\u015F", -1, -1),
-              new Among("m\u0131\u015F", -1, -1)
-            ],
-            a_23 = [new Among("b", -1, 1),
-              new Among("c", -1, 2), new Among("d", -1, 3),
-              new Among("\u011F", -1, 4)
-            ],
-            g_vowel = [17, 65, 16, 0, 0, 0, 0, 0,
-              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 8, 0, 0, 0, 0, 0, 0, 1
-            ],
-            g_U = [
-              1, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0,
-              0, 0, 0, 1
-            ],
-            g_vowel1 = [1, 64, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
-            ],
-            g_vowel2 = [17, 0, 0, 0,
-              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 130
-            ],
-            g_vowel3 = [1, 0,
-              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-              0, 0, 1
-            ],
-            g_vowel4 = [17],
-            g_vowel5 = [65],
-            g_vowel6 = [65],
-            B_c_s_n_s, I_strlen, g_habr = [
-              ["a", g_vowel1, 97, 305],
-              ["e", g_vowel2, 101, 252],
-              ["\u0131", g_vowel3, 97, 305],
-              ["i", g_vowel4, 101, 105],
-              ["o", g_vowel5, 111, 117],
-              ["\u00F6", g_vowel6, 246, 252],
-              ["u", g_vowel5, 111, 117]
-            ],
-            sbp = new SnowballProgram();
-          this.setCurrent = function(word) {
-            sbp.setCurrent(word);
-          };
-          this.getCurrent = function() {
-            return sbp.getCurrent();
-          };
+      var BaseStemmer = lunr.stemmerSupport.BaseStemmer;
 
-          function habr1(g_v, n1, n2) {
-            while (true) {
-              var v_1 = sbp.limit - sbp.cursor;
-              if (sbp.in_grouping_b(g_v, n1, n2)) {
-                sbp.cursor = sbp.limit - v_1;
-                break;
+      /* turkish-stemmer.js, generated by Snowball 3.2.0 */
+      var Stemmer = (function() {
+        // Generated from turkish.sbl by Snowball 3.2.0 - https://snowballstem.org/
+
+        // deno-lint-ignore-file ban-unused-ignore no-constant-condition no-empty prefer-const
+
+        const a_0 = [
+          ["m", -1],
+          ["n", -1],
+          ["miz", -1],
+          ["niz", -1],
+          ["muz", -1],
+          ["nuz", -1],
+          ["m\u00FCz", -1],
+          ["n\u00FCz", -1],
+          ["m\u0131z", -1],
+          ["n\u0131z", -1]
+        ];
+
+        const a_1 = [
+          ["leri", -1],
+          ["lar\u0131", -1]
+        ];
+
+        const a_2 = [
+          ["ni", -1],
+          ["nu", -1],
+          ["n\u00FC", -1],
+          ["n\u0131", -1]
+        ];
+
+        const a_3 = [
+          ["in", -1],
+          ["un", -1],
+          ["\u00FCn", -1],
+          ["\u0131n", -1]
+        ];
+
+        const a_4 = [
+          ["a", -1],
+          ["e", -1]
+        ];
+
+        const a_5 = [
+          ["na", -1],
+          ["ne", -1]
+        ];
+
+        const a_6 = [
+          ["da", -1],
+          ["ta", -1],
+          ["de", -1],
+          ["te", -1]
+        ];
+
+        const a_7 = [
+          ["nda", -1],
+          ["nde", -1]
+        ];
+
+        const a_8 = [
+          ["dan", -1],
+          ["tan", -1],
+          ["den", -1],
+          ["ten", -1]
+        ];
+
+        const a_9 = [
+          ["ndan", -1],
+          ["nden", -1]
+        ];
+
+        const a_10 = [
+          ["la", -1],
+          ["le", -1]
+        ];
+
+        const a_11 = [
+          ["ca", -1],
+          ["ce", -1]
+        ];
+
+        const a_12 = [
+          ["im", -1],
+          ["um", -1],
+          ["\u00FCm", -1],
+          ["\u0131m", -1]
+        ];
+
+        const a_13 = [
+          ["sin", -1],
+          ["sun", -1],
+          ["s\u00FCn", -1],
+          ["s\u0131n", -1]
+        ];
+
+        const a_14 = [
+          ["iz", -1],
+          ["uz", -1],
+          ["\u00FCz", -1],
+          ["\u0131z", -1]
+        ];
+
+        const a_15 = [
+          ["siniz", -1],
+          ["sunuz", -1],
+          ["s\u00FCn\u00FCz", -1],
+          ["s\u0131n\u0131z", -1]
+        ];
+
+        const a_16 = [
+          ["lar", -1],
+          ["ler", -1]
+        ];
+
+        const a_17 = [
+          ["niz", -1],
+          ["nuz", -1],
+          ["n\u00FCz", -1],
+          ["n\u0131z", -1]
+        ];
+
+        const a_18 = [
+          ["dir", -1],
+          ["tir", -1],
+          ["dur", -1],
+          ["tur", -1],
+          ["d\u00FCr", -1],
+          ["t\u00FCr", -1],
+          ["d\u0131r", -1],
+          ["t\u0131r", -1]
+        ];
+
+        const a_19 = [
+          ["cas\u0131na", -1],
+          ["cesine", -1]
+        ];
+
+        const a_20 = [
+          ["di", -1],
+          ["ti", -1],
+          ["dik", -1],
+          ["tik", -1],
+          ["duk", -1],
+          ["tuk", -1],
+          ["d\u00FCk", -1],
+          ["t\u00FCk", -1],
+          ["d\u0131k", -1],
+          ["t\u0131k", -1],
+          ["dim", -1],
+          ["tim", -1],
+          ["dum", -1],
+          ["tum", -1],
+          ["d\u00FCm", -1],
+          ["t\u00FCm", -1],
+          ["d\u0131m", -1],
+          ["t\u0131m", -1],
+          ["din", -1],
+          ["tin", -1],
+          ["dun", -1],
+          ["tun", -1],
+          ["d\u00FCn", -1],
+          ["t\u00FCn", -1],
+          ["d\u0131n", -1],
+          ["t\u0131n", -1],
+          ["du", -1],
+          ["tu", -1],
+          ["d\u00FC", -1],
+          ["t\u00FC", -1],
+          ["d\u0131", -1],
+          ["t\u0131", -1]
+        ];
+
+        const a_21 = [
+          ["sa", -1],
+          ["se", -1],
+          ["sak", -1],
+          ["sek", -1],
+          ["sam", -1],
+          ["sem", -1],
+          ["san", -1],
+          ["sen", -1]
+        ];
+
+        const a_22 = [
+          ["mi\u015F", -1],
+          ["mu\u015F", -1],
+          ["m\u00FC\u015F", -1],
+          ["m\u0131\u015F", -1]
+        ];
+
+        const a_23 = [
+          ["b", 1],
+          ["c", 2],
+          ["d", 3],
+          ["\u011F", 4]
+        ];
+
+        const /**@type {Array<string>}*/ as_23 = ["p", "\u00E7", "t", "k"];
+
+        const /**@type {Array<number>}*/ g_vowel = [17, 65, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 8, 0, 0, 0, 0, 0, 0, 1];
+
+        const /**@type {Array<number>}*/ g_U = [1, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 1];
+
+        const /**@type {Array<number>}*/ g_vowel1 = [1, 64, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
+
+        const /**@type {Array<number>}*/ g_vowel2 = [17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 130];
+
+        const /**@type {Array<number>}*/ g_vowel3 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
+
+        const /**@type {Array<number>}*/ g_vowel4 = [17];
+
+        const /**@type {Array<number>}*/ g_vowel5 = [65];
+
+        const /**@type {Array<number>}*/ g_vowel6 = [65];
+
+        var B = BaseStemmer;
+
+        return class extends B {
+
+
+          /** @return {boolean} */
+          #r_check_vowel_harmony() {
+            const /**@type {number}*/ v_1 = this.limit - this.c;
+            if (!this.go_out_grouping_b(g_vowel, 97, 305)) return false;
+            // deno-lint-ignore no-unused-labels
+            lab0: {
+              const /**@type {number}*/ v_2 = this.limit - this.c;
+              // deno-lint-ignore no-unused-labels
+              lab1: {
+                if (!(this.eq_s_b("a"))) break lab1;
+                if (!this.go_out_grouping_b(g_vowel1, 97, 305)) break lab1;
+                break lab0;
               }
-              sbp.cursor = sbp.limit - v_1;
-              if (sbp.cursor <= sbp.limit_backward)
+              this.c = this.limit - v_2;
+              // deno-lint-ignore no-unused-labels
+              lab2: {
+                if (!(this.eq_s_b("e"))) break lab2;
+                if (!this.go_out_grouping_b(g_vowel2, 101, 252)) break lab2;
+                break lab0;
+              }
+              this.c = this.limit - v_2;
+              // deno-lint-ignore no-unused-labels
+              lab3: {
+                if (!(this.eq_s_b("\u0131"))) break lab3;
+                if (!this.go_out_grouping_b(g_vowel3, 97, 305)) break lab3;
+                break lab0;
+              }
+              this.c = this.limit - v_2;
+              // deno-lint-ignore no-unused-labels
+              lab4: {
+                if (!(this.eq_s_b("i"))) break lab4;
+                if (!this.go_out_grouping_b(g_vowel4, 101, 105)) break lab4;
+                break lab0;
+              }
+              this.c = this.limit - v_2;
+              // deno-lint-ignore no-unused-labels
+              lab5: {
+                if (!(this.eq_s_b("o"))) break lab5;
+                if (!this.go_out_grouping_b(g_vowel5, 111, 117)) break lab5;
+                break lab0;
+              }
+              this.c = this.limit - v_2;
+              // deno-lint-ignore no-unused-labels
+              lab6: {
+                if (!(this.eq_s_b("\u00F6"))) break lab6;
+                if (!this.go_out_grouping_b(g_vowel6, 246, 252)) break lab6;
+                break lab0;
+              }
+              this.c = this.limit - v_2;
+              // deno-lint-ignore no-unused-labels
+              lab7: {
+                if (!(this.eq_s_b("u"))) break lab7;
+                if (!this.go_out_grouping_b(g_vowel5, 111, 117)) break lab7;
+                break lab0;
+              }
+              this.c = this.limit - v_2;
+              if (!(this.eq_s_b("\u00FC"))) return false;
+              if (!this.go_out_grouping_b(g_vowel6, 246, 252)) return false;
+            }
+            this.c = this.limit - v_1;
+            return true;
+          }
+
+          /** @return {boolean} */
+          #r_mark_suffix_with_optional_n_consonant() {
+            // deno-lint-ignore no-unused-labels
+            lab0: {
+              const /**@type {number}*/ v_1 = this.limit - this.c;
+              // deno-lint-ignore no-unused-labels
+              lab1: {
+                if (!(this.eq_s_b("n"))) break lab1;
+                const /**@type {number}*/ v_2 = this.limit - this.c;
+                if (!(this.in_grouping_b(g_vowel, 97, 305))) break lab1;
+                this.c = this.limit - v_2;
+                break lab0;
+              }
+              this.c = this.limit - v_1;
+              // deno-lint-ignore no-unused-labels
+              lab2: {
+                if (!(this.eq_s_b("n"))) break lab2;
                 return false;
-              sbp.cursor--;
+              }
+              const /**@type {number}*/ v_3 = this.limit - this.c;
+              if (this.c <= this.limit_backward) return false;
+              this.c--;
+              if (!(this.in_grouping_b(g_vowel, 97, 305))) return false;
+              this.c = this.limit - v_3;
             }
             return true;
           }
 
-          function r_check_vowel_harmony() {
-            var v_1, v_2;
-            v_1 = sbp.limit - sbp.cursor;
-            habr1(g_vowel, 97, 305);
-            for (var i = 0; i < g_habr.length; i++) {
-              v_2 = sbp.limit - sbp.cursor;
-              var habr = g_habr[i];
-              if (sbp.eq_s_b(1, habr[0]) && habr1(habr[1], habr[2], habr[3])) {
-                sbp.cursor = sbp.limit - v_1;
-                return true;
+          /** @return {boolean} */
+          #r_mark_suffix_with_optional_y_consonant() {
+            // deno-lint-ignore no-unused-labels
+            lab0: {
+              const /**@type {number}*/ v_1 = this.limit - this.c;
+              // deno-lint-ignore no-unused-labels
+              lab1: {
+                if (!(this.eq_s_b("y"))) break lab1;
+                const /**@type {number}*/ v_2 = this.limit - this.c;
+                if (!(this.in_grouping_b(g_vowel, 97, 305))) break lab1;
+                this.c = this.limit - v_2;
+                break lab0;
               }
-              sbp.cursor = sbp.limit - v_2;
-            }
-            sbp.cursor = sbp.limit - v_2;
-            if (!sbp.eq_s_b(1, "\u00FC") || !habr1(g_vowel6, 246, 252))
-              return false;
-            sbp.cursor = sbp.limit - v_1;
-            return true;
-          }
-
-          function habr2(f1, f2) {
-            var v_1 = sbp.limit - sbp.cursor,
-              v_2;
-            if (f1()) {
-              sbp.cursor = sbp.limit - v_1;
-              if (sbp.cursor > sbp.limit_backward) {
-                sbp.cursor--;
-                v_2 = sbp.limit - sbp.cursor;
-                if (f2()) {
-                  sbp.cursor = sbp.limit - v_2;
-                  return true;
-                }
-              }
-            }
-            sbp.cursor = sbp.limit - v_1;
-            if (f1()) {
-              sbp.cursor = sbp.limit - v_1;
-              return false;
-            }
-            sbp.cursor = sbp.limit - v_1;
-            if (sbp.cursor <= sbp.limit_backward)
-              return false;
-            sbp.cursor--;
-            if (!f2())
-              return false;
-            sbp.cursor = sbp.limit - v_1;
-            return true;
-          }
-
-          function habr3(f1) {
-            return habr2(f1, function() {
-              return sbp.in_grouping_b(g_vowel, 97, 305);
-            });
-          }
-
-          function r_mark_suffix_with_optional_n_consonant() {
-            return habr3(function() {
-              return sbp.eq_s_b(1, "n");
-            });
-          }
-
-          function r_mark_suffix_with_optional_s_consonant() {
-            return habr3(function() {
-              return sbp.eq_s_b(1, "s");
-            });
-          }
-
-          function r_mark_suffix_with_optional_y_consonant() {
-            return habr3(function() {
-              return sbp.eq_s_b(1, "y");
-            });
-          }
-
-          function r_mark_suffix_with_optional_U_vowel() {
-            return habr2(function() {
-              return sbp.in_grouping_b(g_U, 105, 305);
-            }, function() {
-              return sbp.out_grouping_b(g_vowel, 97, 305);
-            });
-          }
-
-          function r_mark_possessives() {
-            return sbp.find_among_b(a_0, 10) &&
-              r_mark_suffix_with_optional_U_vowel();
-          }
-
-          function r_mark_sU() {
-            return r_check_vowel_harmony() && sbp.in_grouping_b(g_U, 105, 305) &&
-              r_mark_suffix_with_optional_s_consonant();
-          }
-
-          function r_mark_lArI() {
-            return sbp.find_among_b(a_1, 2);
-          }
-
-          function r_mark_yU() {
-            return r_check_vowel_harmony() && sbp.in_grouping_b(g_U, 105, 305) &&
-              r_mark_suffix_with_optional_y_consonant();
-          }
-
-          function r_mark_nU() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_2, 4);
-          }
-
-          function r_mark_nUn() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_3, 4) &&
-              r_mark_suffix_with_optional_n_consonant();
-          }
-
-          function r_mark_yA() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_4, 2) &&
-              r_mark_suffix_with_optional_y_consonant();
-          }
-
-          function r_mark_nA() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_5, 2);
-          }
-
-          function r_mark_DA() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_6, 4);
-          }
-
-          function r_mark_ndA() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_7, 2);
-          }
-
-          function r_mark_DAn() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_8, 4);
-          }
-
-          function r_mark_ndAn() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_9, 2);
-          }
-
-          function r_mark_ylA() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_10, 2) &&
-              r_mark_suffix_with_optional_y_consonant();
-          }
-
-          function r_mark_ki() {
-            return sbp.eq_s_b(2, "ki");
-          }
-
-          function r_mark_ncA() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_11, 2) &&
-              r_mark_suffix_with_optional_n_consonant();
-          }
-
-          function r_mark_yUm() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_12, 4) &&
-              r_mark_suffix_with_optional_y_consonant();
-          }
-
-          function r_mark_sUn() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_13, 4);
-          }
-
-          function r_mark_yUz() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_14, 4) &&
-              r_mark_suffix_with_optional_y_consonant();
-          }
-
-          function r_mark_sUnUz() {
-            return sbp.find_among_b(a_15, 4);
-          }
-
-          function r_mark_lAr() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_16, 2);
-          }
-
-          function r_mark_nUz() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_17, 4);
-          }
-
-          function r_mark_DUr() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_18, 8);
-          }
-
-          function r_mark_cAsInA() {
-            return sbp.find_among_b(a_19, 2);
-          }
-
-          function r_mark_yDU() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_20, 32) &&
-              r_mark_suffix_with_optional_y_consonant();
-          }
-
-          function r_mark_ysA() {
-            return sbp.find_among_b(a_21, 8) &&
-              r_mark_suffix_with_optional_y_consonant();
-          }
-
-          function r_mark_ymUs_() {
-            return r_check_vowel_harmony() && sbp.find_among_b(a_22, 4) &&
-              r_mark_suffix_with_optional_y_consonant();
-          }
-
-          function r_mark_yken() {
-            return sbp.eq_s_b(3, "ken") &&
-              r_mark_suffix_with_optional_y_consonant();
-          }
-
-          function habr4() {
-            var v_1 = sbp.limit - sbp.cursor;
-            if (!r_mark_ymUs_()) {
-              sbp.cursor = sbp.limit - v_1;
-              if (!r_mark_yDU()) {
-                sbp.cursor = sbp.limit - v_1;
-                if (!r_mark_ysA()) {
-                  sbp.cursor = sbp.limit - v_1;
-                  if (!r_mark_yken())
-                    return true;
-                }
-              }
-            }
-            return false;
-          }
-
-          function habr5() {
-            if (r_mark_cAsInA()) {
-              var v_1 = sbp.limit - sbp.cursor;
-              if (!r_mark_sUnUz()) {
-                sbp.cursor = sbp.limit - v_1;
-                if (!r_mark_lAr()) {
-                  sbp.cursor = sbp.limit - v_1;
-                  if (!r_mark_yUm()) {
-                    sbp.cursor = sbp.limit - v_1;
-                    if (!r_mark_sUn()) {
-                      sbp.cursor = sbp.limit - v_1;
-                      if (!r_mark_yUz())
-                        sbp.cursor = sbp.limit - v_1;
-                    }
-                  }
-                }
-              }
-              if (r_mark_ymUs_())
+              this.c = this.limit - v_1;
+              // deno-lint-ignore no-unused-labels
+              lab2: {
+                if (!(this.eq_s_b("y"))) break lab2;
                 return false;
+              }
+              const /**@type {number}*/ v_3 = this.limit - this.c;
+              if (this.c <= this.limit_backward) return false;
+              this.c--;
+              if (!(this.in_grouping_b(g_vowel, 97, 305))) return false;
+              this.c = this.limit - v_3;
             }
             return true;
           }
 
-          function habr6() {
-            if (r_mark_lAr()) {
-              sbp.bra = sbp.cursor;
-              sbp.slice_del();
-              var v_1 = sbp.limit - sbp.cursor;
-              sbp.ket = sbp.cursor;
-              if (!r_mark_DUr()) {
-                sbp.cursor = sbp.limit - v_1;
-                if (!r_mark_yDU()) {
-                  sbp.cursor = sbp.limit - v_1;
-                  if (!r_mark_ysA()) {
-                    sbp.cursor = sbp.limit - v_1;
-                    if (!r_mark_ymUs_())
-                      sbp.cursor = sbp.limit - v_1;
-                  }
-                }
+          /** @return {boolean} */
+          #r_mark_possessives() {
+            if (this.find_among_b(a_0) === 0) return false;
+            // deno-lint-ignore no-unused-labels
+            lab0: {
+              const /**@type {number}*/ v_1 = this.limit - this.c;
+              // deno-lint-ignore no-unused-labels
+              lab1: {
+                if (!(this.in_grouping_b(g_U, 105, 305))) break lab1;
+                const /**@type {number}*/ v_2 = this.limit - this.c;
+                if (!(this.out_grouping_b(g_vowel, 97, 305))) break lab1;
+                this.c = this.limit - v_2;
+                break lab0;
               }
-              B_c_s_n_s = false;
-              return false;
+              this.c = this.limit - v_1;
+              // deno-lint-ignore no-unused-labels
+              lab2: {
+                if (!(this.in_grouping_b(g_U, 105, 305))) break lab2;
+                return false;
+              }
+              const /**@type {number}*/ v_3 = this.limit - this.c;
+              if (this.c <= this.limit_backward) return false;
+              this.c--;
+              if (!(this.out_grouping_b(g_vowel, 97, 305))) return false;
+              this.c = this.limit - v_3;
             }
             return true;
           }
 
-          function habr7() {
-            if (!r_mark_nUz())
-              return true;
-            var v_1 = sbp.limit - sbp.cursor;
-            if (!r_mark_yDU()) {
-              sbp.cursor = sbp.limit - v_1;
-              if (!r_mark_ysA())
-                return true;
-            }
-            return false;
-          }
-
-          function habr8() {
-            var v_1 = sbp.limit - sbp.cursor,
-              v_2;
-            if (!r_mark_sUnUz()) {
-              sbp.cursor = sbp.limit - v_1;
-              if (!r_mark_yUz()) {
-                sbp.cursor = sbp.limit - v_1;
-                if (!r_mark_sUn()) {
-                  sbp.cursor = sbp.limit - v_1;
-                  if (!r_mark_yUm())
-                    return true;
-                }
+          /** @return {boolean} */
+          #r_mark_sU() {
+            if (!this.#r_check_vowel_harmony()) return false;
+            if (!(this.in_grouping_b(g_U, 105, 305))) return false;
+            // deno-lint-ignore no-unused-labels
+            lab0: {
+              const /**@type {number}*/ v_1 = this.limit - this.c;
+              // deno-lint-ignore no-unused-labels
+              lab1: {
+                if (!(this.eq_s_b("s"))) break lab1;
+                const /**@type {number}*/ v_2 = this.limit - this.c;
+                if (!(this.in_grouping_b(g_vowel, 97, 305))) break lab1;
+                this.c = this.limit - v_2;
+                break lab0;
               }
+              this.c = this.limit - v_1;
+              // deno-lint-ignore no-unused-labels
+              lab2: {
+                if (!(this.eq_s_b("s"))) break lab2;
+                return false;
+              }
+              const /**@type {number}*/ v_3 = this.limit - this.c;
+              if (this.c <= this.limit_backward) return false;
+              this.c--;
+              if (!(this.in_grouping_b(g_vowel, 97, 305))) return false;
+              this.c = this.limit - v_3;
             }
-            sbp.bra = sbp.cursor;
-            sbp.slice_del();
-            v_2 = sbp.limit - sbp.cursor;
-            sbp.ket = sbp.cursor;
-            if (!r_mark_ymUs_())
-              sbp.cursor = sbp.limit - v_2;
-            return false;
+            return true;
           }
 
-          function r_stem_nominal_verb_suffixes() {
-            var v_1 = sbp.limit - sbp.cursor,
-              v_2;
-            sbp.ket = sbp.cursor;
-            B_c_s_n_s = true;
-            if (habr4()) {
-              sbp.cursor = sbp.limit - v_1;
-              if (habr5()) {
-                sbp.cursor = sbp.limit - v_1;
-                if (habr6()) {
-                  sbp.cursor = sbp.limit - v_1;
-                  if (habr7()) {
-                    sbp.cursor = sbp.limit - v_1;
-                    if (habr8()) {
-                      sbp.cursor = sbp.limit - v_1;
-                      if (!r_mark_DUr())
-                        return;
-                      sbp.bra = sbp.cursor;
-                      sbp.slice_del();
-                      sbp.ket = sbp.cursor;
-                      v_2 = sbp.limit - sbp.cursor;
-                      if (!r_mark_sUnUz()) {
-                        sbp.cursor = sbp.limit - v_2;
-                        if (!r_mark_lAr()) {
-                          sbp.cursor = sbp.limit - v_2;
-                          if (!r_mark_yUm()) {
-                            sbp.cursor = sbp.limit - v_2;
-                            if (!r_mark_sUn()) {
-                              sbp.cursor = sbp.limit - v_2;
-                              if (!r_mark_yUz())
-                                sbp.cursor = sbp.limit - v_2;
-                            }
-                          }
+          /** @return {boolean} */
+          #r_mark_lArI() {
+            return this.find_among_b(a_1) !== 0;
+          }
+
+          /** @return {boolean} */
+          #r_mark_nUn() {
+            if (!this.#r_check_vowel_harmony()) return false;
+            if (this.find_among_b(a_3) === 0) return false;
+            return this.#r_mark_suffix_with_optional_n_consonant();
+          }
+
+          /** @return {boolean} */
+          #r_mark_DA() {
+            if (!this.#r_check_vowel_harmony()) return false;
+            return this.find_among_b(a_6) !== 0;
+          }
+
+          /** @return {boolean} */
+          #r_mark_ndA() {
+            if (!this.#r_check_vowel_harmony()) return false;
+            return this.find_among_b(a_7) !== 0;
+          }
+
+          /** @return {boolean} */
+          #r_mark_yUm() {
+            if (!this.#r_check_vowel_harmony()) return false;
+            if (this.find_among_b(a_12) === 0) return false;
+            return this.#r_mark_suffix_with_optional_y_consonant();
+          }
+
+          /** @return {boolean} */
+          #r_mark_sUn() {
+            if (!this.#r_check_vowel_harmony()) return false;
+            return this.find_among_b(a_13) !== 0;
+          }
+
+          /** @return {boolean} */
+          #r_mark_yUz() {
+            if (!this.#r_check_vowel_harmony()) return false;
+            if (this.find_among_b(a_14) === 0) return false;
+            return this.#r_mark_suffix_with_optional_y_consonant();
+          }
+
+          /** @return {boolean} */
+          #r_mark_sUnUz() {
+            return this.find_among_b(a_15) !== 0;
+          }
+
+          /** @return {boolean} */
+          #r_mark_lAr() {
+            if (!this.#r_check_vowel_harmony()) return false;
+            return this.find_among_b(a_16) !== 0;
+          }
+
+          /** @return {boolean} */
+          #r_mark_DUr() {
+            if (!this.#r_check_vowel_harmony()) return false;
+            return this.find_among_b(a_18) !== 0;
+          }
+
+          /** @return {boolean} */
+          #r_mark_yDU() {
+            if (!this.#r_check_vowel_harmony()) return false;
+            if (this.find_among_b(a_20) === 0) return false;
+            return this.#r_mark_suffix_with_optional_y_consonant();
+          }
+
+          /** @return {boolean} */
+          #r_mark_ysA() {
+            if (this.find_among_b(a_21) === 0) return false;
+            return this.#r_mark_suffix_with_optional_y_consonant();
+          }
+
+          /** @return {boolean} */
+          #r_mark_ymUs_() {
+            if (!this.#r_check_vowel_harmony()) return false;
+            if (this.find_among_b(a_22) === 0) return false;
+            return this.#r_mark_suffix_with_optional_y_consonant();
+          }
+
+          /** @return {boolean} */
+          #r_stem_suffix_chain_before_ki() {
+            this.ket = this.c;
+            if (!(this.eq_s_b("ki"))) return false;
+            // deno-lint-ignore no-unused-labels
+            lab0: {
+              const /**@type {number}*/ v_1 = this.limit - this.c;
+              // deno-lint-ignore no-unused-labels
+              lab1: {
+                if (!this.#r_mark_DA()) break lab1;
+                this.bra = this.c;
+                this.slice_del();
+                const /**@type {number}*/ v_2 = this.limit - this.c;
+                // deno-lint-ignore no-unused-labels
+                lab2: {
+                  this.ket = this.c;
+                  // deno-lint-ignore no-unused-labels
+                  lab3: {
+                    const /**@type {number}*/ v_3 = this.limit - this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab4: {
+                      if (!this.#r_mark_lAr()) break lab4;
+                      this.bra = this.c;
+                      this.slice_del();
+                      const /**@type {number}*/ v_4 = this.limit - this.c;
+                      // deno-lint-ignore no-unused-labels
+                      lab5: {
+                        if (!this.#r_stem_suffix_chain_before_ki()) {
+                          this.c = this.limit - v_4;
+                          break lab5;
                         }
                       }
-                      if (!r_mark_ymUs_())
-                        sbp.cursor = sbp.limit - v_2;
+                      break lab3;
+                    }
+                    this.c = this.limit - v_3;
+                    if (!this.#r_mark_possessives()) {
+                      this.c = this.limit - v_2;
+                      break lab2;
+                    }
+                    this.bra = this.c;
+                    this.slice_del();
+                    const /**@type {number}*/ v_5 = this.limit - this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab6: {
+                      this.ket = this.c;
+                      if (!this.#r_mark_lAr()) {
+                        this.c = this.limit - v_5;
+                        break lab6;
+                      }
+                      this.bra = this.c;
+                      this.slice_del();
+                      if (!this.#r_stem_suffix_chain_before_ki()) {
+                        this.c = this.limit - v_5;
+                        break lab6;
+                      }
                     }
                   }
                 }
+                break lab0;
               }
-            }
-            sbp.bra = sbp.cursor;
-            sbp.slice_del();
-          }
-
-          function r_stem_suffix_chain_before_ki() {
-            var v_1, v_2, v_3, v_4;
-            sbp.ket = sbp.cursor;
-            if (r_mark_ki()) {
-              v_1 = sbp.limit - sbp.cursor;
-              if (r_mark_DA()) {
-                sbp.bra = sbp.cursor;
-                sbp.slice_del();
-                v_2 = sbp.limit - sbp.cursor;
-                sbp.ket = sbp.cursor;
-                if (r_mark_lAr()) {
-                  sbp.bra = sbp.cursor;
-                  sbp.slice_del();
-                  r_stem_suffix_chain_before_ki();
-                } else {
-                  sbp.cursor = sbp.limit - v_2;
-                  if (r_mark_possessives()) {
-                    sbp.bra = sbp.cursor;
-                    sbp.slice_del();
-                    sbp.ket = sbp.cursor;
-                    if (r_mark_lAr()) {
-                      sbp.bra = sbp.cursor;
-                      sbp.slice_del();
-                      r_stem_suffix_chain_before_ki();
+              this.c = this.limit - v_1;
+              // deno-lint-ignore no-unused-labels
+              lab7: {
+                if (!this.#r_mark_nUn()) break lab7;
+                this.bra = this.c;
+                this.slice_del();
+                const /**@type {number}*/ v_6 = this.limit - this.c;
+                // deno-lint-ignore no-unused-labels
+                lab8: {
+                  this.ket = this.c;
+                  // deno-lint-ignore no-unused-labels
+                  lab9: {
+                    const /**@type {number}*/ v_7 = this.limit - this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab10: {
+                      if (!this.#r_mark_lArI()) break lab10;
+                      this.bra = this.c;
+                      this.slice_del();
+                      break lab9;
+                    }
+                    this.c = this.limit - v_7;
+                    // deno-lint-ignore no-unused-labels
+                    lab11: {
+                      this.ket = this.c;
+                      // deno-lint-ignore no-unused-labels
+                      lab12: {
+                        const /**@type {number}*/ v_8 = this.limit - this.c;
+                        // deno-lint-ignore no-unused-labels
+                        lab13: {
+                          if (!this.#r_mark_possessives()) break lab13;
+                          break lab12;
+                        }
+                        this.c = this.limit - v_8;
+                        if (!this.#r_mark_sU()) break lab11;
+                      }
+                      this.bra = this.c;
+                      this.slice_del();
+                      const /**@type {number}*/ v_9 = this.limit - this.c;
+                      // deno-lint-ignore no-unused-labels
+                      lab14: {
+                        this.ket = this.c;
+                        if (!this.#r_mark_lAr()) {
+                          this.c = this.limit - v_9;
+                          break lab14;
+                        }
+                        this.bra = this.c;
+                        this.slice_del();
+                        if (!this.#r_stem_suffix_chain_before_ki()) {
+                          this.c = this.limit - v_9;
+                          break lab14;
+                        }
+                      }
+                      break lab9;
+                    }
+                    this.c = this.limit - v_7;
+                    if (!this.#r_stem_suffix_chain_before_ki()) {
+                      this.c = this.limit - v_6;
+                      break lab8;
                     }
                   }
                 }
-                return true;
+                break lab0;
               }
-              sbp.cursor = sbp.limit - v_1;
-              if (r_mark_nUn()) {
-                sbp.bra = sbp.cursor;
-                sbp.slice_del();
-                sbp.ket = sbp.cursor;
-                v_3 = sbp.limit - sbp.cursor;
-                if (r_mark_lArI()) {
-                  sbp.bra = sbp.cursor;
-                  sbp.slice_del();
-                } else {
-                  sbp.cursor = sbp.limit - v_3;
-                  sbp.ket = sbp.cursor;
-                  if (!r_mark_possessives()) {
-                    sbp.cursor = sbp.limit - v_3;
-                    if (!r_mark_sU()) {
-                      sbp.cursor = sbp.limit - v_3;
-                      if (!r_stem_suffix_chain_before_ki())
-                        return true;
+              this.c = this.limit - v_1;
+              if (!this.#r_mark_ndA()) return false;
+              // deno-lint-ignore no-unused-labels
+              lab15: {
+                const /**@type {number}*/ v_10 = this.limit - this.c;
+                // deno-lint-ignore no-unused-labels
+                lab16: {
+                  if (!this.#r_mark_lArI()) break lab16;
+                  this.bra = this.c;
+                  this.slice_del();
+                  break lab15;
+                }
+                this.c = this.limit - v_10;
+                // deno-lint-ignore no-unused-labels
+                lab17: {
+                  if (!this.#r_mark_sU()) break lab17;
+                  this.bra = this.c;
+                  this.slice_del();
+                  const /**@type {number}*/ v_11 = this.limit - this.c;
+                  // deno-lint-ignore no-unused-labels
+                  lab18: {
+                    this.ket = this.c;
+                    if (!this.#r_mark_lAr()) {
+                      this.c = this.limit - v_11;
+                      break lab18;
+                    }
+                    this.bra = this.c;
+                    this.slice_del();
+                    if (!this.#r_stem_suffix_chain_before_ki()) {
+                      this.c = this.limit - v_11;
+                      break lab18;
                     }
                   }
-                  sbp.bra = sbp.cursor;
-                  sbp.slice_del();
-                  sbp.ket = sbp.cursor;
-                  if (r_mark_lAr()) {
-                    sbp.bra = sbp.cursor;
-                    sbp.slice_del();
-                    r_stem_suffix_chain_before_ki()
-                  }
+                  break lab15;
                 }
-                return true;
+                this.c = this.limit - v_10;
+                if (!this.#r_stem_suffix_chain_before_ki()) return false;
               }
-              sbp.cursor = sbp.limit - v_1;
-              if (r_mark_ndA()) {
-                v_4 = sbp.limit - sbp.cursor;
-                if (r_mark_lArI()) {
-                  sbp.bra = sbp.cursor;
-                  sbp.slice_del();
-                } else {
-                  sbp.cursor = sbp.limit - v_4;
-                  if (r_mark_sU()) {
-                    sbp.bra = sbp.cursor;
-                    sbp.slice_del();
-                    sbp.ket = sbp.cursor;
-                    if (r_mark_lAr()) {
-                      sbp.bra = sbp.cursor;
-                      sbp.slice_del();
-                      r_stem_suffix_chain_before_ki();
+            }
+            return true;
+          }
+
+          /** @return {boolean} */
+          #stem() {
+            let /**@type {number}*/ a;
+            let /**@type {boolean}*/ B_continue_stemming_noun_suffixes;
+            // deno-lint-ignore no-unused-labels
+            lab0: {
+              const /**@type {number}*/ v_1 = this.c;
+              // deno-lint-ignore no-unused-labels
+              lab1: {
+                this.bra = this.c;
+                // deno-lint-ignore no-unused-labels
+                golab2: while (true) {
+                  const /**@type {number}*/ v_2 = this.c;
+                  // deno-lint-ignore no-unused-labels
+                  lab3: {
+                    // deno-lint-ignore no-unused-labels
+                    lab4: {
+                      if (!(this.eq_s("'"))) break lab4;
+                      break lab3;
                     }
-                  } else {
-                    sbp.cursor = sbp.limit - v_4;
-                    if (!r_stem_suffix_chain_before_ki())
-                      return false;
+                    this.c = v_2;
+                    break golab2;
+                  }
+                  this.c = v_2;
+                  if (this.c >= this.limit) break lab1;
+                  this.c++;
+                }
+                this.ket = this.c;
+                this.slice_del();
+              }
+              this.c = v_1;
+              const /**@type {number}*/ v_3 = this.c;
+              // deno-lint-ignore no-unused-labels
+              lab5: {
+                if (this.c + 2 > this.limit) break lab5;
+                this.c += 2;
+                // deno-lint-ignore no-unused-labels
+                golab6: while (true) {
+                  const /**@type {number}*/ v_4 = this.c;
+                  // deno-lint-ignore no-unused-labels
+                  lab7: {
+                    if (!(this.eq_s("'"))) break lab7;
+                    this.c = v_4;
+                    break golab6;
+                  }
+                  this.c = v_4;
+                  if (this.c >= this.limit) break lab5;
+                  this.c++;
+                }
+                this.bra = this.c;
+                this.c = this.limit;
+                this.ket = this.c;
+                this.slice_del();
+              }
+              this.c = v_3;
+            }
+            const /**@type {number}*/ v_5 = this.c;
+            for (let /**@type {number}*/ v_6 = 2; v_6 > 0; v_6--) {
+              if (!this.go_out_grouping(g_vowel, 97, 305)) return false;
+              this.c++;
+            }
+            this.c = v_5;
+            this.limit_backward = this.c;
+            this.c = this.limit;
+            const /**@type {number}*/ v_7 = this.limit - this.c;
+            // deno-lint-ignore no-unused-labels
+            lab8: {
+              this.ket = this.c;
+              B_continue_stemming_noun_suffixes = true;
+              // deno-lint-ignore no-unused-labels
+              lab9: {
+                const /**@type {number}*/ v_8 = this.limit - this.c;
+                // deno-lint-ignore no-unused-labels
+                lab10: {
+                  // deno-lint-ignore no-unused-labels
+                  lab11: {
+                    const /**@type {number}*/ v_9 = this.limit - this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab12: {
+                      if (!this.#r_mark_ymUs_()) break lab12;
+                      break lab11;
+                    }
+                    this.c = this.limit - v_9;
+                    // deno-lint-ignore no-unused-labels
+                    lab13: {
+                      if (!this.#r_mark_yDU()) break lab13;
+                      break lab11;
+                    }
+                    this.c = this.limit - v_9;
+                    // deno-lint-ignore no-unused-labels
+                    lab14: {
+                      if (!this.#r_mark_ysA()) break lab14;
+                      break lab11;
+                    }
+                    this.c = this.limit - v_9;
+                    if (!(this.eq_s_b("ken"))) break lab10;
+                    if (!this.#r_mark_suffix_with_optional_y_consonant()) break lab10;
+                  }
+                  break lab9;
+                }
+                this.c = this.limit - v_8;
+                // deno-lint-ignore no-unused-labels
+                lab15: {
+                  if (this.find_among_b(a_19) === 0) break lab15;
+                  // deno-lint-ignore no-unused-labels
+                  lab16: {
+                    const /**@type {number}*/ v_10 = this.limit - this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab17: {
+                      if (!this.#r_mark_sUnUz()) break lab17;
+                      break lab16;
+                    }
+                    this.c = this.limit - v_10;
+                    // deno-lint-ignore no-unused-labels
+                    lab18: {
+                      if (!this.#r_mark_lAr()) break lab18;
+                      break lab16;
+                    }
+                    this.c = this.limit - v_10;
+                    // deno-lint-ignore no-unused-labels
+                    lab19: {
+                      if (!this.#r_mark_yUm()) break lab19;
+                      break lab16;
+                    }
+                    this.c = this.limit - v_10;
+                    // deno-lint-ignore no-unused-labels
+                    lab20: {
+                      if (!this.#r_mark_sUn()) break lab20;
+                      break lab16;
+                    }
+                    this.c = this.limit - v_10;
+                    // deno-lint-ignore no-unused-labels
+                    lab21: {
+                      if (!this.#r_mark_yUz()) break lab21;
+                      break lab16;
+                    }
+                    this.c = this.limit - v_10;
+                  }
+                  if (!this.#r_mark_ymUs_()) break lab15;
+                  break lab9;
+                }
+                this.c = this.limit - v_8;
+                // deno-lint-ignore no-unused-labels
+                lab22: {
+                  if (!this.#r_mark_lAr()) break lab22;
+                  this.bra = this.c;
+                  this.slice_del();
+                  const /**@type {number}*/ v_11 = this.limit - this.c;
+                  // deno-lint-ignore no-unused-labels
+                  lab23: {
+                    this.ket = this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab24: {
+                      const /**@type {number}*/ v_12 = this.limit - this.c;
+                      // deno-lint-ignore no-unused-labels
+                      lab25: {
+                        if (!this.#r_mark_DUr()) break lab25;
+                        break lab24;
+                      }
+                      this.c = this.limit - v_12;
+                      // deno-lint-ignore no-unused-labels
+                      lab26: {
+                        if (!this.#r_mark_yDU()) break lab26;
+                        break lab24;
+                      }
+                      this.c = this.limit - v_12;
+                      // deno-lint-ignore no-unused-labels
+                      lab27: {
+                        if (!this.#r_mark_ysA()) break lab27;
+                        break lab24;
+                      }
+                      this.c = this.limit - v_12;
+                      if (!this.#r_mark_ymUs_()) {
+                        this.c = this.limit - v_11;
+                        break lab23;
+                      }
+                    }
+                  }
+                  B_continue_stemming_noun_suffixes = false;
+                  break lab9;
+                }
+                this.c = this.limit - v_8;
+                // deno-lint-ignore no-unused-labels
+                lab28: {
+                  if (!this.#r_check_vowel_harmony()) break lab28;
+                  if (this.find_among_b(a_17) === 0) break lab28;
+                  // deno-lint-ignore no-unused-labels
+                  lab29: {
+                    const /**@type {number}*/ v_13 = this.limit - this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab30: {
+                      if (!this.#r_mark_yDU()) break lab30;
+                      break lab29;
+                    }
+                    this.c = this.limit - v_13;
+                    if (!this.#r_mark_ysA()) break lab28;
+                  }
+                  break lab9;
+                }
+                this.c = this.limit - v_8;
+                // deno-lint-ignore no-unused-labels
+                lab31: {
+                  // deno-lint-ignore no-unused-labels
+                  lab32: {
+                    const /**@type {number}*/ v_14 = this.limit - this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab33: {
+                      if (!this.#r_mark_sUnUz()) break lab33;
+                      break lab32;
+                    }
+                    this.c = this.limit - v_14;
+                    // deno-lint-ignore no-unused-labels
+                    lab34: {
+                      if (!this.#r_mark_yUz()) break lab34;
+                      break lab32;
+                    }
+                    this.c = this.limit - v_14;
+                    // deno-lint-ignore no-unused-labels
+                    lab35: {
+                      if (!this.#r_mark_sUn()) break lab35;
+                      break lab32;
+                    }
+                    this.c = this.limit - v_14;
+                    if (!this.#r_mark_yUm()) break lab31;
+                  }
+                  this.bra = this.c;
+                  this.slice_del();
+                  const /**@type {number}*/ v_15 = this.limit - this.c;
+                  // deno-lint-ignore no-unused-labels
+                  lab36: {
+                    this.ket = this.c;
+                    if (!this.#r_mark_ymUs_()) {
+                      this.c = this.limit - v_15;
+                      break lab36;
+                    }
+                  }
+                  break lab9;
+                }
+                this.c = this.limit - v_8;
+                if (!this.#r_mark_DUr()) break lab8;
+                this.bra = this.c;
+                this.slice_del();
+                const /**@type {number}*/ v_16 = this.limit - this.c;
+                // deno-lint-ignore no-unused-labels
+                lab37: {
+                  this.ket = this.c;
+                  // deno-lint-ignore no-unused-labels
+                  lab38: {
+                    const /**@type {number}*/ v_17 = this.limit - this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab39: {
+                      if (!this.#r_mark_sUnUz()) break lab39;
+                      break lab38;
+                    }
+                    this.c = this.limit - v_17;
+                    // deno-lint-ignore no-unused-labels
+                    lab40: {
+                      if (!this.#r_mark_lAr()) break lab40;
+                      break lab38;
+                    }
+                    this.c = this.limit - v_17;
+                    // deno-lint-ignore no-unused-labels
+                    lab41: {
+                      if (!this.#r_mark_yUm()) break lab41;
+                      break lab38;
+                    }
+                    this.c = this.limit - v_17;
+                    // deno-lint-ignore no-unused-labels
+                    lab42: {
+                      if (!this.#r_mark_sUn()) break lab42;
+                      break lab38;
+                    }
+                    this.c = this.limit - v_17;
+                    // deno-lint-ignore no-unused-labels
+                    lab43: {
+                      if (!this.#r_mark_yUz()) break lab43;
+                      break lab38;
+                    }
+                    this.c = this.limit - v_17;
+                  }
+                  if (!this.#r_mark_ymUs_()) {
+                    this.c = this.limit - v_16;
+                    break lab37;
                   }
                 }
-                return true;
               }
+              this.bra = this.c;
+              this.slice_del();
             }
-            return false;
-          }
-
-          function habr9(v_1) {
-            sbp.ket = sbp.cursor;
-            if (!r_mark_ndA()) {
-              sbp.cursor = sbp.limit - v_1;
-              if (!r_mark_nA())
-                return false;
-            }
-            var v_2 = sbp.limit - sbp.cursor;
-            if (r_mark_lArI()) {
-              sbp.bra = sbp.cursor;
-              sbp.slice_del();
-            } else {
-              sbp.cursor = sbp.limit - v_2;
-              if (r_mark_sU()) {
-                sbp.bra = sbp.cursor;
-                sbp.slice_del();
-                sbp.ket = sbp.cursor;
-                if (r_mark_lAr()) {
-                  sbp.bra = sbp.cursor;
-                  sbp.slice_del();
-                  r_stem_suffix_chain_before_ki();
+            this.c = this.limit - v_7;
+            if (!B_continue_stemming_noun_suffixes) return false;
+            const /**@type {number}*/ v_18 = this.limit - this.c;
+            // deno-lint-ignore no-unused-labels
+            lab44: {
+              // deno-lint-ignore no-unused-labels
+              lab45: {
+                const /**@type {number}*/ v_19 = this.limit - this.c;
+                // deno-lint-ignore no-unused-labels
+                lab46: {
+                  this.ket = this.c;
+                  if (!this.#r_mark_lAr()) break lab46;
+                  this.bra = this.c;
+                  this.slice_del();
+                  const /**@type {number}*/ v_20 = this.limit - this.c;
+                  // deno-lint-ignore no-unused-labels
+                  lab47: {
+                    if (!this.#r_stem_suffix_chain_before_ki()) {
+                      this.c = this.limit - v_20;
+                      break lab47;
+                    }
+                  }
+                  break lab45;
                 }
-              } else {
-                sbp.cursor = sbp.limit - v_2;
-                if (!r_stem_suffix_chain_before_ki())
-                  return false;
-              }
-            }
-            return true;
-          }
-
-          function habr10(v_1) {
-            sbp.ket = sbp.cursor;
-            if (!r_mark_ndAn()) {
-              sbp.cursor = sbp.limit - v_1;
-              if (!r_mark_nU())
-                return false;
-            }
-            var v_2 = sbp.limit - sbp.cursor;
-            if (!r_mark_sU()) {
-              sbp.cursor = sbp.limit - v_2;
-              if (!r_mark_lArI())
-                return false;
-            }
-            sbp.bra = sbp.cursor;
-            sbp.slice_del();
-            sbp.ket = sbp.cursor;
-            if (r_mark_lAr()) {
-              sbp.bra = sbp.cursor;
-              sbp.slice_del();
-              r_stem_suffix_chain_before_ki();
-            }
-            return true;
-          }
-
-          function habr11() {
-            var v_1 = sbp.limit - sbp.cursor,
-              v_2;
-            sbp.ket = sbp.cursor;
-            if (!r_mark_nUn()) {
-              sbp.cursor = sbp.limit - v_1;
-              if (!r_mark_ylA())
-                return false;
-            }
-            sbp.bra = sbp.cursor;
-            sbp.slice_del();
-            v_2 = sbp.limit - sbp.cursor;
-            sbp.ket = sbp.cursor;
-            if (r_mark_lAr()) {
-              sbp.bra = sbp.cursor;
-              sbp.slice_del();
-              if (r_stem_suffix_chain_before_ki())
-                return true;
-            }
-            sbp.cursor = sbp.limit - v_2;
-            sbp.ket = sbp.cursor;
-            if (!r_mark_possessives()) {
-              sbp.cursor = sbp.limit - v_2;
-              if (!r_mark_sU()) {
-                sbp.cursor = sbp.limit - v_2;
-                if (!r_stem_suffix_chain_before_ki())
-                  return true;
-              }
-            }
-            sbp.bra = sbp.cursor;
-            sbp.slice_del();
-            sbp.ket = sbp.cursor;
-            if (r_mark_lAr()) {
-              sbp.bra = sbp.cursor;
-              sbp.slice_del();
-              r_stem_suffix_chain_before_ki();
-            }
-            return true;
-          }
-
-          function habr12() {
-            var v_1 = sbp.limit - sbp.cursor,
-              v_2, v_3;
-            sbp.ket = sbp.cursor;
-            if (!r_mark_DA()) {
-              sbp.cursor = sbp.limit - v_1;
-              if (!r_mark_yU()) {
-                sbp.cursor = sbp.limit - v_1;
-                if (!r_mark_yA())
-                  return false;
-              }
-            }
-            sbp.bra = sbp.cursor;
-            sbp.slice_del();
-            sbp.ket = sbp.cursor;
-            v_2 = sbp.limit - sbp.cursor;
-            if (r_mark_possessives()) {
-              sbp.bra = sbp.cursor;
-              sbp.slice_del();
-              v_3 = sbp.limit - sbp.cursor;
-              sbp.ket = sbp.cursor;
-              if (!r_mark_lAr())
-                sbp.cursor = sbp.limit - v_3;
-            } else {
-              sbp.cursor = sbp.limit - v_2;
-              if (!r_mark_lAr())
-                return true;
-            }
-            sbp.bra = sbp.cursor;
-            sbp.slice_del();
-            sbp.ket = sbp.cursor;
-            r_stem_suffix_chain_before_ki();
-            return true;
-          }
-
-          function r_stem_noun_suffixes() {
-            var v_1 = sbp.limit - sbp.cursor,
-              v_2, v_3;
-            sbp.ket = sbp.cursor;
-            if (r_mark_lAr()) {
-              sbp.bra = sbp.cursor;
-              sbp.slice_del();
-              r_stem_suffix_chain_before_ki();
-              return;
-            }
-            sbp.cursor = sbp.limit - v_1;
-            sbp.ket = sbp.cursor;
-            if (r_mark_ncA()) {
-              sbp.bra = sbp.cursor;
-              sbp.slice_del();
-              v_2 = sbp.limit - sbp.cursor;
-              sbp.ket = sbp.cursor;
-              if (r_mark_lArI()) {
-                sbp.bra = sbp.cursor;
-                sbp.slice_del();
-              } else {
-                sbp.cursor = sbp.limit - v_2;
-                sbp.ket = sbp.cursor;
-                if (!r_mark_possessives()) {
-                  sbp.cursor = sbp.limit - v_2;
-                  if (!r_mark_sU()) {
-                    sbp.cursor = sbp.limit - v_2;
-                    sbp.ket = sbp.cursor;
-                    if (!r_mark_lAr())
-                      return;
-                    sbp.bra = sbp.cursor;
-                    sbp.slice_del();
-                    if (!r_stem_suffix_chain_before_ki())
-                      return;
+                this.c = this.limit - v_19;
+                // deno-lint-ignore no-unused-labels
+                lab48: {
+                  this.ket = this.c;
+                  if (!this.#r_check_vowel_harmony()) break lab48;
+                  if (this.find_among_b(a_11) === 0) break lab48;
+                  if (!this.#r_mark_suffix_with_optional_n_consonant()) break lab48;
+                  this.bra = this.c;
+                  this.slice_del();
+                  const /**@type {number}*/ v_21 = this.limit - this.c;
+                  // deno-lint-ignore no-unused-labels
+                  lab49: {
+                    // deno-lint-ignore no-unused-labels
+                    lab50: {
+                      const /**@type {number}*/ v_22 = this.limit - this.c;
+                      // deno-lint-ignore no-unused-labels
+                      lab51: {
+                        this.ket = this.c;
+                        if (!this.#r_mark_lArI()) break lab51;
+                        this.bra = this.c;
+                        this.slice_del();
+                        break lab50;
+                      }
+                      this.c = this.limit - v_22;
+                      // deno-lint-ignore no-unused-labels
+                      lab52: {
+                        this.ket = this.c;
+                        // deno-lint-ignore no-unused-labels
+                        lab53: {
+                          const /**@type {number}*/ v_23 = this.limit - this.c;
+                          // deno-lint-ignore no-unused-labels
+                          lab54: {
+                            if (!this.#r_mark_possessives()) break lab54;
+                            break lab53;
+                          }
+                          this.c = this.limit - v_23;
+                          if (!this.#r_mark_sU()) break lab52;
+                        }
+                        this.bra = this.c;
+                        this.slice_del();
+                        const /**@type {number}*/ v_24 = this.limit - this.c;
+                        // deno-lint-ignore no-unused-labels
+                        lab55: {
+                          this.ket = this.c;
+                          if (!this.#r_mark_lAr()) {
+                            this.c = this.limit - v_24;
+                            break lab55;
+                          }
+                          this.bra = this.c;
+                          this.slice_del();
+                          if (!this.#r_stem_suffix_chain_before_ki()) {
+                            this.c = this.limit - v_24;
+                            break lab55;
+                          }
+                        }
+                        break lab50;
+                      }
+                      this.c = this.limit - v_22;
+                      this.ket = this.c;
+                      if (!this.#r_mark_lAr()) {
+                        this.c = this.limit - v_21;
+                        break lab49;
+                      }
+                      this.bra = this.c;
+                      this.slice_del();
+                      if (!this.#r_stem_suffix_chain_before_ki()) {
+                        this.c = this.limit - v_21;
+                        break lab49;
+                      }
+                    }
+                  }
+                  break lab45;
+                }
+                this.c = this.limit - v_19;
+                // deno-lint-ignore no-unused-labels
+                lab56: {
+                  this.ket = this.c;
+                  // deno-lint-ignore no-unused-labels
+                  lab57: {
+                    const /**@type {number}*/ v_25 = this.limit - this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab58: {
+                      if (!this.#r_mark_ndA()) break lab58;
+                      break lab57;
+                    }
+                    this.c = this.limit - v_25;
+                    if (!this.#r_check_vowel_harmony()) break lab56;
+                    if (this.find_among_b(a_5) === 0) break lab56;
+                  }
+                  // deno-lint-ignore no-unused-labels
+                  lab59: {
+                    const /**@type {number}*/ v_26 = this.limit - this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab60: {
+                      if (!this.#r_mark_lArI()) break lab60;
+                      this.bra = this.c;
+                      this.slice_del();
+                      break lab59;
+                    }
+                    this.c = this.limit - v_26;
+                    // deno-lint-ignore no-unused-labels
+                    lab61: {
+                      if (!this.#r_mark_sU()) break lab61;
+                      this.bra = this.c;
+                      this.slice_del();
+                      const /**@type {number}*/ v_27 = this.limit - this.c;
+                      // deno-lint-ignore no-unused-labels
+                      lab62: {
+                        this.ket = this.c;
+                        if (!this.#r_mark_lAr()) {
+                          this.c = this.limit - v_27;
+                          break lab62;
+                        }
+                        this.bra = this.c;
+                        this.slice_del();
+                        if (!this.#r_stem_suffix_chain_before_ki()) {
+                          this.c = this.limit - v_27;
+                          break lab62;
+                        }
+                      }
+                      break lab59;
+                    }
+                    this.c = this.limit - v_26;
+                    if (!this.#r_stem_suffix_chain_before_ki()) break lab56;
+                  }
+                  break lab45;
+                }
+                this.c = this.limit - v_19;
+                // deno-lint-ignore no-unused-labels
+                lab63: {
+                  this.ket = this.c;
+                  // deno-lint-ignore no-unused-labels
+                  lab64: {
+                    const /**@type {number}*/ v_28 = this.limit - this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab65: {
+                      if (!this.#r_check_vowel_harmony()) break lab65;
+                      if (this.find_among_b(a_9) === 0) break lab65;
+                      break lab64;
+                    }
+                    this.c = this.limit - v_28;
+                    if (!this.#r_check_vowel_harmony()) break lab63;
+                    if (this.find_among_b(a_2) === 0) break lab63;
+                  }
+                  // deno-lint-ignore no-unused-labels
+                  lab66: {
+                    const /**@type {number}*/ v_29 = this.limit - this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab67: {
+                      if (!this.#r_mark_sU()) break lab67;
+                      this.bra = this.c;
+                      this.slice_del();
+                      const /**@type {number}*/ v_30 = this.limit - this.c;
+                      // deno-lint-ignore no-unused-labels
+                      lab68: {
+                        this.ket = this.c;
+                        if (!this.#r_mark_lAr()) {
+                          this.c = this.limit - v_30;
+                          break lab68;
+                        }
+                        this.bra = this.c;
+                        this.slice_del();
+                        if (!this.#r_stem_suffix_chain_before_ki()) {
+                          this.c = this.limit - v_30;
+                          break lab68;
+                        }
+                      }
+                      break lab66;
+                    }
+                    this.c = this.limit - v_29;
+                    if (!this.#r_mark_lArI()) break lab63;
+                  }
+                  break lab45;
+                }
+                this.c = this.limit - v_19;
+                // deno-lint-ignore no-unused-labels
+                lab69: {
+                  this.ket = this.c;
+                  if (!this.#r_check_vowel_harmony()) break lab69;
+                  if (this.find_among_b(a_8) === 0) break lab69;
+                  this.bra = this.c;
+                  this.slice_del();
+                  const /**@type {number}*/ v_31 = this.limit - this.c;
+                  // deno-lint-ignore no-unused-labels
+                  lab70: {
+                    this.ket = this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab71: {
+                      const /**@type {number}*/ v_32 = this.limit - this.c;
+                      // deno-lint-ignore no-unused-labels
+                      lab72: {
+                        if (!this.#r_mark_possessives()) break lab72;
+                        this.bra = this.c;
+                        this.slice_del();
+                        const /**@type {number}*/ v_33 = this.limit - this.c;
+                        // deno-lint-ignore no-unused-labels
+                        lab73: {
+                          this.ket = this.c;
+                          if (!this.#r_mark_lAr()) {
+                            this.c = this.limit - v_33;
+                            break lab73;
+                          }
+                          this.bra = this.c;
+                          this.slice_del();
+                          if (!this.#r_stem_suffix_chain_before_ki()) {
+                            this.c = this.limit - v_33;
+                            break lab73;
+                          }
+                        }
+                        break lab71;
+                      }
+                      this.c = this.limit - v_32;
+                      // deno-lint-ignore no-unused-labels
+                      lab74: {
+                        if (!this.#r_mark_lAr()) break lab74;
+                        this.bra = this.c;
+                        this.slice_del();
+                        const /**@type {number}*/ v_34 = this.limit - this.c;
+                        // deno-lint-ignore no-unused-labels
+                        lab75: {
+                          if (!this.#r_stem_suffix_chain_before_ki()) {
+                            this.c = this.limit - v_34;
+                            break lab75;
+                          }
+                        }
+                        break lab71;
+                      }
+                      this.c = this.limit - v_32;
+                      if (!this.#r_stem_suffix_chain_before_ki()) {
+                        this.c = this.limit - v_31;
+                        break lab70;
+                      }
+                    }
+                  }
+                  break lab45;
+                }
+                this.c = this.limit - v_19;
+                // deno-lint-ignore no-unused-labels
+                lab76: {
+                  this.ket = this.c;
+                  // deno-lint-ignore no-unused-labels
+                  lab77: {
+                    const /**@type {number}*/ v_35 = this.limit - this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab78: {
+                      if (!this.#r_mark_nUn()) break lab78;
+                      break lab77;
+                    }
+                    this.c = this.limit - v_35;
+                    if (!this.#r_check_vowel_harmony()) break lab76;
+                    if (this.find_among_b(a_10) === 0) break lab76;
+                    if (!this.#r_mark_suffix_with_optional_y_consonant()) break lab76;
+                  }
+                  this.bra = this.c;
+                  this.slice_del();
+                  const /**@type {number}*/ v_36 = this.limit - this.c;
+                  // deno-lint-ignore no-unused-labels
+                  lab79: {
+                    // deno-lint-ignore no-unused-labels
+                    lab80: {
+                      const /**@type {number}*/ v_37 = this.limit - this.c;
+                      // deno-lint-ignore no-unused-labels
+                      lab81: {
+                        this.ket = this.c;
+                        if (!this.#r_mark_lAr()) break lab81;
+                        this.bra = this.c;
+                        this.slice_del();
+                        if (!this.#r_stem_suffix_chain_before_ki()) break lab81;
+                        break lab80;
+                      }
+                      this.c = this.limit - v_37;
+                      // deno-lint-ignore no-unused-labels
+                      lab82: {
+                        this.ket = this.c;
+                        // deno-lint-ignore no-unused-labels
+                        lab83: {
+                          const /**@type {number}*/ v_38 = this.limit - this.c;
+                          // deno-lint-ignore no-unused-labels
+                          lab84: {
+                            if (!this.#r_mark_possessives()) break lab84;
+                            break lab83;
+                          }
+                          this.c = this.limit - v_38;
+                          if (!this.#r_mark_sU()) break lab82;
+                        }
+                        this.bra = this.c;
+                        this.slice_del();
+                        const /**@type {number}*/ v_39 = this.limit - this.c;
+                        // deno-lint-ignore no-unused-labels
+                        lab85: {
+                          this.ket = this.c;
+                          if (!this.#r_mark_lAr()) {
+                            this.c = this.limit - v_39;
+                            break lab85;
+                          }
+                          this.bra = this.c;
+                          this.slice_del();
+                          if (!this.#r_stem_suffix_chain_before_ki()) {
+                            this.c = this.limit - v_39;
+                            break lab85;
+                          }
+                        }
+                        break lab80;
+                      }
+                      this.c = this.limit - v_37;
+                      if (!this.#r_stem_suffix_chain_before_ki()) {
+                        this.c = this.limit - v_36;
+                        break lab79;
+                      }
+                    }
+                  }
+                  break lab45;
+                }
+                this.c = this.limit - v_19;
+                // deno-lint-ignore no-unused-labels
+                lab86: {
+                  this.ket = this.c;
+                  if (!this.#r_mark_lArI()) break lab86;
+                  this.bra = this.c;
+                  this.slice_del();
+                  break lab45;
+                }
+                this.c = this.limit - v_19;
+                // deno-lint-ignore no-unused-labels
+                lab87: {
+                  if (!this.#r_stem_suffix_chain_before_ki()) break lab87;
+                  break lab45;
+                }
+                this.c = this.limit - v_19;
+                // deno-lint-ignore no-unused-labels
+                lab88: {
+                  this.ket = this.c;
+                  // deno-lint-ignore no-unused-labels
+                  lab89: {
+                    const /**@type {number}*/ v_40 = this.limit - this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab90: {
+                      if (!this.#r_mark_DA()) break lab90;
+                      break lab89;
+                    }
+                    this.c = this.limit - v_40;
+                    // deno-lint-ignore no-unused-labels
+                    lab91: {
+                      if (!this.#r_check_vowel_harmony()) break lab91;
+                      if (!(this.in_grouping_b(g_U, 105, 305))) break lab91;
+                      if (!this.#r_mark_suffix_with_optional_y_consonant()) break lab91;
+                      break lab89;
+                    }
+                    this.c = this.limit - v_40;
+                    if (!this.#r_check_vowel_harmony()) break lab88;
+                    if (this.find_among_b(a_4) === 0) break lab88;
+                    if (!this.#r_mark_suffix_with_optional_y_consonant()) break lab88;
+                  }
+                  this.bra = this.c;
+                  this.slice_del();
+                  const /**@type {number}*/ v_41 = this.limit - this.c;
+                  // deno-lint-ignore no-unused-labels
+                  lab92: {
+                    this.ket = this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab93: {
+                      const /**@type {number}*/ v_42 = this.limit - this.c;
+                      // deno-lint-ignore no-unused-labels
+                      lab94: {
+                        if (!this.#r_mark_possessives()) break lab94;
+                        this.bra = this.c;
+                        this.slice_del();
+                        const /**@type {number}*/ v_43 = this.limit - this.c;
+                        // deno-lint-ignore no-unused-labels
+                        lab95: {
+                          this.ket = this.c;
+                          if (!this.#r_mark_lAr()) {
+                            this.c = this.limit - v_43;
+                            break lab95;
+                          }
+                        }
+                        break lab93;
+                      }
+                      this.c = this.limit - v_42;
+                      if (!this.#r_mark_lAr()) {
+                        this.c = this.limit - v_41;
+                        break lab92;
+                      }
+                    }
+                    this.bra = this.c;
+                    this.slice_del();
+                    this.ket = this.c;
+                    if (!this.#r_stem_suffix_chain_before_ki()) {
+                      this.c = this.limit - v_41;
+                      break lab92;
+                    }
+                  }
+                  break lab45;
+                }
+                this.c = this.limit - v_19;
+                this.ket = this.c;
+                // deno-lint-ignore no-unused-labels
+                lab96: {
+                  const /**@type {number}*/ v_44 = this.limit - this.c;
+                  // deno-lint-ignore no-unused-labels
+                  lab97: {
+                    if (!this.#r_mark_possessives()) break lab97;
+                    break lab96;
+                  }
+                  this.c = this.limit - v_44;
+                  if (!this.#r_mark_sU()) break lab44;
+                }
+                this.bra = this.c;
+                this.slice_del();
+                const /**@type {number}*/ v_45 = this.limit - this.c;
+                // deno-lint-ignore no-unused-labels
+                lab98: {
+                  this.ket = this.c;
+                  if (!this.#r_mark_lAr()) {
+                    this.c = this.limit - v_45;
+                    break lab98;
+                  }
+                  this.bra = this.c;
+                  this.slice_del();
+                  if (!this.#r_stem_suffix_chain_before_ki()) {
+                    this.c = this.limit - v_45;
+                    break lab98;
                   }
                 }
-                sbp.bra = sbp.cursor;
-                sbp.slice_del();
-                sbp.ket = sbp.cursor;
-                if (r_mark_lAr()) {
-                  sbp.bra = sbp.cursor;
-                  sbp.slice_del();
-                  r_stem_suffix_chain_before_ki();
+              }
+            }
+            this.c = this.limit - v_18;
+            this.c = this.limit_backward;
+            this.limit_backward = this.c;
+            this.c = this.limit;
+            {
+              const /**@type {number}*/ v_46 = this.limit - this.c;
+              // deno-lint-ignore no-unused-labels
+              lab99: {
+                if (!(this.eq_s_b("ad"))) break lab99;
+                const /**@type {number}*/ v_47 = this.limit - this.c;
+                // deno-lint-ignore no-unused-labels
+                lab100: {
+                  if (!(this.eq_s_b("soy"))) {
+                    this.c = this.limit - v_47;
+                    break lab100;
+                  }
                 }
-              }
-              return;
-            }
-            sbp.cursor = sbp.limit - v_1;
-            if (habr9(v_1))
-              return;
-            sbp.cursor = sbp.limit - v_1;
-            if (habr10(v_1))
-              return;
-            sbp.cursor = sbp.limit - v_1;
-            sbp.ket = sbp.cursor;
-            if (r_mark_DAn()) {
-              sbp.bra = sbp.cursor;
-              sbp.slice_del();
-              sbp.ket = sbp.cursor;
-              v_3 = sbp.limit - sbp.cursor;
-              if (r_mark_possessives()) {
-                sbp.bra = sbp.cursor;
-                sbp.slice_del();
-                sbp.ket = sbp.cursor;
-                if (r_mark_lAr()) {
-                  sbp.bra = sbp.cursor;
-                  sbp.slice_del();
-                  r_stem_suffix_chain_before_ki();
-                }
-              } else {
-                sbp.cursor = sbp.limit - v_3;
-                if (r_mark_lAr()) {
-                  sbp.bra = sbp.cursor;
-                  sbp.slice_del();
-                  r_stem_suffix_chain_before_ki();
-                } else {
-                  sbp.cursor = sbp.limit - v_3;
-                  r_stem_suffix_chain_before_ki();
-                }
-              }
-              return;
-            }
-            sbp.cursor = sbp.limit - v_1;
-            if (habr11())
-              return;
-            sbp.cursor = sbp.limit - v_1;
-            if (r_mark_lArI()) {
-              sbp.bra = sbp.cursor;
-              sbp.slice_del();
-              return;
-            }
-            sbp.cursor = sbp.limit - v_1;
-            if (r_stem_suffix_chain_before_ki())
-              return;
-            sbp.cursor = sbp.limit - v_1;
-            if (habr12())
-              return;
-            sbp.cursor = sbp.limit - v_1;
-            sbp.ket = sbp.cursor;
-            if (!r_mark_possessives()) {
-              sbp.cursor = sbp.limit - v_1;
-              if (!r_mark_sU())
-                return;
-            }
-            sbp.bra = sbp.cursor;
-            sbp.slice_del();
-            sbp.ket = sbp.cursor;
-            if (r_mark_lAr()) {
-              sbp.bra = sbp.cursor;
-              sbp.slice_del();
-              r_stem_suffix_chain_before_ki();
-            }
-          }
-
-          function r_post_process_last_consonants() {
-            var among_var;
-            sbp.ket = sbp.cursor;
-            among_var = sbp.find_among_b(a_23, 4);
-            if (among_var) {
-              sbp.bra = sbp.cursor;
-              switch (among_var) {
-                case 1:
-                  sbp.slice_from("p");
-                  break;
-                case 2:
-                  sbp.slice_from("\u00E7");
-                  break;
-                case 3:
-                  sbp.slice_from("t");
-                  break;
-                case 4:
-                  sbp.slice_from("k");
-                  break;
-              }
-            }
-          }
-
-          function habr13() {
-            while (true) {
-              var v_1 = sbp.limit - sbp.cursor;
-              if (sbp.in_grouping_b(g_vowel, 97, 305)) {
-                sbp.cursor = sbp.limit - v_1;
-                break;
-              }
-              sbp.cursor = sbp.limit - v_1;
-              if (sbp.cursor <= sbp.limit_backward)
+                if ( /**@type {boolean}*/ (this.c > this.limit_backward)) break lab99;
                 return false;
-              sbp.cursor--;
-            }
-            return true;
-          }
-
-          function habr14(v_1, c1, c2) {
-            sbp.cursor = sbp.limit - v_1;
-            if (habr13()) {
-              var v_2 = sbp.limit - sbp.cursor;
-              if (!sbp.eq_s_b(1, c1)) {
-                sbp.cursor = sbp.limit - v_2;
-                if (!sbp.eq_s_b(1, c2))
-                  return true;
               }
-              sbp.cursor = sbp.limit - v_1;
-              var c = sbp.cursor;
-              sbp.insert(sbp.cursor, sbp.cursor, c2);
-              sbp.cursor = c;
-              return false;
+              this.c = this.limit - v_46;
             }
-            return true;
-          }
-
-          function r_append_U_to_stems_ending_with_d_or_g() {
-            var v_1 = sbp.limit - sbp.cursor;
-            if (!sbp.eq_s_b(1, "d")) {
-              sbp.cursor = sbp.limit - v_1;
-              if (!sbp.eq_s_b(1, "g"))
-                return;
-            }
-            if (habr14(v_1, "a", "\u0131"))
-              if (habr14(v_1, "e", "i"))
-                if (habr14(v_1, "o", "u"))
-                  habr14(v_1, "\u00F6", "\u00FC")
-          }
-
-          function r_more_than_one_syllable_word() {
-            var v_1 = sbp.cursor,
-              v_2 = 2,
-              v_3;
-            while (true) {
-              v_3 = sbp.cursor;
-              while (!sbp.in_grouping(g_vowel, 97, 305)) {
-                if (sbp.cursor >= sbp.limit) {
-                  sbp.cursor = v_3;
-                  if (v_2 > 0)
-                    return false;
-                  sbp.cursor = v_1;
-                  return true;
+            const /**@type {number}*/ v_48 = this.limit - this.c;
+            // deno-lint-ignore no-unused-labels
+            lab101: {
+              this.ket = this.c;
+              this.bra = this.c;
+              // deno-lint-ignore no-unused-labels
+              lab102: {
+                // deno-lint-ignore no-unused-labels
+                lab103: {
+                  if (!(this.eq_s_b("d"))) break lab103;
+                  break lab102;
                 }
-                sbp.cursor++;
+                if (!(this.eq_s_b("g"))) break lab101;
               }
-              v_2--;
+              if (!this.go_out_grouping_b(g_vowel, 97, 305)) break lab101;
+              // deno-lint-ignore no-unused-labels
+              lab104: {
+                const /**@type {number}*/ v_49 = this.limit - this.c;
+                // deno-lint-ignore no-unused-labels
+                lab105: {
+                  // deno-lint-ignore no-unused-labels
+                  lab106: {
+                    // deno-lint-ignore no-unused-labels
+                    lab107: {
+                      if (!(this.eq_s_b("a"))) break lab107;
+                      break lab106;
+                    }
+                    if (!(this.eq_s_b("\u0131"))) break lab105;
+                  }
+                  this.slice_from("\u0131");
+                  break lab104;
+                }
+                this.c = this.limit - v_49;
+                // deno-lint-ignore no-unused-labels
+                lab108: {
+                  // deno-lint-ignore no-unused-labels
+                  lab109: {
+                    // deno-lint-ignore no-unused-labels
+                    lab110: {
+                      if (!(this.eq_s_b("e"))) break lab110;
+                      break lab109;
+                    }
+                    if (!(this.eq_s_b("i"))) break lab108;
+                  }
+                  this.slice_from("i");
+                  break lab104;
+                }
+                this.c = this.limit - v_49;
+                // deno-lint-ignore no-unused-labels
+                lab111: {
+                  // deno-lint-ignore no-unused-labels
+                  lab112: {
+                    // deno-lint-ignore no-unused-labels
+                    lab113: {
+                      if (!(this.eq_s_b("o"))) break lab113;
+                      break lab112;
+                    }
+                    if (!(this.eq_s_b("u"))) break lab111;
+                  }
+                  this.slice_from("u");
+                  break lab104;
+                }
+                this.c = this.limit - v_49;
+                // deno-lint-ignore no-unused-labels
+                lab114: {
+                  // deno-lint-ignore no-unused-labels
+                  lab115: {
+                    if (!(this.eq_s_b("\u00F6"))) break lab115;
+                    break lab114;
+                  }
+                  if (!(this.eq_s_b("\u00FC"))) break lab101;
+                }
+                this.slice_from("\u00FC");
+              }
             }
-          }
-
-          function habr15(v_1, n1, c1) {
-            while (!sbp.eq_s(n1, c1)) {
-              if (sbp.cursor >= sbp.limit)
-                return true;
-              sbp.cursor++;
+            this.c = this.limit - v_48;
+            const /**@type {number}*/ v_50 = this.limit - this.c;
+            // deno-lint-ignore no-unused-labels
+            lab116: {
+              this.ket = this.c;
+              a = this.find_among_b(a_23);
+              if (a === 0) break lab116;
+              this.bra = this.c;
+              this.slice_from(as_23[a - 1]);
             }
-            I_strlen = n1;
-            if (I_strlen != sbp.limit)
-              return true;
-            sbp.cursor = v_1;
-            return false;
-          }
-
-          function r_is_reserved_word() {
-            var v_1 = sbp.cursor;
-            if (habr15(v_1, 2, "ad")) {
-              sbp.cursor = v_1;
-              if (habr15(v_1, 5, "soyad"))
-                return false;
-            }
+            this.c = this.limit - v_50;
+            this.c = this.limit_backward;
             return true;
           }
 
-          function r_postlude() {
-            var v_1 = sbp.cursor;
-            if (r_is_reserved_word())
-              return false;
-            sbp.limit_backward = v_1;
-            sbp.cursor = sbp.limit;
-            r_append_U_to_stems_ending_with_d_or_g();
-            sbp.cursor = sbp.limit;
-            r_post_process_last_consonants();
-            return true;
+          /**@return{string}*/
+          stem( /**@type {string}*/ input) {
+            this.setCurrent(input);
+            this.#stem();
+            return this.getCurrent();
           }
-          this.stem = function() {
-            if (r_more_than_one_syllable_word()) {
-              sbp.limit_backward = sbp.cursor;
-              sbp.cursor = sbp.limit;
-              r_stem_nominal_verb_suffixes();
-              sbp.cursor = sbp.limit;
-              if (B_c_s_n_s) {
-                r_stem_noun_suffixes();
-                sbp.cursor = sbp.limit_backward;
-                if (r_postlude())
-                  return true;
-              }
-            }
-            return false;
-          }
-        };
+
+          stemWord = this.stem;
+        }
+      })();
+
+      var st = new Stemmer();
 
       /* and return a function that stems a word for the current locale */
       return function(token) {
         return token.update(function(word) {
-          st.setCurrent(word);
-          st.stem();
-          return st.getCurrent();
+          return st.stemWord(word);
         })
       }
     })();
 
     lunr.Pipeline.registerFunction(lunr.tr.stemmer, 'stemmer-tr');
+
+    /* fold wildcard terms like the stemmer folds the index (generated by build/derive-fold-maps.js) */
+    lunr.tr.wildcardNormalizer = lunr.stemmerSupport.generateWildcardNormalizer({
+      "d'": "d"
+    });
+    lunr.tr.wildcardNormalizer.label = "wildcardNormalizer-tr";
+    lunr.tr.wildcardNormalizer.pipelineFunctionLabel = "stemmer-tr";
+    lunr.stemmerSupport.addQueryParserWildcardNormalizer(lunr, lunr.tr.wildcardNormalizer);
 
 
     lunr.tr.stopWordFilter = lunr.generateStopWordFilter('acaba altmış altı ama ancak arada aslında ayrıca bana bazı belki ben benden beni benim beri beş bile bin bir biri birkaç birkez birçok birşey birşeyi biz bizden bize bizi bizim bu buna bunda bundan bunlar bunları bunların bunu bunun burada böyle böylece da daha dahi de defa değil diye diğer doksan dokuz dolayı dolayısıyla dört edecek eden ederek edilecek ediliyor edilmesi ediyor elli en etmesi etti ettiği ettiğini eğer gibi göre halen hangi hatta hem henüz hep hepsi her herhangi herkesin hiç hiçbir iki ile ilgili ise itibaren itibariyle için işte kadar karşın katrilyon kendi kendilerine kendini kendisi kendisine kendisini kez ki kim kimden kime kimi kimse kırk milyar milyon mu mü mı nasıl ne neden nedenle nerde nerede nereye niye niçin o olan olarak oldu olduklarını olduğu olduğunu olmadı olmadığı olmak olması olmayan olmaz olsa olsun olup olur olursa oluyor on ona ondan onlar onlardan onları onların onu onun otuz oysa pek rağmen sadece sanki sekiz seksen sen senden seni senin siz sizden sizi sizin tarafından trilyon tüm var vardı ve veya ya yani yapacak yapmak yaptı yaptıkları yaptığı yaptığını yapılan yapılması yapıyor yedi yerine yetmiş yine yirmi yoksa yüz zaten çok çünkü öyle üzere üç şey şeyden şeyi şeyler şu şuna şunda şundan şunları şunu şöyle'.split(' '));

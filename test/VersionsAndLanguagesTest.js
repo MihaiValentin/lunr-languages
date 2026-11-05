@@ -399,8 +399,9 @@ lunrVersions.forEach(function (lunrVersion) {
                 this.add({ "body": "Respiración autonomías hablaré pingüino año", "id": 1 });
             });
 
-            it("should not fold Spanish accents by default", function () {
-                assert.equal(defaultIdx.search('respiracion').length, 0)
+            // Snowball 3.2.0 also removes the unaccented suffix: respiracion and respiración both stem to respir
+            it("should stem the accent-free form like the accented one", function () {
+                assert.equal(defaultIdx.search('respiracion').length, 1)
             });
 
             it("should find accented Spanish words when accents are omitted", function () {

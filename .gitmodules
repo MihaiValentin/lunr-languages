@@ -1,3 +1,0 @@
-[submodule "build/snowball-js"]
-	path = build/snowball-js
-	url = https://github.com/fortnightlabs/snowball-js.git

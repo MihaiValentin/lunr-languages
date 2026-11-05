@@ -6,15 +6,38 @@
  * http://www.mozilla.org/MPL/
  */
 /*!
- * based on
- * Snowball JavaScript Library v0.3
- * http://code.google.com/p/urim/
- * http://snowball.tartarus.org/
+ * The stemmer is generated from russian.sbl by Snowball 3.2.0 (https://snowballstem.org/).
  *
- * Copyright 2010, Oleg Mazko
- * http://www.mozilla.org/MPL/
+ * Copyright (c) 2001, Dr Martin Porter
+ * Copyright (c) 2004,2005, Richard Boulton
+ * Copyright (c) 2013, Yoshiki Shibukawa
+ * Copyright (c) 2006-2025, Olly Betts
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *   1. Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *   2. Redistributions in binary form must reproduce the above copyright notice,
+ *      this list of conditions and the following disclaimer in the documentation
+ *      and/or other materials provided with the distribution.
+ *   3. Neither the name of the Snowball project nor the names of its contributors
+ *      may be used to endorse or promote products derived from this software
+ *      without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 /**
  * export the module via AMD, CommonJS or as a browser global
  * Export code from https://github.com/umdjs/umd/blob/master/returnExports.js
@@ -75,306 +98,456 @@
 
     lunr.Pipeline.registerFunction(lunr.ru.trimmer, 'trimmer-ru');
 
+    /* throw error if lunr stemmer support is older than this file */
+    if ('function' !== typeof lunr.stemmerSupport.BaseStemmer) {
+      throw new Error('Lunr stemmer support is outdated. Please update lunr.stemmer.support.js to the same version as this script.');
+    }
+
     /* lunr stemmer function */
     lunr.ru.stemmer = (function() {
-      /* create the wrapped stemmer object */
-      var Among = lunr.stemmerSupport.Among,
-        SnowballProgram = lunr.stemmerSupport.SnowballProgram,
-        st = new function RussianStemmer() {
-          var a_0 = [new Among("\u0432", -1, 1), new Among("\u0438\u0432", 0, 2),
-              new Among("\u044B\u0432", 0, 2),
-              new Among("\u0432\u0448\u0438", -1, 1),
-              new Among("\u0438\u0432\u0448\u0438", 3, 2),
-              new Among("\u044B\u0432\u0448\u0438", 3, 2),
-              new Among("\u0432\u0448\u0438\u0441\u044C", -1, 1),
-              new Among("\u0438\u0432\u0448\u0438\u0441\u044C", 6, 2),
-              new Among("\u044B\u0432\u0448\u0438\u0441\u044C", 6, 2)
-            ],
-            a_1 = [
-              new Among("\u0435\u0435", -1, 1), new Among("\u0438\u0435", -1, 1),
-              new Among("\u043E\u0435", -1, 1), new Among("\u044B\u0435", -1, 1),
-              new Among("\u0438\u043C\u0438", -1, 1),
-              new Among("\u044B\u043C\u0438", -1, 1),
-              new Among("\u0435\u0439", -1, 1), new Among("\u0438\u0439", -1, 1),
-              new Among("\u043E\u0439", -1, 1), new Among("\u044B\u0439", -1, 1),
-              new Among("\u0435\u043C", -1, 1), new Among("\u0438\u043C", -1, 1),
-              new Among("\u043E\u043C", -1, 1), new Among("\u044B\u043C", -1, 1),
-              new Among("\u0435\u0433\u043E", -1, 1),
-              new Among("\u043E\u0433\u043E", -1, 1),
-              new Among("\u0435\u043C\u0443", -1, 1),
-              new Among("\u043E\u043C\u0443", -1, 1),
-              new Among("\u0438\u0445", -1, 1), new Among("\u044B\u0445", -1, 1),
-              new Among("\u0435\u044E", -1, 1), new Among("\u043E\u044E", -1, 1),
-              new Among("\u0443\u044E", -1, 1), new Among("\u044E\u044E", -1, 1),
-              new Among("\u0430\u044F", -1, 1), new Among("\u044F\u044F", -1, 1)
-            ],
-            a_2 = [
-              new Among("\u0435\u043C", -1, 1), new Among("\u043D\u043D", -1, 1),
-              new Among("\u0432\u0448", -1, 1),
-              new Among("\u0438\u0432\u0448", 2, 2),
-              new Among("\u044B\u0432\u0448", 2, 2), new Among("\u0449", -1, 1),
-              new Among("\u044E\u0449", 5, 1),
-              new Among("\u0443\u044E\u0449", 6, 2)
-            ],
-            a_3 = [
-              new Among("\u0441\u044C", -1, 1), new Among("\u0441\u044F", -1, 1)
-            ],
-            a_4 = [
-              new Among("\u043B\u0430", -1, 1),
-              new Among("\u0438\u043B\u0430", 0, 2),
-              new Among("\u044B\u043B\u0430", 0, 2),
-              new Among("\u043D\u0430", -1, 1),
-              new Among("\u0435\u043D\u0430", 3, 2),
-              new Among("\u0435\u0442\u0435", -1, 1),
-              new Among("\u0438\u0442\u0435", -1, 2),
-              new Among("\u0439\u0442\u0435", -1, 1),
-              new Among("\u0435\u0439\u0442\u0435", 7, 2),
-              new Among("\u0443\u0439\u0442\u0435", 7, 2),
-              new Among("\u043B\u0438", -1, 1),
-              new Among("\u0438\u043B\u0438", 10, 2),
-              new Among("\u044B\u043B\u0438", 10, 2), new Among("\u0439", -1, 1),
-              new Among("\u0435\u0439", 13, 2), new Among("\u0443\u0439", 13, 2),
-              new Among("\u043B", -1, 1), new Among("\u0438\u043B", 16, 2),
-              new Among("\u044B\u043B", 16, 2), new Among("\u0435\u043C", -1, 1),
-              new Among("\u0438\u043C", -1, 2), new Among("\u044B\u043C", -1, 2),
-              new Among("\u043D", -1, 1), new Among("\u0435\u043D", 22, 2),
-              new Among("\u043B\u043E", -1, 1),
-              new Among("\u0438\u043B\u043E", 24, 2),
-              new Among("\u044B\u043B\u043E", 24, 2),
-              new Among("\u043D\u043E", -1, 1),
-              new Among("\u0435\u043D\u043E", 27, 2),
-              new Among("\u043D\u043D\u043E", 27, 1),
-              new Among("\u0435\u0442", -1, 1),
-              new Among("\u0443\u0435\u0442", 30, 2),
-              new Among("\u0438\u0442", -1, 2), new Among("\u044B\u0442", -1, 2),
-              new Among("\u044E\u0442", -1, 1),
-              new Among("\u0443\u044E\u0442", 34, 2),
-              new Among("\u044F\u0442", -1, 2), new Among("\u043D\u044B", -1, 1),
-              new Among("\u0435\u043D\u044B", 37, 2),
-              new Among("\u0442\u044C", -1, 1),
-              new Among("\u0438\u0442\u044C", 39, 2),
-              new Among("\u044B\u0442\u044C", 39, 2),
-              new Among("\u0435\u0448\u044C", -1, 1),
-              new Among("\u0438\u0448\u044C", -1, 2), new Among("\u044E", -1, 2),
-              new Among("\u0443\u044E", 44, 2)
-            ],
-            a_5 = [
-              new Among("\u0430", -1, 1), new Among("\u0435\u0432", -1, 1),
-              new Among("\u043E\u0432", -1, 1), new Among("\u0435", -1, 1),
-              new Among("\u0438\u0435", 3, 1), new Among("\u044C\u0435", 3, 1),
-              new Among("\u0438", -1, 1), new Among("\u0435\u0438", 6, 1),
-              new Among("\u0438\u0438", 6, 1),
-              new Among("\u0430\u043C\u0438", 6, 1),
-              new Among("\u044F\u043C\u0438", 6, 1),
-              new Among("\u0438\u044F\u043C\u0438", 10, 1),
-              new Among("\u0439", -1, 1), new Among("\u0435\u0439", 12, 1),
-              new Among("\u0438\u0435\u0439", 13, 1),
-              new Among("\u0438\u0439", 12, 1), new Among("\u043E\u0439", 12, 1),
-              new Among("\u0430\u043C", -1, 1), new Among("\u0435\u043C", -1, 1),
-              new Among("\u0438\u0435\u043C", 18, 1),
-              new Among("\u043E\u043C", -1, 1), new Among("\u044F\u043C", -1, 1),
-              new Among("\u0438\u044F\u043C", 21, 1), new Among("\u043E", -1, 1),
-              new Among("\u0443", -1, 1), new Among("\u0430\u0445", -1, 1),
-              new Among("\u044F\u0445", -1, 1),
-              new Among("\u0438\u044F\u0445", 26, 1), new Among("\u044B", -1, 1),
-              new Among("\u044C", -1, 1), new Among("\u044E", -1, 1),
-              new Among("\u0438\u044E", 30, 1), new Among("\u044C\u044E", 30, 1),
-              new Among("\u044F", -1, 1), new Among("\u0438\u044F", 33, 1),
-              new Among("\u044C\u044F", 33, 1)
-            ],
-            a_6 = [
-              new Among("\u043E\u0441\u0442", -1, 1),
-              new Among("\u043E\u0441\u0442\u044C", -1, 1)
-            ],
-            a_7 = [
-              new Among("\u0435\u0439\u0448\u0435", -1, 1),
-              new Among("\u043D", -1, 2), new Among("\u0435\u0439\u0448", -1, 1),
-              new Among("\u044C", -1, 3)
-            ],
-            g_v = [33, 65, 8, 232],
-            I_p2, I_pV, sbp = new SnowballProgram();
-          this.setCurrent = function(word) {
-            sbp.setCurrent(word);
-          };
-          this.getCurrent = function() {
-            return sbp.getCurrent();
-          };
+      var BaseStemmer = lunr.stemmerSupport.BaseStemmer;
 
-          function habr3() {
-            while (!sbp.in_grouping(g_v, 1072, 1103)) {
-              if (sbp.cursor >= sbp.limit)
-                return false;
-              sbp.cursor++;
-            }
-            return true;
-          }
+      /* russian-stemmer.js, generated by Snowball 3.2.0 */
+      var Stemmer = (function() {
+        // Generated from russian.sbl by Snowball 3.2.0 - https://snowballstem.org/
 
-          function habr4() {
-            while (!sbp.out_grouping(g_v, 1072, 1103)) {
-              if (sbp.cursor >= sbp.limit)
-                return false;
-              sbp.cursor++;
-            }
-            return true;
-          }
+        // deno-lint-ignore-file ban-unused-ignore no-constant-condition no-empty prefer-const
 
-          function r_mark_regions() {
-            I_pV = sbp.limit;
-            I_p2 = I_pV;
-            if (habr3()) {
-              I_pV = sbp.cursor;
-              if (habr4())
-                if (habr3())
-                  if (habr4())
-                    I_p2 = sbp.cursor;
-            }
-          }
+        const a_0 = [
+          ["\u0432", 1],
+          ["\u0438\u0432", 2, 1],
+          ["\u044B\u0432", 2, 2],
+          ["\u0432\u0448\u0438", 1],
+          ["\u0438\u0432\u0448\u0438", 2, 1],
+          ["\u044B\u0432\u0448\u0438", 2, 2],
+          ["\u0432\u0448\u0438\u0441\u044C", 1],
+          ["\u0438\u0432\u0448\u0438\u0441\u044C", 2, 1],
+          ["\u044B\u0432\u0448\u0438\u0441\u044C", 2, 2]
+        ];
 
-          function r_R2() {
-            return I_p2 <= sbp.cursor;
-          }
+        const a_1 = [
+          ["\u0435\u0435", 1],
+          ["\u0438\u0435", 1],
+          ["\u043E\u0435", 1],
+          ["\u044B\u0435", 1],
+          ["\u0438\u043C\u0438", 1],
+          ["\u044B\u043C\u0438", 1],
+          ["\u0435\u0439", 1],
+          ["\u0438\u0439", 1],
+          ["\u043E\u0439", 1],
+          ["\u044B\u0439", 1],
+          ["\u0435\u043C", 1],
+          ["\u0438\u043C", 1],
+          ["\u043E\u043C", 1],
+          ["\u044B\u043C", 1],
+          ["\u0435\u0433\u043E", 1],
+          ["\u043E\u0433\u043E", 1],
+          ["\u0435\u043C\u0443", 1],
+          ["\u043E\u043C\u0443", 1],
+          ["\u0438\u0445", 1],
+          ["\u044B\u0445", 1],
+          ["\u0435\u044E", 1],
+          ["\u043E\u044E", 1],
+          ["\u0443\u044E", 1],
+          ["\u044E\u044E", 1],
+          ["\u0430\u044F", 1],
+          ["\u044F\u044F", 1]
+        ];
 
-          function habr2(a, n) {
-            var among_var, v_1;
-            sbp.ket = sbp.cursor;
-            among_var = sbp.find_among_b(a, n);
-            if (among_var) {
-              sbp.bra = sbp.cursor;
-              switch (among_var) {
-                case 1:
-                  v_1 = sbp.limit - sbp.cursor;
-                  if (!sbp.eq_s_b(1, "\u0430")) {
-                    sbp.cursor = sbp.limit - v_1;
-                    if (!sbp.eq_s_b(1, "\u044F"))
-                      return false;
+        const a_2 = [
+          ["\u0435\u043C", 1],
+          ["\u043D\u043D", 1],
+          ["\u0432\u0448", 1],
+          ["\u0438\u0432\u0448", 2, 1],
+          ["\u044B\u0432\u0448", 2, 2],
+          ["\u0449", 1],
+          ["\u044E\u0449", 1, 1],
+          ["\u0443\u044E\u0449", 2, 1]
+        ];
+
+        const a_3 = [
+          ["\u0441\u044C", 1],
+          ["\u0441\u044F", 1]
+        ];
+
+        const a_4 = [
+          ["\u043B\u0430", 1],
+          ["\u0438\u043B\u0430", 2, 1],
+          ["\u044B\u043B\u0430", 2, 2],
+          ["\u043D\u0430", 1],
+          ["\u0435\u043D\u0430", 2, 1],
+          ["\u0435\u0442\u0435", 1],
+          ["\u0438\u0442\u0435", 2],
+          ["\u0439\u0442\u0435", 1],
+          ["\u0435\u0439\u0442\u0435", 2, 1],
+          ["\u0443\u0439\u0442\u0435", 2, 2],
+          ["\u043B\u0438", 1],
+          ["\u0438\u043B\u0438", 2, 1],
+          ["\u044B\u043B\u0438", 2, 2],
+          ["\u0439", 1],
+          ["\u0435\u0439", 2, 1],
+          ["\u0443\u0439", 2, 2],
+          ["\u043B", 1],
+          ["\u0438\u043B", 2, 1],
+          ["\u044B\u043B", 2, 2],
+          ["\u0435\u043C", 1],
+          ["\u0438\u043C", 2],
+          ["\u044B\u043C", 2],
+          ["\u043D", 1],
+          ["\u0435\u043D", 2, 1],
+          ["\u043B\u043E", 1],
+          ["\u0438\u043B\u043E", 2, 1],
+          ["\u044B\u043B\u043E", 2, 2],
+          ["\u043D\u043E", 1],
+          ["\u0435\u043D\u043E", 2, 1],
+          ["\u043D\u043D\u043E", 1, 2],
+          ["\u0435\u0442", 1],
+          ["\u0443\u0435\u0442", 2, 1],
+          ["\u0438\u0442", 2],
+          ["\u044B\u0442", 2],
+          ["\u044E\u0442", 1],
+          ["\u0443\u044E\u0442", 2, 1],
+          ["\u044F\u0442", 2],
+          ["\u043D\u044B", 1],
+          ["\u0435\u043D\u044B", 2, 1],
+          ["\u0442\u044C", 1],
+          ["\u0438\u0442\u044C", 2, 1],
+          ["\u044B\u0442\u044C", 2, 2],
+          ["\u0435\u0448\u044C", 1],
+          ["\u0438\u0448\u044C", 2],
+          ["\u044E", 2],
+          ["\u0443\u044E", 2, 1]
+        ];
+
+        const a_5 = [
+          ["\u0430", 1],
+          ["\u0435\u0432", 1],
+          ["\u043E\u0432", 1],
+          ["\u0435", 1],
+          ["\u0438\u0435", 1, 1],
+          ["\u044C\u0435", 1, 2],
+          ["\u0438", 1],
+          ["\u0435\u0438", 1, 1],
+          ["\u0438\u0438", 1, 2],
+          ["\u0430\u043C\u0438", 1, 3],
+          ["\u044F\u043C\u0438", 1, 4],
+          ["\u0438\u044F\u043C\u0438", 1, 1],
+          ["\u0439", 1],
+          ["\u0435\u0439", 1, 1],
+          ["\u0438\u0435\u0439", 1, 1],
+          ["\u0438\u0439", 1, 3],
+          ["\u043E\u0439", 1, 4],
+          ["\u0430\u043C", 1],
+          ["\u0435\u043C", 1],
+          ["\u0438\u0435\u043C", 1, 1],
+          ["\u043E\u043C", 1],
+          ["\u044F\u043C", 1],
+          ["\u0438\u044F\u043C", 1, 1],
+          ["\u043E", 1],
+          ["\u0443", 1],
+          ["\u0430\u0445", 1],
+          ["\u044F\u0445", 1],
+          ["\u0438\u044F\u0445", 1, 1],
+          ["\u044B", 1],
+          ["\u044C", 1],
+          ["\u044E", 1],
+          ["\u0438\u044E", 1, 1],
+          ["\u044C\u044E", 1, 2],
+          ["\u044F", 1],
+          ["\u0438\u044F", 1, 1],
+          ["\u044C\u044F", 1, 2]
+        ];
+
+        const a_6 = [
+          ["\u043E\u0441\u0442", 1],
+          ["\u043E\u0441\u0442\u044C", 1]
+        ];
+
+        const a_7 = [
+          ["\u0435\u0439\u0448\u0435", 1],
+          ["\u043D", 2],
+          ["\u0435\u0439\u0448", 1],
+          ["\u044C", 3]
+        ];
+
+        const /**@type {Array<number>}*/ g_v = [33, 65, 8, 232];
+
+        var B = BaseStemmer;
+
+        return class extends B {
+
+
+          /** @return {boolean} */
+          #stem() {
+            let /**@type {number}*/ a;
+            let /**@type {number}*/ I_p2;
+            let /**@type {number}*/ I_pV;
+            const /**@type {number}*/ v_1 = this.c;
+            // deno-lint-ignore no-unused-labels
+            lab0: {
+              while (true) {
+                const /**@type {number}*/ v_2 = this.c;
+                // deno-lint-ignore no-unused-labels
+                lab1: {
+                  // deno-lint-ignore no-unused-labels
+                  golab2: while (true) {
+                    const /**@type {number}*/ v_3 = this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab3: {
+                      this.bra = this.c;
+                      if (!(this.eq_s("\u0451"))) break lab3;
+                      this.ket = this.c;
+                      this.c = v_3;
+                      break golab2;
+                    }
+                    this.c = v_3;
+                    if (this.c >= this.limit) break lab1;
+                    this.c++;
                   }
-                case 2:
-                  sbp.slice_del();
-                  break;
-              }
-              return true;
-            }
-            return false;
-          }
-
-          function r_perfective_gerund() {
-            return habr2(a_0, 9);
-          }
-
-          function habr1(a, n) {
-            var among_var;
-            sbp.ket = sbp.cursor;
-            among_var = sbp.find_among_b(a, n);
-            if (among_var) {
-              sbp.bra = sbp.cursor;
-              if (among_var == 1)
-                sbp.slice_del();
-              return true;
-            }
-            return false;
-          }
-
-          function r_adjective() {
-            return habr1(a_1, 26);
-          }
-
-          function r_adjectival() {
-            var among_var;
-            if (r_adjective()) {
-              habr2(a_2, 8);
-              return true;
-            }
-            return false;
-          }
-
-          function r_reflexive() {
-            return habr1(a_3, 2);
-          }
-
-          function r_verb() {
-            return habr2(a_4, 46);
-          }
-
-          function r_noun() {
-            habr1(a_5, 36);
-          }
-
-          function r_derivational() {
-            var among_var;
-            sbp.ket = sbp.cursor;
-            among_var = sbp.find_among_b(a_6, 2);
-            if (among_var) {
-              sbp.bra = sbp.cursor;
-              if (r_R2() && among_var == 1)
-                sbp.slice_del();
-            }
-          }
-
-          function r_tidy_up() {
-            var among_var;
-            sbp.ket = sbp.cursor;
-            among_var = sbp.find_among_b(a_7, 4);
-            if (among_var) {
-              sbp.bra = sbp.cursor;
-              switch (among_var) {
-                case 1:
-                  sbp.slice_del();
-                  sbp.ket = sbp.cursor;
-                  if (!sbp.eq_s_b(1, "\u043D"))
-                    break;
-                  sbp.bra = sbp.cursor;
-                case 2:
-                  if (!sbp.eq_s_b(1, "\u043D"))
-                    break;
-                case 3:
-                  sbp.slice_del();
-                  break;
+                  this.slice_from("\u0435");
+                  continue;
+                }
+                this.c = v_2;
+                break;
               }
             }
-          }
-          this.stem = function() {
-            r_mark_regions();
-            sbp.cursor = sbp.limit;
-            if (sbp.cursor < I_pV)
-              return false;
-            sbp.limit_backward = I_pV;
-            if (!r_perfective_gerund()) {
-              sbp.cursor = sbp.limit;
-              if (!r_reflexive())
-                sbp.cursor = sbp.limit;
-              if (!r_adjectival()) {
-                sbp.cursor = sbp.limit;
-                if (!r_verb()) {
-                  sbp.cursor = sbp.limit;
-                  r_noun();
+            this.c = v_1;
+            // deno-lint-ignore no-unused-labels
+            lab4: {
+              I_pV = this.limit;
+              I_p2 = this.limit;
+              const /**@type {number}*/ v_4 = this.c;
+              // deno-lint-ignore no-unused-labels
+              lab5: {
+                if (!this.go_out_grouping(g_v, 1072, 1103)) break lab5;
+                this.c++;
+                I_pV = this.c;
+                if (!this.go_in_grouping(g_v, 1072, 1103)) break lab5;
+                this.c++;
+                if (!this.go_out_grouping(g_v, 1072, 1103)) break lab5;
+                this.c++;
+                if (!this.go_in_grouping(g_v, 1072, 1103)) break lab5;
+                this.c++;
+                I_p2 = this.c;
+              }
+              this.c = v_4;
+            }
+            this.limit_backward = this.c;
+            this.c = this.limit;
+            if (this.c < I_pV) return false;
+            const /**@type {number}*/ v_5 = this.limit_backward;
+            this.limit_backward = I_pV;
+            const /**@type {number}*/ v_6 = this.limit - this.c;
+            // deno-lint-ignore no-unused-labels
+            lab6: {
+              // deno-lint-ignore no-unused-labels
+              lab7: {
+                const /**@type {number}*/ v_7 = this.limit - this.c;
+                // deno-lint-ignore no-unused-labels
+                lab8: {
+                  this.ket = this.c;
+                  a = this.find_among_b(a_0);
+                  if (a === 0) break lab8;
+                  this.bra = this.c;
+                  switch (a) {
+                    case 1: {
+                      // deno-lint-ignore no-unused-labels
+                      lab9: {
+                        // deno-lint-ignore no-unused-labels
+                        lab10: {
+                          if (!(this.eq_s_b("\u0430"))) break lab10;
+                          break lab9;
+                        }
+                        if (!(this.eq_s_b("\u044F"))) break lab8;
+                      }
+                      this.slice_del();
+                      break;
+                    }
+                    case 2: {
+                      this.slice_del();
+                      break;
+                    }
+                  }
+                  break lab7;
+                }
+                this.c = this.limit - v_7;
+                const /**@type {number}*/ v_8 = this.limit - this.c;
+                // deno-lint-ignore no-unused-labels
+                lab11: {
+                  this.ket = this.c;
+                  if (this.find_among_b(a_3) === 0) {
+                    this.c = this.limit - v_8;
+                    break lab11;
+                  }
+                  this.bra = this.c;
+                  this.slice_del();
+                }
+                // deno-lint-ignore no-unused-labels
+                lab12: {
+                  const /**@type {number}*/ v_9 = this.limit - this.c;
+                  // deno-lint-ignore no-unused-labels
+                  lab13: {
+                    this.ket = this.c;
+                    if (this.find_among_b(a_1) === 0) break lab13;
+                    this.bra = this.c;
+                    this.slice_del();
+                    const /**@type {number}*/ v_10 = this.limit - this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab14: {
+                      this.ket = this.c;
+                      a = this.find_among_b(a_2);
+                      if (a === 0) {
+                        this.c = this.limit - v_10;
+                        break lab14;
+                      }
+                      this.bra = this.c;
+                      switch (a) {
+                        case 1: {
+                          // deno-lint-ignore no-unused-labels
+                          lab15: {
+                            // deno-lint-ignore no-unused-labels
+                            lab16: {
+                              if (!(this.eq_s_b("\u0430"))) break lab16;
+                              break lab15;
+                            }
+                            if (!(this.eq_s_b("\u044F"))) {
+                              this.c = this.limit - v_10;
+                              break lab14;
+                            }
+                          }
+                          this.slice_del();
+                          break;
+                        }
+                        case 2: {
+                          this.slice_del();
+                          break;
+                        }
+                      }
+                    }
+                    break lab12;
+                  }
+                  this.c = this.limit - v_9;
+                  // deno-lint-ignore no-unused-labels
+                  lab17: {
+                    this.ket = this.c;
+                    a = this.find_among_b(a_4);
+                    if (a === 0) break lab17;
+                    this.bra = this.c;
+                    switch (a) {
+                      case 1: {
+                        // deno-lint-ignore no-unused-labels
+                        lab18: {
+                          // deno-lint-ignore no-unused-labels
+                          lab19: {
+                            if (!(this.eq_s_b("\u0430"))) break lab19;
+                            break lab18;
+                          }
+                          if (!(this.eq_s_b("\u044F"))) break lab17;
+                        }
+                        this.slice_del();
+                        break;
+                      }
+                      case 2: {
+                        this.slice_del();
+                        break;
+                      }
+                    }
+                    break lab12;
+                  }
+                  this.c = this.limit - v_9;
+                  this.ket = this.c;
+                  if (this.find_among_b(a_5) === 0) break lab6;
+                  this.bra = this.c;
+                  this.slice_del();
                 }
               }
             }
-            sbp.cursor = sbp.limit;
-            sbp.ket = sbp.cursor;
-            if (sbp.eq_s_b(1, "\u0438")) {
-              sbp.bra = sbp.cursor;
-              sbp.slice_del();
-            } else
-              sbp.cursor = sbp.limit;
-            r_derivational();
-            sbp.cursor = sbp.limit;
-            r_tidy_up();
+            this.c = this.limit - v_6;
+            const /**@type {number}*/ v_11 = this.limit - this.c;
+            // deno-lint-ignore no-unused-labels
+            lab20: {
+              this.ket = this.c;
+              if (!(this.eq_s_b("\u0438"))) {
+                this.c = this.limit - v_11;
+                break lab20;
+              }
+              this.bra = this.c;
+              this.slice_del();
+            }
+            const /**@type {number}*/ v_12 = this.limit - this.c;
+            // deno-lint-ignore no-unused-labels
+            lab21: {
+              this.ket = this.c;
+              if (this.find_among_b(a_6) === 0) break lab21;
+              this.bra = this.c;
+              if ( /**@type {boolean}*/ (I_p2 > this.c)) break lab21;
+              this.slice_del();
+            }
+            this.c = this.limit - v_12;
+            const /**@type {number}*/ v_13 = this.limit - this.c;
+            // deno-lint-ignore no-unused-labels
+            lab22: {
+              this.ket = this.c;
+              a = this.find_among_b(a_7);
+              if (a === 0) break lab22;
+              this.bra = this.c;
+              switch (a) {
+                case 1: {
+                  this.slice_del();
+                  this.ket = this.c;
+                  if (!(this.eq_s_b("\u043D"))) break lab22;
+                  this.bra = this.c;
+                  if (!(this.eq_s_b("\u043D"))) break lab22;
+                  this.slice_del();
+                  break;
+                }
+                case 2: {
+                  if (!(this.eq_s_b("\u043D"))) break lab22;
+                  this.slice_del();
+                  break;
+                }
+                case 3: {
+                  this.slice_del();
+                  break;
+                }
+              }
+            }
+            this.c = this.limit - v_13;
+            this.limit_backward = v_5;
+            this.c = this.limit_backward;
             return true;
           }
-        };
+
+          /**@return{string}*/
+          stem( /**@type {string}*/ input) {
+            this.setCurrent(input);
+            this.#stem();
+            return this.getCurrent();
+          }
+
+          stemWord = this.stem;
+        }
+      })();
+
+      var st = new Stemmer();
 
       /* and return a function that stems a word for the current locale */
       return function(token) {
         return token.update(function(word) {
-          st.setCurrent(word);
-          st.stem();
-          return st.getCurrent();
+          return st.stemWord(word);
         })
       }
     })();
 
     lunr.Pipeline.registerFunction(lunr.ru.stemmer, 'stemmer-ru');
+
+    /* fold wildcard terms like the stemmer folds the index (generated by build/derive-fold-maps.js) */
+    lunr.ru.wildcardNormalizer = lunr.stemmerSupport.generateWildcardNormalizer({
+      "\u0451": "\u0435"
+    });
+    lunr.ru.wildcardNormalizer.label = "wildcardNormalizer-ru";
+    lunr.ru.wildcardNormalizer.pipelineFunctionLabel = "stemmer-ru";
+    lunr.stemmerSupport.addQueryParserWildcardNormalizer(lunr, lunr.ru.wildcardNormalizer);
 
 
     lunr.ru.stopWordFilter = lunr.generateStopWordFilter('а без более больше будет будто бы был была были было быть в вам вас вдруг ведь во вот впрочем все всегда всего всех всю вы где говорил да даже два для до другой его ее ей ему если есть еще ж же жизнь за зачем здесь и из или им иногда их к кажется как какая какой когда конечно кто куда ли лучше между меня мне много может можно мой моя мы на над надо наконец нас не него нее ней нельзя нет ни нибудь никогда ним них ничего но ну о об один он она они опять от перед по под после потом потому почти при про раз разве с сам свою себе себя сегодня сейчас сказал сказала сказать со совсем так такой там тебя тем теперь то тогда того тоже только том тот три тут ты у уж уже хорошо хоть чего человек чем через что чтоб чтобы чуть эти этого этой этом этот эту я'.split(' '));
