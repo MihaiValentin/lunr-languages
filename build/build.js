@@ -307,7 +307,11 @@ var list = [
         stopWords: { custom: 'ar.csv' },
         script: 'Arabic'
     }, {
-        locale: 'hi'
+        locale: 'hi',
+        snowball: 'hindi',
+        copyright: '2020, Mihir Kumar',
+        stopWords: { custom: 'hi.csv' },
+        script: ['Devanagari', 'Latin']
     }, {
         locale: 'da',
         snowball: 'danish',
@@ -399,6 +403,10 @@ var list = [
         script: 'Latin'
     }, {
         locale: 'ta',
+        snowball: 'tamil',
+        copyright: '2021, Manikandan Venkatasubban',
+        stopWords: { custom: 'ta.csv' },
+        script: ['Tamil', 'Latin']
     }, {
         locale: 'te'
     }, {
@@ -418,6 +426,10 @@ var list = [
         locale: 'ko',
     }, {
         locale: 'hy',
+        snowball: 'armenian',
+        copyright: '2021, Manikandan Venkatasubban',
+        stopWords: { custom: 'hy.csv' },
+        script: ['Armenian', 'Latin']
     }, {
         locale: 'he',
     }, {

@@ -19,6 +19,7 @@
 ### Armenian (hy)
 
 - Searches no longer go through lunr's English stemmer: a Latin word in an Armenian index (`running`) is found by itself again.
+- Stemmed for the first time: 1.x returned words unchanged. Generated from Snowball 3.2.0's Armenian stemmer; the stop words are unchanged.
 
 ### Chinese (zh)
 
@@ -67,6 +68,7 @@
 ### Hindi (hi)
 
 - Loads without `wordcut.js`; loading failed with a TypeError unless it was attached first. `lunr.hi.tokenizer` (a Thai segmenter that was never used for indexing) is removed.
+- Stemmed for the first time: 1.x returned words unchanged. Generated from Snowball 3.2.0's Hindi stemmer; the stop words are unchanged.
 
 ### Hungarian (hu)
 
@@ -142,6 +144,8 @@
 ### Tamil (ta)
 
 - Loads without `wordcut.js`; loading failed with a TypeError unless it was attached first. `lunr.ta.tokenizer` (a Thai segmenter that was never used for indexing) is removed.
+- Stemmed for the first time: 1.x returned words unchanged. Generated from Snowball 3.2.0's Tamil stemmer; the stop words are unchanged.
+- The stemmer changes letters inside the word, so wildcard terms get rules for it, among them the demonstrative prefixes (`இந்`, `அந்`, …).
 
 ### Telugu (te)
 

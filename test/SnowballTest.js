@@ -89,6 +89,9 @@ describe("Wildcard searches", function () {
         // el: σπίτια found with and without the accent; αθεΐα, whose ΐ Snowball folds to η
         ['el', 'σπίτια', ['σπίτ*', 'σπιτ*']],
         ['el', 'αθεΐα', ['αθεΐ*']],
+        // ta: இந்தக்கட்சி ("this party"), found with and without the demonstrative prefix இந்
+        ['ta', 'இந்தக்கட்சி',
+            ['இந்தக்க*', 'தக்க*']],
         // ar: الكتابة (with the article ال), found without it; أحمد found typed without the hamza
         ['ar', 'الكتابة', ['كتا*', 'الكتا*']],
         ['ar', 'أحمد', ['أحم*', 'احم*']],
