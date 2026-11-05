@@ -31,7 +31,7 @@ Installed separately, only when a segmenter plugin is used; their licenses apply
 | Component | License | Used for |
 |---|---|---|
 | [snowball-data](https://github.com/snowballstem/snowball-data) word lists (`voc.txt`, `output.txt`) | BSD-3-Clause | deriving the wildcard maps; the stem samples of the tests (`build/snowball/stem-samples.json`, in the repository) |
-| [unicode-8.0.0](https://www.npmjs.com/package/unicode-8.0.0) (Unicode data) | MIT | the character ranges of the trimmers |
+| [@unicode/unicode-17.0.0](https://www.npmjs.com/package/@unicode/unicode-17.0.0) (Unicode 17.0 data) | MIT | the character ranges of the trimmers |
 
 ## Stop word lists of other origin
 

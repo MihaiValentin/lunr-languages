@@ -335,7 +335,7 @@ function derive(name) {
 /* letters of the script that the sample (almost) lacks: does the stemmer fold them to their base letter? */
 function probe(name, stemmer, words, stems, map) {
     var scripts = [].concat(languages[name].script);   // several scripts: the language's own comes first
-    var script = require('unicode-8.0.0/scripts/' + scripts[0] + '/regex');
+    var script = require('@unicode/unicode-17.0.0/Script/' + scripts[0] + '/regex.js');
     var seen = {};
     words.forEach(function(w) {
         for (var i = 0; i < w.length; i++) seen[w[i]] = (seen[w[i]] || 0) + 1;

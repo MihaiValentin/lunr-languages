@@ -87,10 +87,10 @@
     "url": "https://github.com/MihaiValentin/lunr-languages"
   },
   "devDependencies": {
+    "@unicode/unicode-17.0.0": "1.6.17",
     "acorn": "^8.19.0",
     "js-beautify": "^2.0.3",
     "typescript": "5.6.3",
-    "uglify-js": "^3.19.3",
-    "unicode-8.0.0": "^0.1.5"
+    "uglify-js": "^3.19.3"
   }
 }

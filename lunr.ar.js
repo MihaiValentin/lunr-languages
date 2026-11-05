@@ -93,7 +93,7 @@
     };
 
     /* lunr trimmer function */
-    lunr.ar.wordCharacters = "\u0600-\u0604\u0606-\u060B\u060D-\u061A\u061E\u0620-\u063F\u0641-\u064A\u0656-\u066F\u0671-\u06DC\u06DE-\u06FF\u0750-\u077F\u08A0-\u08B4\u08E3-\u08FF\uFB50-\uFBC1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFD\uFE70-\uFE74\uFE76-\uFEFC";
+    lunr.ar.wordCharacters = "\u0600-\u0604\u0606-\u060B\u060D-\u061A\u061C-\u061E\u0620-\u063F\u0641-\u064A\u0656-\u066F\u0671-\u06DC\u06DE-\u06FF\u0750-\u077F\u0870-\u0891\u0897-\u08E1\u08E3-\u08FF\uFB50-\uFD3D\uFD40-\uFDCF\uFDF0-\uFDFF\uFE70-\uFE74\uFE76-\uFEFC";
     lunr.ar.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.ar.wordCharacters);
 
     lunr.Pipeline.registerFunction(lunr.ar.trimmer, 'trimmer-ar');

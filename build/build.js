@@ -83,7 +83,7 @@ function wordCharacters(script) {
     if (Array.isArray(script)) {
         return script.map(wordCharacters).join('');
     }
-    var charRegex = require('unicode-8.0.0/scripts/' + script + '/regex');
+    var charRegex = require('@unicode/unicode-17.0.0/Script/' + script + '/regex.js');
     // Now from /[a-z]/ get "a-z". Scripts with letters outside the BMP (Arabic) add them as
     // alternatives, /[…]|\uD803[…]/; the trimmer's character class works on UTF-16 units, so only the
     // BMP class is kept. Inside the class, the alternatives would break the trimmer's regex.
@@ -312,7 +312,7 @@ function updateStemmerSupport(support, version) {
  *   snowball       Snowball's algorithm name: the stemmer build/snowball/<snowball>-stemmer.js, its
  *                  word list in snowball-data and its wildcard map are fetched and derived for it, and
  *                  lunr.<locale>.js is generated from build/lunr.template
- *   script         Unicode script of the word characters (unicode-8.0.0 package), for the trimmer and
+ *   script         Unicode script of the word characters (Unicode 17.0, @unicode/unicode-17.0.0), for the trimmer and
  *                  for probing letters in the wildcard map derivation; a list (['Arabic', 'Latin'])
  *                  keeps the letters of all of them, the first is probed
  *   copyright      the copyright line of the generated file's header (default: 2014, Mihai Valentin)
