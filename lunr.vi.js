@@ -2,16 +2,7 @@
  * Lunr languages, `Vietnamese` language
  * https://github.com/MihaiValentin/lunr-languages
  *
- * Copyright 2017, Keerati Thiwanruk
- * http://www.mozilla.org/MPL/
- */
-/*!
- * based on
- * Snowball JavaScript Library v0.3
- * http://code.google.com/p/urim/
- * http://snowball.tartarus.org/
- *
- * Copyright 2010, Oleg Mazko
+ * Copyright 2019, Bill Moyers
  * http://www.mozilla.org/MPL/
  */
 

@@ -190,4 +190,5 @@
 
 ### Vietnamese (vi)
 
+- The file header credits its author (Bill Moyers, 2019); it was copied from the Thai file and named Keerati Thiwanruk and Snowball, which `lunr.vi.js` doesn't use.
 - Searches no longer go through lunr's English stemmer: a Latin word in a Vietnamese index (`running`) is found by itself again.
