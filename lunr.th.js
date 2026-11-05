@@ -54,9 +54,7 @@
 
     /*
     Thai tokenization is the same to Japanense, which does not take into account spaces.
-    So, it uses the same logic to assign tokenization function due to different Lunr versions.
     */
-    var isLunr2 = lunr.version[0] == "2";
 
     /* register specific locale function */
     lunr.th = function() {
@@ -66,16 +64,7 @@
         lunr.th.trimmer
       );
 
-      if (isLunr2) { // for lunr version 2.0.0
-        this.tokenizer = lunr.th.tokenizer;
-      } else {
-        if (lunr.tokenizer) { // for lunr version 0.6.0
-          lunr.tokenizer = lunr.th.tokenizer;
-        }
-        if (this.tokenizerFn) { // for lunr version 0.7.0 -> 1.0.0
-          this.tokenizerFn = lunr.th.tokenizer;
-        }
-      }
+      this.tokenizer = lunr.th.tokenizer;
     };
 
     /* lunr trimmer function */
@@ -89,11 +78,13 @@
       //console.log(obj);
       if (!arguments.length || obj == null || obj == undefined) return []
       if (Array.isArray(obj)) return obj.map(function(t) {
-        return isLunr2 ? new lunr.Token(t) : t
+        return new lunr.Token(t)
       })
 
       var str = obj.toString().replace(/^\s+/, '');
-      return segmenter.cut(str).split('|');
+      return segmenter.cut(str).split('|').map(function(t) {
+        return new lunr.Token(t)
+      });
     }
   };
 }))

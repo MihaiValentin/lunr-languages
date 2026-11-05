@@ -3,17 +3,13 @@ var describe = test.describe;
 var it = test.it;
 var assert = require('assert');
 
+// a trimmer applied to a word (lunr 2 passes tokens)
+var trimToken = function (lunr, trimmer, word) {
+    return trimmer(new lunr.Token(word)).toString();
+};
+
 var lunrVersions = [
     {
-        version: "0.6.0",
-        lunr: "lunr-0.6.0.min"
-    }, {
-        version: "0.7.0",
-        lunr: "lunr-0.7.0.min"
-    }, {
-        version: "1.0.0",
-        lunr: "lunr-1.0.0.min"
-    }, {
         version: "2.0.1",
         lunr: "lunr-2.0.1"
     }, {
@@ -169,11 +165,9 @@ lunrVersions.forEach(function (lunrVersion) {
                 assert.equal(idxRu.search('1234').length, 1)
             });
 
-            if (lunrVersion.version[0] === "2") {
-                it("should keep wildcard searches with numeric prefixes", function () {
-                    assert.equal(idxDe.search('123*').length, 1)
-                });
-            }
+            it("should keep wildcard searches with numeric prefixes", function () {
+                assert.equal(idxDe.search('123*').length, 1)
+            });
         });
         describe("should trim punctuation around locale words in language trimmers", function () {
             delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
@@ -184,19 +178,23 @@ lunrVersions.forEach(function (lunrVersion) {
             require('../lunr.hy.js')(lunr);
             require('../lunr.vi.js')(lunr);
 
+            var trim = function (trimmer, word) {
+                return trimmer(new lunr.Token(word)).toString()
+            };
+
             it("should trim Korean punctuation", function () {
-                assert.equal(lunr.ko.trimmer('(한국어)'), '한국어')
-                assert.equal(lunr.ko.trimmer('한국어,'), '한국어')
+                assert.equal(trim(lunr.ko.trimmer, '(한국어)'), '한국어')
+                assert.equal(trim(lunr.ko.trimmer, '한국어,'), '한국어')
             });
 
             it("should trim Armenian punctuation", function () {
-                assert.equal(lunr.hy.trimmer('(միսը)'), 'միսը')
-                assert.equal(lunr.hy.trimmer('միսը,'), 'միսը')
+                assert.equal(trim(lunr.hy.trimmer, '(միսը)'), 'միսը')
+                assert.equal(trim(lunr.hy.trimmer, 'միսը,'), 'միսը')
             });
 
             it("should trim Vietnamese punctuation", function () {
-                assert.equal(lunr.vi.trimmer('(đình)'), 'đình')
-                assert.equal(lunr.vi.trimmer('đình,'), 'đình')
+                assert.equal(trim(lunr.vi.trimmer, '(đình)'), 'đình')
+                assert.equal(trim(lunr.vi.trimmer, 'đình,'), 'đình')
             });
         });
         describe("should trim punctuation around Thai words", function () {
@@ -208,12 +206,12 @@ lunrVersions.forEach(function (lunrVersion) {
             require('../lunr.th.js')(lunr);
 
             it("should trim Thai punctuation", function () {
-                assert.equal(lunr.th.trimmer('(สวัสดี)'), 'สวัสดี')
-                assert.equal(lunr.th.trimmer('สวัสดี,'), 'สวัสดี')
+                assert.equal(trimToken(lunr, lunr.th.trimmer, '(สวัสดี)'), 'สวัสดี')
+                assert.equal(trimToken(lunr, lunr.th.trimmer, 'สวัสดี,'), 'สวัสดี')
             });
 
             it("should keep Latin words in Thai text", function () {
-                assert.equal(lunr.th.trimmer('(iPhone)'), 'iPhone')
+                assert.equal(trimToken(lunr, lunr.th.trimmer, '(iPhone)'), 'iPhone')
             });
         });
         describe("should keep Vietnamese words written with composed letters", function () {
@@ -231,13 +229,13 @@ lunrVersions.forEach(function (lunrVersion) {
             });
 
             it("should keep composed letters at the end of a word", function () {
-                assert.equal(lunr.vi.trimmer('là'), 'là')
-                assert.equal(lunr.vi.trimmer('thủ'), 'thủ')
-                assert.equal(lunr.vi.trimmer('(đó)'), 'đó')
+                assert.equal(trimToken(lunr, lunr.vi.trimmer, 'là'), 'là')
+                assert.equal(trimToken(lunr, lunr.vi.trimmer, 'thủ'), 'thủ')
+                assert.equal(trimToken(lunr, lunr.vi.trimmer, '(đó)'), 'đó')
             });
 
             it("should keep decomposed letters at the end of a word", function () {
-                assert.equal(lunr.vi.trimmer('là'.normalize('NFD')), 'là'.normalize('NFD'))
+                assert.equal(trimToken(lunr, lunr.vi.trimmer, 'là'.normalize('NFD')), 'là'.normalize('NFD'))
             });
 
             it("should find a word ending in a composed letter", function () {
@@ -307,15 +305,13 @@ lunrVersions.forEach(function (lunrVersion) {
                 assert.equal(idx.search('günstig').length, 1)
             });
 
-            if (lunrVersion.version[0] === "2") {
-                it("should find German words with umlauts with wildcard searches", function () {
-                    assert.equal(idx.search('günsti*').length, 1)
-                });
+            it("should find German words with umlauts with wildcard searches", function () {
+                assert.equal(idx.search('günsti*').length, 1)
+            });
 
-                it("should leave non-German indexes unchanged after German is loaded", function () {
-                    assert.equal(defaultIdx.search('günsti*').length, 1)
-                });
-            }
+            it("should leave non-German indexes unchanged after German is loaded", function () {
+                assert.equal(defaultIdx.search('günsti*').length, 1)
+            });
         });
         describe("should normalize French accented queries", function () {
             delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
@@ -336,18 +332,16 @@ lunrVersions.forEach(function (lunrVersion) {
                 assert.equal(idx.search('maitre').length, 1)
             });
 
-            if (lunrVersion.version[0] === "2") {
-                it("should index folded French stems", function () {
-                    assert.ok(idx.invertedIndex.empech)
-                    assert.ok(idx.invertedIndex.maitr)
-                    assert.equal(idx.invertedIndex['empêch'], undefined)
-                    assert.equal(idx.invertedIndex['maîtr'], undefined)
-                });
+            it("should index folded French stems", function () {
+                assert.ok(idx.invertedIndex.empech)
+                assert.ok(idx.invertedIndex.maitr)
+                assert.equal(idx.invertedIndex['empêch'], undefined)
+                assert.equal(idx.invertedIndex['maîtr'], undefined)
+            });
 
-                it("should find French words with accented wildcard searches", function () {
-                    assert.equal(idx.search('maîtr*').length, 1)
-                });
-            }
+            it("should find French words with accented wildcard searches", function () {
+                assert.equal(idx.search('maîtr*').length, 1)
+            });
         });
         Object.keys(testDocuments).forEach(function (language) {
             describe("should be able to correctly find terms in " + language.toUpperCase() + " correctly", function () {
@@ -385,45 +379,43 @@ lunrVersions.forEach(function (lunrVersion) {
             })
         })
 
-        if (lunrVersion.version[0] === "2") {
-            describe("should support opt-in Spanish accent folding", function () {
-                delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+        describe("should support opt-in Spanish accent folding", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
 
-                var lunr = require('./lunr/' + lunrVersion.lunr);
-                require('../lunr.stemmer.support.js')(lunr);
-                require('../lunr.es.js')(lunr);
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            require('../lunr.es.js')(lunr);
 
-                var defaultIdx = lunr(function () {
-                    this.use(lunr.es);
-                    this.field('body');
-                    this.add({ "body": "Respiración", "id": 1 });
-                });
+            var defaultIdx = lunr(function () {
+                this.use(lunr.es);
+                this.field('body');
+                this.add({ "body": "Respiración", "id": 1 });
+            });
 
-                var accentFoldIdx = lunr(function () {
-                    this.use(lunr.es);
-                    this.pipeline.before(lunr.es.stemmer, lunr.es.accentFold);
-                    this.searchPipeline.before(lunr.es.stemmer, lunr.es.accentFold);
-                    this.field('body');
-                    this.add({ "body": "Respiración autonomías hablaré pingüino año", "id": 1 });
-                });
+            var accentFoldIdx = lunr(function () {
+                this.use(lunr.es);
+                this.pipeline.before(lunr.es.stemmer, lunr.es.accentFold);
+                this.searchPipeline.before(lunr.es.stemmer, lunr.es.accentFold);
+                this.field('body');
+                this.add({ "body": "Respiración autonomías hablaré pingüino año", "id": 1 });
+            });
 
-                it("should not fold Spanish accents by default", function () {
-                    assert.equal(defaultIdx.search('respiracion').length, 0)
-                });
+            it("should not fold Spanish accents by default", function () {
+                assert.equal(defaultIdx.search('respiracion').length, 0)
+            });
 
-                it("should find accented Spanish words when accents are omitted", function () {
-                    assert.equal(accentFoldIdx.search('respiracion').length, 1)
-                    assert.equal(accentFoldIdx.search('autonomias').length, 1)
-                    assert.equal(accentFoldIdx.search('hablare').length, 1)
-                    assert.equal(accentFoldIdx.search('pinguino').length, 1)
-                });
+            it("should find accented Spanish words when accents are omitted", function () {
+                assert.equal(accentFoldIdx.search('respiracion').length, 1)
+                assert.equal(accentFoldIdx.search('autonomias').length, 1)
+                assert.equal(accentFoldIdx.search('hablare').length, 1)
+                assert.equal(accentFoldIdx.search('pinguino').length, 1)
+            });
 
-                it("should not fold ene into plain n", function () {
-                    assert.equal(accentFoldIdx.search('ano').length, 0)
-                    assert.equal(accentFoldIdx.search('año').length, 1)
-                });
-            })
-        }
+            it("should not fold ene into plain n", function () {
+                assert.equal(accentFoldIdx.search('ano').length, 0)
+                assert.equal(accentFoldIdx.search('año').length, 1)
+            });
+        })
     })
 });
 
@@ -467,6 +459,16 @@ describe("should write the stop words of every language in Unicode NFC", functio
             assert.deepEqual(stopWords.filter(function (word) {
                 return word !== word.normalize('NFC');
             }), []);
+        });
+    });
+});
+
+describe("Lunr versions before 2", function () {
+    it("should be rejected by the stemmer support with a hint to lunr-languages 1.x", function () {
+        ['0.7.2', '1.0.0'].forEach(function (version) {
+            assert.throws(function () {
+                require('../lunr.stemmer.support.js')({ version: version });
+            }, /requires Lunr 2.*use Lunr languages 1\.x/);
         });
     });
 });

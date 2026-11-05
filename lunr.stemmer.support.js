@@ -33,6 +33,11 @@
      * can return a function as the exported value.
      */
     return function(lunr) {
+        /* lunr-languages 2.x needs lunr 2 (lunr.Token, lunr.QueryParser) */
+        if (!lunr || !lunr.version || parseInt(lunr.version, 10) < 2) {
+            throw new Error('Lunr languages requires Lunr 2. For Lunr ' + (lunr && lunr.version) + ', use Lunr languages 1.x.');
+        }
+
         /* provides utilities for the included stemmers */
         lunr.stemmerSupport = {
             Among: function(s, substring_i, result, method) {
@@ -278,10 +283,6 @@
                 };
             },
             addQueryParserWildcardNormalizer: function(lunr, normalizer) {
-                if (!lunr.Index || !lunr.Index.prototype || !lunr.Index.prototype.query || !lunr.QueryParser || !lunr.QueryParser.parseTerm || !lunr.QueryLexer) {
-                    return;
-                }
-
                 if (!this.queryParserWildcardNormalizers) {
                     this.queryParserWildcardNormalizers = [];
                 }
@@ -381,18 +382,11 @@
                 var endRegex = new RegExp("[^" + allowedCharacters + "]+$")
 
                 return function(token) {
-                    // for lunr version 2
-                    if (typeof token.update === "function") {
-                        return token.update(function (s) {
-                            return s
-                                .replace(startRegex, '')
-                                .replace(endRegex, '');
-                        })
-                    } else { // for lunr version 1
-                        return token
+                    return token.update(function (s) {
+                        return s
                             .replace(startRegex, '')
                             .replace(endRegex, '');
-                    }
+                    })
                 };
             }
         }

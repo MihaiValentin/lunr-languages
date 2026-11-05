@@ -7,7 +7,7 @@
 <body>
     <p>Open developer tools and observe the results in the Console tab. View source for code.</p>
     <script>
-        require(['../test/lunr/lunr-2.0.0-alpha.5.js', '../lunr.stemmer.support.js', '../lunr.de.js'], function(lunr, stemmerSupport, de) {
+        require(['../test/lunr/lunr-2.3.5.js', '../lunr.stemmer.support.js', '../lunr.de.js'], function(lunr, stemmerSupport, de) {
             // since the `stemmerSupport` and `de` add keys on the lunr object, we'll pass it as reference to them
             // in the end, we will only need `lunr`.
             stemmerSupport(lunr); // adds `lunr.stemmerSupport`

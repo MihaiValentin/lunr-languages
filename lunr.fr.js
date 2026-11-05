@@ -62,17 +62,13 @@
         lunr.fr.stemmer
       );
 
-      // for lunr version 2
-      // this is necessary so that every searched word is also trimmed and stemmed before
-      // in lunr <= 1 this is not needed, as it is done using the normal pipeline
-      if (this.searchPipeline) {
-        this.searchPipeline.reset();
-        this.searchPipeline.add(
-          lunr.fr.trimmer,
-          lunr.fr.accentFold,
-          lunr.fr.stemmer
-        )
-      }
+      // every searched word is also trimmed and stemmed
+      this.searchPipeline.reset();
+      this.searchPipeline.add(
+        lunr.fr.trimmer,
+        lunr.fr.accentFold,
+        lunr.fr.stemmer
+      )
     };
 
     /* lunr trimmer function */
@@ -684,18 +680,11 @@
 
       /* and return a function that stems a word for the current locale */
       return function(token) {
-        // for lunr version 2
-        if (typeof token.update === "function") {
-          return token.update(function(word) {
-            st.setCurrent(word);
-            st.stem();
-            return st.getCurrent();
-          })
-        } else { // for lunr version <= 1
-          st.setCurrent(token);
+        return token.update(function(word) {
+          st.setCurrent(word);
           st.stem();
           return st.getCurrent();
-        }
+        })
       }
     })();
 
@@ -718,17 +707,9 @@
         return token;
       }
 
-      if (typeof token.update === "function") {
-        return token.update(function(term) {
-          return lunr.fr.accentFoldTerm(term);
-        });
-      }
-
-      if (typeof token === "string") {
-        return lunr.fr.accentFoldTerm(token);
-      }
-
-      return token;
+      return token.update(function(term) {
+        return lunr.fr.accentFoldTerm(term);
+      });
     };
 
     lunr.Pipeline.registerFunction(lunr.fr.accentFold, "accentFold-fr");

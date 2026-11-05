@@ -42,6 +42,9 @@
     }
   },
   "engine": "node 0.10.1",
+  "peerDependencies": {
+    "lunr": "^2.0.0"
+  },
   "exports": {
     "./package.json": "./package.json",
     "./lunr.*.js": {

@@ -286,12 +286,7 @@
     /*
     Chinese tokenization is trickier, since it does not
     take into account spaces.
-    Since the tokenization function is represented different
-    internally for each of the Lunr versions, this had to be done
-    in order to try to try to pick the best way of doing this based
-    on the Lunr version
      */
-    var isLunr2 = lunr.version[0] == "2";
 
     /* register specific locale function */
     lunr.zh = function() {
@@ -303,37 +298,24 @@
       );
 
       // change the tokenizer for Chinese one
-      if (isLunr2) { // for lunr version 2.0.0
-        this.tokenizer = lunr.zh.tokenizer;
-      } else {
-        if (lunr.tokenizer) { // for lunr version 0.6.0
-          lunr.tokenizer = lunr.zh.tokenizer;
-        }
-        if (this.tokenizerFn) { // for lunr version 0.7.0 -> 1.0.0
-          this.tokenizerFn = lunr.zh.tokenizer;
-        }
-      }
+      this.tokenizer = lunr.zh.tokenizer;
     };
 
     lunr.zh.tokenizer = function(obj) {
       if (!arguments.length || obj == null || obj == undefined) return []
       if (Array.isArray(obj)) return obj.map(function(t) {
-        return isLunr2 ? new lunr.Token(t.toLowerCase()) : t.toLowerCase()
+        return new lunr.Token(t.toLowerCase())
       })
 
       var str = obj.toString().trim().toLowerCase();
       var tokens = nodejiebaCut(str, nodejiebaDictJson);
 
       return tokens.map(function(token, index) {
-        if (isLunr2) {
-          var tokenMetadata = {}
-          tokenMetadata["position"] = [token.start, token.token.length]
-          tokenMetadata["index"] = index
+        var tokenMetadata = {}
+        tokenMetadata["position"] = [token.start, token.token.length]
+        tokenMetadata["index"] = index
 
-          return new lunr.Token(token.token, tokenMetadata);
-        } else {
-          return token.token
-        }
+        return new lunr.Token(token.token, tokenMetadata);
       });
     }
 

@@ -56,27 +56,16 @@
     lunr.el = function() {
       this.pipeline.reset();
 
-      if (this.searchPipeline === undefined) {
-        this.pipeline.add(
-          lunr.el.trimmer,
-          lunr.el.normilizer
-        );
-      }
-
       this.pipeline.add(
         lunr.el.stopWordFilter,
         lunr.el.stemmer
       );
 
-      // for lunr version 2
-      // this is necessary so that every searched word is also stemmed before
-      // in lunr <= 1 this is not needed, as it is done using the normal pipeline
-      if (this.searchPipeline) {
-        this.searchPipeline.reset();
-        this.searchPipeline.add(
-          lunr.el.stemmer
-        );
-      }
+      // every searched word is also stemmed
+      this.searchPipeline.reset();
+      this.searchPipeline.add(
+        lunr.el.stemmer
+      );
     };
 
     /* lunr trimmer function */
@@ -617,13 +606,9 @@
       }
 
       return function(token) {
-        if (typeof token.update === "function") {
-          return token.update(function(word) {
-            return stem(word.toUpperCase()).toLowerCase();
-          });
-        } else {
-          return stem(token.toUpperCase()).toLowerCase();
-        }
+        return token.update(function(word) {
+          return stem(word.toUpperCase()).toLowerCase();
+        });
       }
     })();
 
@@ -660,21 +645,13 @@
       };
 
       return function(token) {
-        if (typeof token.update === "function") {
-          return token.update(function(term) {
-            var ret = "";
-            for (var i = 0; i < term.length; i++) {
-              ret += accentMap[term.charAt(i)] || term.charAt(i);
-            }
-            return ret;
-          });
-        } else {
+        return token.update(function(term) {
           var ret = "";
-          for (var i = 0; i < token.length; i++) {
-            ret += accentMap[token.charAt(i)] || token.charAt(i);
+          for (var i = 0; i < term.length; i++) {
+            ret += accentMap[term.charAt(i)] || term.charAt(i);
           }
           return ret;
-        }
+        });
       }
     })();
 

@@ -107,8 +107,10 @@ Lunr Languages improves **recall and precision**, especially for:
 ## Installation
 
 ```bash
-npm install lunr-languages
+npm install lunr lunr-languages
 ```
+
+Lunr Languages 2.x requires Lunr 2 (`lunr@^2.0.0`). For Lunr 0.x or 1.x, use Lunr Languages 1.x.
 
 ---
 
@@ -175,6 +177,14 @@ var idx = lunr(function () {
 
 idx.search(query.normalize('NFC'));
 ```
+
+---
+
+## Migrating from 1.x
+
+* Lunr 2 is required (`lunr@^2.0.0`). For Lunr 0.x or 1.x, stay on Lunr Languages 1.x.
+
+See [CHANGELOG.md](CHANGELOG.md) for the changes per language.
 
 ---
 
