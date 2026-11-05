@@ -79,7 +79,7 @@ describe("Wildcard searches", function () {
         ['pt', 'coração', ['coraç*', 'corac*']],
         ['ro', 'ţară', ['ţar*', 'țar*', 'tar*']],
         ['pl', 'żółw', ['żółw*', 'zolw*']],
-        ['tr', 'kızlar', ['kız*', 'kiz*']]
+        ['tr', 'KIZLAR', ['kız*', 'kiz*', 'KIZ*']]
     ];
 
     cases.forEach(function (c) {

@@ -101,3 +101,4 @@
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change.
 - Wildcard terms are folded like the stemmer folds the index.
 - Accent folding on by default: `kiz` finds `kız`, wildcards too (`ı` as `i`). Opt-out: remove `lunr.tr.accentFold` from both pipelines.
+- `I` and `İ` are lowercased the Turkish way (`ı`, `i`) in indexed text and searches, before lunr lowercases: `İSTANBUL` finds `istanbul`, `KIZLAR` stems like `kızlar`. lunr's `toLowerCase()` gave `i̇` (with a combining dot) and `i`, so such words were not found.

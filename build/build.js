@@ -338,7 +338,8 @@ var list = [
         snowball: 'turkish',
         stopWords: { custom: 'tr.csv' },
         script: 'Latin',
-        accentFold: { default: true }
+        accentFold: { default: true },
+        specialCasing: { 'I': 'ı', 'İ': 'i' }
     }, {
         locale: 'th',
     }, {

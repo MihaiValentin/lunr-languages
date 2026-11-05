@@ -518,6 +518,60 @@ lunrVersions.forEach(function (lunrVersion) {
             })
         })
 
+        describe("should lowercase Turkish I and İ the Turkish way", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            require('../lunr.tr.js')(lunr);
+            require('../lunr.de.js')(lunr);
+            require('../lunr.multi.js')(lunr);
+
+            var idx = lunr(function () {
+                this.use(lunr.tr);
+                this.field('body');
+                this.add({ "body": "İSTANBUL KIZLAR", "id": 1 });
+            });
+
+            var idxDe = lunr(function () {
+                this.use(lunr.de);
+                this.field('body');
+                this.add({ "body": "INFO", "id": 1 });
+            });
+
+            var idxMulti = lunr(function () {
+                this.use(lunr.multiLanguage('en', 'tr'));
+                this.field('body');
+                this.add({ "body": "INFO KIZLAR", "id": 1 });
+            });
+
+            it("should index İ as i (not i plus a combining dot)", function () {
+                assert.equal(idx.search('istanbul').length, 1)
+            });
+
+            it("should index I as ı, so it stems like the lowercase word", function () {
+                assert.equal(lunr.tr.tokenizer('KIZLAR')[0].toString(), 'kızlar')
+                assert.equal(idx.search('kızı').length, 1)
+            });
+
+            it("should map query terms the same way", function () {
+                assert.equal(idx.search('İSTANBUL').length, 1)
+                assert.equal(idx.search('KIZI').length, 1)
+                assert.equal(idx.search('İstan*').length, 1)
+            });
+
+            it("should not change other languages' indexes", function () {
+                assert.equal(lunr.tokenizer('INFO')[0].toString(), 'info')
+                assert.equal(idxDe.search('INFO').length, 1)
+            });
+
+            it("should keep both readings in multi-language indexes", function () {
+                assert.equal(idxMulti.search('info').length, 1)
+                assert.equal(idxMulti.search('INFO').length, 1)
+                assert.equal(idxMulti.search('kızı').length, 1)
+            });
+        });
+
         describe("should map special casing before lunr lowercases", function () {
             delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
             var lunr = require('./lunr/' + lunrVersion.lunr);
