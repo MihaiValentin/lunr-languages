@@ -32,12 +32,8 @@ var TARBALL_SHA256 = '1d3f39267a15d0351312ff4d778de7bb8aae6480a63c4b318eda31032a
 var DATA_COMMIT = '019921c3a41c2b70063ee3feb215a00c8e594597';
 var DATA_URL = 'https://raw.githubusercontent.com/snowballstem/snowball-data/' + DATA_COMMIT + '/';
 
-// the Snowball algorithms of the languages configured in build.js, without duplicates
-var STEMMERS = require('./build').snowballLanguages().map(function(language) {
-    return language.snowball;
-}).filter(function(name, i, names) {
-    return names.indexOf(name) === i;
-}).sort();
+// the Snowball algorithms of the languages configured in build.js
+var STEMMERS = Object.keys(require('./build').snowballStemmers());
 
 var OUT_DIR = path.join(__dirname, 'snowball');
 var CACHE_DIR = path.join(__dirname, 'cache', 'snowball-data');

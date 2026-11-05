@@ -1,0 +1,182 @@
+{
+  "danish": {
+    "words": 23868,
+    "coverage": {
+      "none": 1,
+      "map": 1
+    },
+    "map": {},
+    "probed": []
+  },
+  "dutch": {
+    "words": 45670,
+    "coverage": {
+      "none": 0.794,
+      "map": 0.8544
+    },
+    "map": {
+      "^ge": "",
+      "age": "age",
+      "ge": "",
+      "gen": "gen",
+      "ige": "ige"
+    },
+    "probed": []
+  },
+  "finnish": {
+    "words": 84399,
+    "coverage": {
+      "none": 0.9604,
+      "map": 0.9604
+    },
+    "map": {},
+    "probed": []
+  },
+  "french": {
+    "words": 21653,
+    "coverage": {
+      "none": 0.9031,
+      "map": 0.9562
+    },
+    "map": {
+      "^d'": "",
+      "^j'": "",
+      "^l'": "",
+      "^n'": "",
+      "^qu'": "",
+      "^s'": "",
+      "ç": "c",
+      "ço": "ço",
+      "çu": "çu",
+      "è": "e"
+    },
+    "probed": []
+  },
+  "german": {
+    "words": 35053,
+    "coverage": {
+      "none": 0.7848,
+      "map": 0.9988
+    },
+    "map": {
+      "ae": "a",
+      "oe": "o",
+      "ß": "ss",
+      "ä": "a",
+      "ö": "o",
+      "ü": "u"
+    },
+    "probed": []
+  },
+  "hungarian": {
+    "words": 29881,
+    "coverage": {
+      "none": 0.9472,
+      "map": 0.9472
+    },
+    "map": {},
+    "probed": []
+  },
+  "italian": {
+    "words": 37426,
+    "coverage": {
+      "none": 0.9463,
+      "map": 0.9722
+    },
+    "map": {
+      "^d'": "",
+      "^l'": "",
+      "^un'": "",
+      "é": "è"
+    },
+    "probed": []
+  },
+  "norwegian": {
+    "words": 20913,
+    "coverage": {
+      "none": 1,
+      "map": 1
+    },
+    "map": {},
+    "probed": []
+  },
+  "polish": {
+    "words": 62576,
+    "coverage": {
+      "none": 0.9847,
+      "map": 0.9928
+    },
+    "map": {
+      "ć": "c",
+      "ćw": "ćw"
+    },
+    "probed": []
+  },
+  "portuguese": {
+    "words": 32016,
+    "coverage": {
+      "none": 0.9825,
+      "map": 0.9825
+    },
+    "map": {},
+    "probed": []
+  },
+  "romanian": {
+    "words": 87642,
+    "coverage": {
+      "none": 0.8733,
+      "map": 0.9785
+    },
+    "map": {
+      "ş": "ș",
+      "ţ": "ț"
+    },
+    "probed": []
+  },
+  "russian": {
+    "words": 49785,
+    "coverage": {
+      "none": 0.9978,
+      "map": 1
+    },
+    "map": {
+      "ё": "е"
+    },
+    "probed": []
+  },
+  "spanish": {
+    "words": 28378,
+    "coverage": {
+      "none": 0.9087,
+      "map": 0.9957
+    },
+    "map": {
+      "á": "a",
+      "é": "e",
+      "í": "i",
+      "ó": "o",
+      "ú": "u"
+    },
+    "probed": []
+  },
+  "swedish": {
+    "words": 30738,
+    "coverage": {
+      "none": 1,
+      "map": 1
+    },
+    "map": {},
+    "probed": []
+  },
+  "turkish": {
+    "words": 96325,
+    "coverage": {
+      "none": 0.907,
+      "map": 0.9073
+    },
+    "map": {
+      "d'": "d"
+    },
+    "probed": []
+  }
+}

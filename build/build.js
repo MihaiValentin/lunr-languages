@@ -388,14 +388,33 @@ function build() {
     console.log('Done!');
 }
 
+/*
+ * The Snowball algorithms of the list as { <snowball>: { script, locales } }, sorted by name.
+ * Used by fetch-snowball.js and derive-fold-maps.js, so they follow this list.
+ */
+function snowballStemmers() {
+    var stemmers = {};
+    list.filter(function(language) {
+        return language.snowball;
+    }).forEach(function(language) {
+        var stemmer = stemmers[language.snowball];
+        if (stemmer && stemmer.script !== language.script) {
+            throw new Error(language.snowball + ': locales ' + stemmer.locales.join(', ') + ' and ' +
+                language.locale + ' use different scripts');
+        }
+        stemmer = stemmers[language.snowball] = stemmer || { script: language.script, locales: [] };
+        stemmer.locales.push(language.locale);
+    });
+    var sorted = {};
+    Object.keys(stemmers).sort().forEach(function(name) {
+        sorted[name] = stemmers[name];
+    });
+    return sorted;
+}
+
 module.exports = {
     languages: list,
-    /* the Snowball languages of the list, i.e. those with `snowball` */
-    snowballLanguages: function() {
-        return list.filter(function(language) {
-            return language.snowball;
-        });
-    }
+    snowballStemmers: snowballStemmers
 };
 
 if (require.main === module) {
