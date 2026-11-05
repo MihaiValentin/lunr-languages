@@ -15,8 +15,8 @@
  * 5. Probe the letters of the script that voc.txt (almost) lacks: swap the letter for its base
  *    letter in sample words; if the stems agree, the stemmer folds it.
  *
- * Writes build/fold-maps.json. NFD is only used here, to guess base letters; the
- * plugins never normalise.
+ * Writes build/fold-maps.json: an entry per Snowball algorithm, and one per hand-written language with
+ * accent folding, under its locale. NFD is only used here, to guess base letters; the plugins never normalise.
  *
  * Usage: node build/derive-fold-maps.js [--accept] [stemmer ...]
  * (npm run fetch-data runs it for all stemmers, after fetching the data.)
@@ -382,7 +382,7 @@ function run(names, accept) {
     var previous = fs.existsSync(OUT_FILE) ? JSON.parse(fs.readFileSync(OUT_FILE, 'utf8')) : {};
     var result = {};
     Object.keys(previous).forEach(function(name) {
-        if (languages[name]) result[name] = previous[name];   // drop stemmers that are no longer used
+        if (languages[name]) result[name] = previous[name];   // drop stemmers that are no longer used; hand-written below
     });
     var dropped = [];
     names.forEach(function(name) {
@@ -407,9 +407,48 @@ function run(names, accept) {
         throw new Error('Wildcard coverage dropped (rerun with --accept after review):\n  ' + dropped.join('\n  '));
     }
 
+    var handWritten = handWrittenAccentFolds();
+    Object.keys(handWritten).forEach(function(locale) {
+        if (languages[locale]) throw new Error(locale + ': a locale named like a Snowball algorithm');
+        result[locale] = handWritten[locale];
+        console.log(locale + ' (hand-written): ' + Object.keys(handWritten[locale].accentFold).length + ' letters folded');
+    });
+
     var sorted = {};
     Object.keys(result).sort().forEach(function(name) { sorted[name] = result[name]; });
     fs.writeFileSync(OUT_FILE, JSON.stringify(sorted, null, 2) + '\n');
+}
+
+/*
+ * The accent fold maps of hand-written languages with accentFold (build.js), which have no word list: CLDR
+ * Latin-ASCII for the lowercase NFC letters of their trimmer's lunr.<locale>.wordCharacters, without `keep`.
+ * { <locale>: entry }, shaped like the entry of a Snowball algorithm without a stemmer: the accent fold map,
+ * and empty wildcard maps for the words and the accent folded words.
+ */
+function handWrittenAccentFolds() {
+    var maps = {};
+    require('./build').languages.filter(function(language) {
+        return !language.snowball && language.accentFold;
+    }).forEach(function(language) {
+        var lunr = require('lunr');
+        require('../lunr.stemmer.support.js')(lunr);
+        require('../lunr.' + language.locale + '.js')(lunr);
+        var characters = new RegExp('^[' + lunr[language.locale].wordCharacters + ']$');
+        var letters = [];
+        for (var cp = 0; cp <= 0xFFFF; cp++) {
+            if (cp >= 0xD800 && cp <= 0xDFFF) continue;
+            var ch = String.fromCharCode(cp);
+            if (/^\p{L}$/u.test(ch) && ch === ch.toLowerCase() && ch === ch.normalize('NFC') && characters.test(ch)) {
+                letters.push(ch);
+            }
+        }
+        maps[language.locale] = {
+            accentFold: accentFold.accentFoldMap(letters, language.accentFold.keep),
+            map: {},
+            folded: { map: {} }
+        };
+    });
+    return maps;
 }
 
 if (require.main === module) {
@@ -422,4 +461,5 @@ if (require.main === module) {
     }
 }
 
-module.exports = { run: run, derive: derive, makeFold: makeFold, diffBlocks: diffBlocks };
+module.exports = { run: run, derive: derive, makeFold: makeFold, diffBlocks: diffBlocks,
+    handWrittenAccentFolds: handWrittenAccentFolds };

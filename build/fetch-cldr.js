@@ -26,7 +26,8 @@ var CLDR_SHA256 = '4686f5643c75039583281cf3a91688ef7dfb665420f185c03982664740e66
 var config = require('./build');
 var SNOWBALL = config.snowballStemmers();
 var STEMMERS = Object.keys(SNOWBALL);
-var NEEDS_CLDR = STEMMERS.some(function(name) { return SNOWBALL[name].accentFold; });
+var NEEDS_CLDR = STEMMERS.some(function(name) { return SNOWBALL[name].accentFold; }) ||
+    config.languages.some(function(language) { return !language.snowball && language.accentFold; });
 
 var VERSION_FILE = path.join(__dirname, 'cldr', 'VERSION');
 
