@@ -82,6 +82,7 @@
 - Stop words: Snowball's list (159 words) instead of a custom 421-word list.
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change.
 - Wildcard terms are folded like the stemmer folds the index (`ё` as `е`).
+- Stop words: Snowball's 159 plus 197 function words of the 1.x list that Snowball's lacks (356); the 1.x list's typos, single letters, content words (`год`, `время`, `люди`, …) and numbers 4–20 and ordinals are left out.
 
 ### Spanish (es)
 

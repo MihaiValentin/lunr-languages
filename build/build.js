@@ -290,7 +290,7 @@ var list = [
     }, {
         locale: 'ru',
         snowball: 'russian',
-        stopWords: { snowball: 'russian' },
+        stopWords: { snowball: 'russian', add: 'ru.txt' },
         script: 'Cyrillic'
     }, {
         locale: 'es',
