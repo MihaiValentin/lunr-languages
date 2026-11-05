@@ -61,9 +61,6 @@
         lunr.hi.stemmer
       );
 
-      // change the tokenizer for japanese one
-      // this.tokenizer = lunr.hi.tokenizer;
-
       this.searchPipeline.reset();
       this.searchPipeline.add(lunr.hi.stemmer)
     };
@@ -86,20 +83,6 @@
         })
       }
     })();
-
-    var segmenter = lunr.wordcut;
-    segmenter.init();
-    lunr.hi.tokenizer = function(obj) {
-      if (!arguments.length || obj == null || obj == undefined) return []
-      if (Array.isArray(obj)) return obj.map(function(t) {
-        return new lunr.Token(t.toLowerCase())
-      });
-
-      var str = obj.toString().toLowerCase().replace(/^\s+/, '');
-      return segmenter.cut(str).split('|').map(function(t) {
-        return new lunr.Token(t)
-      });
-    }
 
     lunr.Pipeline.registerFunction(lunr.hi.stemmer, 'stemmer-hi');
     lunr.Pipeline.registerFunction(lunr.hi.stopWordFilter, 'stopWordFilter-hi');

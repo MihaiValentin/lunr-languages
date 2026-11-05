@@ -494,7 +494,7 @@ lunrVersions.forEach(function (lunrVersion) {
                 if (language === 'ja') {    // for japanese, we must also load the tinyseg tokenizer
                     require('../tinyseg')(lunr);
                 }
-                if (language === 'th' || language === 'hi' || language === 'ta' || language === 'sa' || language === 'kn' || language === 'te') {    // for thai, we must also load the wordcut tokenizer
+                if (language === 'th') {    // for thai, we must also load the wordcut tokenizer
                     lunr.wordcut = require('../wordcut');
                 }
                 require('../lunr.' + language + '.js')(lunr);
@@ -562,6 +562,20 @@ lunrVersions.forEach(function (lunrVersion) {
                     this.add({ "body": "Running ภาษาไทย", "id": 1 });
                 });
                 assert.equal(idx.search('running').length, 1);
+            });
+        });
+
+        describe("should load hi, kn, sa, ta and te without wordcut", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+
+            ['hi', 'kn', 'sa', 'ta', 'te'].forEach(function (language) {
+                it("should load " + language.toUpperCase() + " and tokenize it with lunr's tokenizer", function () {
+                    require('../lunr.' + language + '.js')(lunr);
+                    assert.equal(lunr[language].tokenizer, undefined);
+                });
             });
         });
 

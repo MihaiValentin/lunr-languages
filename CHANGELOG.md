@@ -51,6 +51,10 @@
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change. It treats `ae`, `oe`, `ue` like `ä`, `ö`, `ü` (Snowball 3.0.0's german2), so `Kaese` and `Käse` share a stem.
 - Wildcard terms are folded by a map derived from the stemmer instead of a hand-written one; it also folds `ae`, `oe`, `ue`.
 
+### Hindi (hi)
+
+- Loads without `wordcut.js`; loading failed with a TypeError unless it was attached first. `lunr.hi.tokenizer` (a Thai segmenter that was never used for indexing) is removed.
+
 ### Hungarian (hu)
 
 - Stop words: Snowball's current list; `ő` instead of the mis-encoded `õ` (`elő`, `ők`, …), so these words are filtered now.
@@ -67,6 +71,10 @@
 
 - The deprecated `jp` locale and its `stemmer-jp`, `trimmer-jp` and `stopWordFilter-jp` labels are removed; use `ja`.
 - Searches no longer go through lunr's English stemmer: a Latin word in a Japanese index (`running`) is found by itself again.
+
+### Kannada (kn)
+
+- Loads without `wordcut.js`; loading failed with a TypeError unless it was attached first. `lunr.kn.tokenizer` (a Thai segmenter that was never used for indexing) is removed.
 
 ### Norwegian (no)
 
@@ -97,6 +105,10 @@
 - Wildcard terms are folded like the stemmer folds the index (`ё` as `е`).
 - Stop words: Snowball's 159 plus 197 function words of the 1.x list that Snowball's lacks (356); the 1.x list's typos, single letters, content words (`год`, `время`, `люди`, …) and numbers 4–20 and ordinals are left out.
 
+### Sanskrit (sa)
+
+- Loads without `wordcut.js`; loading failed with a TypeError unless it was attached first. `lunr.sa.tokenizer` (a Thai segmenter that was never used for indexing) is removed.
+
 ### Spanish (es)
 
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change. It also removes unaccented suffixes (`respiracion` → `respir`, like `respiración`).
@@ -107,6 +119,14 @@
 
 - Stop words: Snowball's current list; `sitt` instead of `sitta`.
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change.
+
+### Tamil (ta)
+
+- Loads without `wordcut.js`; loading failed with a TypeError unless it was attached first. `lunr.ta.tokenizer` (a Thai segmenter that was never used for indexing) is removed.
+
+### Telugu (te)
+
+- Loads without `wordcut.js`; loading failed with a TypeError unless it was attached first. `lunr.te.tokenizer` (a Thai segmenter that was never used for indexing) is removed.
 
 ### Thai (th)
 

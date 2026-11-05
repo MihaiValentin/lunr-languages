@@ -83,20 +83,6 @@
       }
     })();
 
-    var segmenter = lunr.wordcut;
-    segmenter.init();
-    lunr.kn.tokenizer = function(obj) {
-      if (!arguments.length || obj == null || obj == undefined) return []
-      if (Array.isArray(obj)) return obj.map(function(t) {
-        return new lunr.Token(t.toLowerCase())
-      });
-
-      var str = obj.toString().toLowerCase().replace(/^\s+/, '');
-      return segmenter.cut(str).split('|').map(function(t) {
-        return new lunr.Token(t)
-      });
-    }
-
     lunr.Pipeline.registerFunction(lunr.kn.stemmer, 'stemmer-kn');
     lunr.Pipeline.registerFunction(lunr.kn.stopWordFilter, 'stopWordFilter-kn');
 
