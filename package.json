@@ -7,8 +7,8 @@
   "files": [
     "lunr.*.js",
     "min/lunr.*.min.js",
-    "tinyseg.js",
-    "wordcut.js",
+    "licenses",
+    "THIRD-PARTY-NOTICES.md",
     "types"
   ],
   "type": "commonjs",
@@ -26,22 +26,25 @@
       ],
       "min/lunr.*.min": [
         "types/plugin.d.ts"
-      ],
-      "tinyseg.js": [
-        "types/plugin.d.ts"
-      ],
-      "tinyseg": [
-        "types/plugin.d.ts"
-      ],
-      "wordcut.js": [
-        "types/wordcut.d.ts"
-      ],
-      "wordcut": [
-        "types/wordcut.d.ts"
       ]
     }
   },
-  "engine": "node 0.10.1",
+  "engines": {
+    "node": ">=14.6"
+  },
+  "peerDependencies": {
+    "@node-rs/jieba": "^1.0.0 || ^2.0.0",
+    "jieba-wasm": "^2.0.0",
+    "lunr": "^2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@node-rs/jieba": {
+      "optional": true
+    },
+    "jieba-wasm": {
+      "optional": true
+    }
+  },
   "exports": {
     "./package.json": "./package.json",
     "./lunr.*.js": {
@@ -68,34 +71,15 @@
       "require": "./min/lunr.*.min.js",
       "default": "./min/lunr.*.min.js"
     },
-    "./tinyseg.js": {
-      "types": "./types/plugin.d.ts",
-      "import": "./tinyseg.js",
-      "require": "./tinyseg.js",
-      "default": "./tinyseg.js"
-    },
-    "./tinyseg": {
-      "types": "./types/plugin.d.ts",
-      "import": "./tinyseg.js",
-      "require": "./tinyseg.js",
-      "default": "./tinyseg.js"
-    },
-    "./wordcut.js": {
-      "types": "./types/wordcut.d.ts",
-      "import": "./wordcut.js",
-      "require": "./wordcut.js",
-      "default": "./wordcut.js"
-    },
-    "./wordcut": {
-      "types": "./types/wordcut.d.ts",
-      "import": "./wordcut.js",
-      "require": "./wordcut.js",
-      "default": "./wordcut.js"
-    },
     "./*": "./*"
   },
   "scripts": {
     "build": "node build/build.js",
+    "build-wordcut": "node build/build-wordcut.js",
+    "derive-maps": "node build/derive-fold-maps.js",
+    "fetch-cldr": "node build/fetch-cldr.js",
+    "fetch-data": "node build/fetch-snowball.js && node build/fetch-cldr.js && node build/derive-fold-maps.js",
+    "fetch-snowball": "node build/fetch-snowball.js",
     "test": "node --test test/*Test.js"
   },
   "repository": {
@@ -103,8 +87,10 @@
     "url": "https://github.com/MihaiValentin/lunr-languages"
   },
   "devDependencies": {
-    "js-beautify": "^1.5.1",
-    "uglify-js": "^2.4.15",
-    "unicode-8.0.0": "^0.1.5"
+    "@unicode/unicode-17.0.0": "1.6.17",
+    "acorn": "^8.19.0",
+    "js-beautify": "^2.0.3",
+    "typescript": "5.6.3",
+    "uglify-js": "^3.19.3"
   }
 }

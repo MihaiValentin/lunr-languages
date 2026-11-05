@@ -1,6 +1,0 @@
-[submodule "build/snowball-js"]
-	path = build/snowball-js
-	url = https://github.com/fortnightlabs/snowball-js.git
-[submodule "build/stopwords-filter"]
-	path = build/stopwords-filter
-	url = https://github.com/brenes/stopwords-filter.git

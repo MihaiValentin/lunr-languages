@@ -1,0 +1,37 @@
+# Words of lunr's built-in English stop word list (lunr.stopWordFilter, lunr 2.3.9) that Snowball's
+# english list lacks, so lunr.en drops at least the words lunr's default English drops.
+able
+across
+almost
+also
+among
+can
+dear
+either
+else
+ever
+every
+get
+got
+however
+just
+least
+let
+like
+likely
+may
+might
+must
+neither
+often
+rather
+said
+say
+says
+since
+tis
+twas
+us
+wants
+will
+yet

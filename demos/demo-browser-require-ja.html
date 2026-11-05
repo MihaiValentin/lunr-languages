@@ -8,7 +8,7 @@
 <body>
     <p>Open developer tools and observe the results in the Console tab. View source for code.</p>
     <script>
-        require(['../test/lunr/lunr-0.7.0.min.js', '../lunr.stemmer.support.js', '../tinyseg.js', '../lunr.ja.js'], function(lunr, stemmerSupport, TinySegmenter, ja) {
+        require(['../test/lunr/lunr-2.3.5.js', '../lunr.stemmer.support.js', '../lunr.ja.tinyseg.js', '../lunr.ja.js'], function(lunr, stemmerSupport, TinySegmenter, ja) {
             // since the `stemmerSupport` and `ja` add keys on the lunr object, we'll pass it as reference to them
             // in the end, we will only need `lunr`.
             stemmerSupport(lunr); // adds `lunr.stemmerSupport`

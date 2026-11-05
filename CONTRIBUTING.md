@@ -12,17 +12,17 @@ Even better! Open a *Pull request*. Make sure you include everything needed in t
 
 Wonderful! Here are the changes you need to do, then Open a *Pull request*. Make sure you include everything needed in the pull request (check below)
 
-- [ ] except Japanese, all the `lunr.<language>.js` files are built from `build/lunr.template`
-    - [ ] If `lunr.template` fits your needs in terms of code/template, go to `build/build.js` and add your language
-        - [ ] You need a stemmer file
-        - [ ] You need a stop words file
-    - [ ] If `lunr.template` does not fit your needs (for example for non-latin characters), just copy any `lunr.<language>.js` file and start modifying
+- [ ] If [Snowball](https://snowballstem.org/algorithms/) has a stemmer for your language, add an entry to the list in `build/build.js`: `locale`, `snowball` (the algorithm's name), `stopWords` and `script` (the Unicode script of its letters). `npm run fetch-data` then fetches the stemmer and derives its wildcard map, and `npm run build` generates `lunr.<locale>.js` from `build/lunr.template`. The comment above the list describes every option.
+- [ ] Otherwise, write `lunr.<locale>.js` by hand (copy a similar language) and add an entry with only `locale`; the build beautifies and minifies it. For accent folding, add `accentFold` to the entry and the lines `// build: accentFold` and `// build: end accentFold` to the file: `npm run fetch-data` derives the map from the letters of `lunr.<locale>.wordCharacters` into `build/fold-maps.json` (under the locale), and the build writes `lunr.<locale>.accentFold` between the lines; put it into the pipelines yourself.
+- [ ] For a language written without spaces, get the tokenizer from `lunr.stemmerSupport.generateSegmentingTokenizer(locale, options)` (Intl.Segmenter by default). Another segmenter goes into an optional plugin file `lunr.<locale>.<segmenter>.js` that sets `lunr.segmenters[<locale>] = { name, segment(str) }` (`segment` returns `[{ word, index }]`); it must not depend on being loaded before or after the language file.
 - [ ] write stop words, word characters and stemming rules for text in Unicode NFC, the form all languages expect their input in; the test suite checks that every stop word is in NFC
 - [ ] you must also test your new language
     - [ ] go to `test/testdata` and create a new file, then link it to `VersionsAndLanguagesTest.js`
     - [ ] make sure you cover many testcases (wildcard, stemming)
     - [ ] your tests will automatically be run on all the Lunr versions
+    - [ ] for a Snowball language, `test/SnowballTest.js` checks its stems against Snowball's own output (`build/snowball/stem-samples.json`, written by `npm run fetch-data`) and needs a wildcard search case in its `cases` if the language has a wildcard map; it also re-derives the maps when the word lists are in `build/cache/snowball-data/`; `test/BuildTest.js` parses every shipped file as ES2022
 - [ ] add the new language to `README.md`
+- [ ] if you add third-party code or data (a stemmer, a stop word list, a segmenter), add it with its source and license to `THIRD-PARTY-NOTICES.md` and its license text to `licenses/`
 - [ ] re-build the files (check section below)
 - [ ] open a *Pull request*. Make sure you include everything needed in the pull request (check below)
 
@@ -38,8 +38,22 @@ Wonderful! Here are the changes you need to do, then Open a *Pull request*. Make
 The `lunr.<locale>.js` files are the result of a build process that concatenates a stemmer and a stop word list and add functionality to become lunr.js-compatible.
 Should you decide to make mass-modifications (add stopwords, change stemming rules, reorganize the code) and build a new set of files, you should do follow these steps:
 
-* `git clone --recursive https://github.com/MihaiValentin/lunr-languages.git` (make sure you use the `--recursive` flag to also clone the repos needed to build `lunr-languages`)
+* `git clone https://github.com/MihaiValentin/lunr-languages.git`
 * `cd path/to/lunr-languages`
 * `npm install` to install the dependencies needed for building
-* change the `build/*.template` files
+* change the `build/*.template` files or the list in `build/build.js`
 * run `node build/build.js` to generate the `lunr.<locale>.js` files (and the minified versions as well) and the `lunr.stemmer.support.js` file
+
+## Snowball
+
+`build/snowball/` holds the Snowball release lunr-languages is built from (stemmers, `base-stemmer.js`, its license and NEWS), so building needs no network. `npm run fetch-data` downloads it again from the pinned release (`build/fetch-snowball.js`: version and SHA-256) and caches Snowball's word lists in `build/cache/snowball-data/` (not committed). To update Snowball, change the pinned version and checksum, run it, and review the diff of `build/snowball/`.
+
+A language's stop words are named in its entry of the list in `build/build.js`: `stopWords: { snowball: '<name>' }` for Snowball's list (fetched from snowball-website into `build/snowball/stopwords/`; Snowball names them by language, so `dutch_porter` would use `'dutch'`), or `stopWords: { custom: '<file>' }` for a comma-separated list in `build/stopwords-custom/`. Either can take `add: '<file>'`: more words from `build/stopwords-add/<file>` (one per line, `#` starts a comment), merged into the list without duplicates; the build lists added words that are in the list already.
+
+## CLDR
+
+The accent folding maps are derived from CLDR's Latin-ASCII transform, pinned in `build/fetch-cldr.js` (commit and SHA-256) and recorded in `build/cldr/VERSION`. `npm run fetch-data` fetches the Snowball data and CLDR into `build/cache/` (not committed) and derives `build/fold-maps.json`, the wildcard and accent fold maps the build reads; `npm run fetch-data -- --accept` lets a wildcard coverage drop pass after review. To update CLDR, change the pinned commit and checksum, run it, and review the diff of `build/fold-maps.json`.
+
+## wordcut
+
+`lunr.th.wordcut.js` is built from the npm package wordcut, pinned with its integrity in `build/build-wordcut.js`: `npm run build-wordcut` downloads it, wraps its `lib/*.js` modules unchanged with shims for `fs`, `path` and `glob` that serve the built-in dictionary, and writes its license to `licenses/`. To update wordcut, change the pinned version and integrity, run it, and run the Thai tests.

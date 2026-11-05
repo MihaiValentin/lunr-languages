@@ -6,15 +6,42 @@
  * http://www.mozilla.org/MPL/
  */
 /*!
- * based on
- * Snowball JavaScript Library v0.3
- * http://code.google.com/p/urim/
- * http://snowball.tartarus.org/
+ * The stemmer is generated from hungarian.sbl by Snowball 3.2.0 (https://snowballstem.org/).
  *
- * Copyright 2010, Oleg Mazko
- * http://www.mozilla.org/MPL/
+ * Copyright (c) 2001, Dr Martin Porter
+ * Copyright (c) 2004,2005, Richard Boulton
+ * Copyright (c) 2013, Yoshiki Shibukawa
+ * Copyright (c) 2006-2025, Olly Betts
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *   1. Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *   2. Redistributions in binary form must reproduce the above copyright notice,
+ *      this list of conditions and the following disclaimer in the documentation
+ *      and/or other materials provided with the distribution.
+ *   3. Neither the name of the Snowball project nor the names of its contributors
+ *      may be used to endorse or promote products derived from this software
+ *      without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
+/*!
+ * The accent folding map is derived from CLDR's Latin-ASCII transform (release-49, https://cldr.unicode.org/),
+ * Copyright © 2001-2026 Unicode, Inc., under the Unicode License V3 (licenses/Unicode-3.0.txt).
+ */
 /**
  * export the module via AMD, CommonJS or as a browser global
  * Export code from https://github.com/umdjs/umd/blob/master/returnExports.js
@@ -58,511 +85,481 @@
       this.pipeline.add(
         lunr.hu.trimmer,
         lunr.hu.stopWordFilter,
+        lunr.hu.accentFold,
         lunr.hu.stemmer
       );
 
-      // for lunr version 2
-      // this is necessary so that every searched word is also trimmed and stemmed before
-      // in lunr <= 1 this is not needed, as it is done using the normal pipeline
-      if (this.searchPipeline) {
-        this.searchPipeline.reset();
-        this.searchPipeline.add(
-          lunr.hu.trimmer,
-          lunr.hu.stemmer
-        )
-      }
+      // every searched word is also trimmed and stemmed
+      this.searchPipeline.reset();
+      this.searchPipeline.add(
+        lunr.hu.trimmer,
+        lunr.hu.accentFold,
+        lunr.hu.stemmer
+      )
     };
 
     /* lunr trimmer function */
-    lunr.hu.wordCharacters = "A-Za-z\xAA\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02B8\u02E0-\u02E4\u1D00-\u1D25\u1D2C-\u1D5C\u1D62-\u1D65\u1D6B-\u1D77\u1D79-\u1DBE\u1E00-\u1EFF\u2071\u207F\u2090-\u209C\u212A\u212B\u2132\u214E\u2160-\u2188\u2C60-\u2C7F\uA722-\uA787\uA78B-\uA7AD\uA7B0-\uA7B7\uA7F7-\uA7FF\uAB30-\uAB5A\uAB5C-\uAB64\uFB00-\uFB06\uFF21-\uFF3A\uFF41-\uFF5A";
+    lunr.hu.wordCharacters = "A-Za-z\xAA\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02B8\u02E0-\u02E4\u1D00-\u1D25\u1D2C-\u1D5C\u1D62-\u1D65\u1D6B-\u1D77\u1D79-\u1DBE\u1E00-\u1EFF\u2071\u207F\u2090-\u209C\u212A\u212B\u2132\u214E\u2160-\u2188\u2C60-\u2C7F\uA722-\uA787\uA78B-\uA7DC\uA7F1-\uA7FF\uAB30-\uAB5A\uAB5C-\uAB64\uAB66-\uAB69\uFB00-\uFB06\uFF21-\uFF3A\uFF41-\uFF5A";
     lunr.hu.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.hu.wordCharacters);
 
     lunr.Pipeline.registerFunction(lunr.hu.trimmer, 'trimmer-hu');
 
+    /* throw error if lunr stemmer support is older than this file */
+    if ('function' !== typeof lunr.stemmerSupport.BaseStemmer) {
+      throw new Error('Lunr stemmer support is outdated. Please update lunr.stemmer.support.js to the same version as this script.');
+    }
+
     /* lunr stemmer function */
     lunr.hu.stemmer = (function() {
-      /* create the wrapped stemmer object */
-      var Among = lunr.stemmerSupport.Among,
-        SnowballProgram = lunr.stemmerSupport.SnowballProgram,
-        st = new function HungarianStemmer() {
-          var a_0 = [new Among("cs", -1, -1), new Among("dzs", -1, -1),
-              new Among("gy", -1, -1), new Among("ly", -1, -1),
-              new Among("ny", -1, -1), new Among("sz", -1, -1),
-              new Among("ty", -1, -1), new Among("zs", -1, -1)
-            ],
-            a_1 = [
-              new Among("\u00E1", -1, 1), new Among("\u00E9", -1, 2)
-            ],
-            a_2 = [
-              new Among("bb", -1, -1), new Among("cc", -1, -1),
-              new Among("dd", -1, -1), new Among("ff", -1, -1),
-              new Among("gg", -1, -1), new Among("jj", -1, -1),
-              new Among("kk", -1, -1), new Among("ll", -1, -1),
-              new Among("mm", -1, -1), new Among("nn", -1, -1),
-              new Among("pp", -1, -1), new Among("rr", -1, -1),
-              new Among("ccs", -1, -1), new Among("ss", -1, -1),
-              new Among("zzs", -1, -1), new Among("tt", -1, -1),
-              new Among("vv", -1, -1), new Among("ggy", -1, -1),
-              new Among("lly", -1, -1), new Among("nny", -1, -1),
-              new Among("tty", -1, -1), new Among("ssz", -1, -1),
-              new Among("zz", -1, -1)
-            ],
-            a_3 = [new Among("al", -1, 1),
-              new Among("el", -1, 2)
-            ],
-            a_4 = [new Among("ba", -1, -1),
-              new Among("ra", -1, -1), new Among("be", -1, -1),
-              new Among("re", -1, -1), new Among("ig", -1, -1),
-              new Among("nak", -1, -1), new Among("nek", -1, -1),
-              new Among("val", -1, -1), new Among("vel", -1, -1),
-              new Among("ul", -1, -1), new Among("n\u00E1l", -1, -1),
-              new Among("n\u00E9l", -1, -1), new Among("b\u00F3l", -1, -1),
-              new Among("r\u00F3l", -1, -1), new Among("t\u00F3l", -1, -1),
-              new Among("b\u00F5l", -1, -1), new Among("r\u00F5l", -1, -1),
-              new Among("t\u00F5l", -1, -1), new Among("\u00FCl", -1, -1),
-              new Among("n", -1, -1), new Among("an", 19, -1),
-              new Among("ban", 20, -1), new Among("en", 19, -1),
-              new Among("ben", 22, -1), new Among("k\u00E9ppen", 22, -1),
-              new Among("on", 19, -1), new Among("\u00F6n", 19, -1),
-              new Among("k\u00E9pp", -1, -1), new Among("kor", -1, -1),
-              new Among("t", -1, -1), new Among("at", 29, -1),
-              new Among("et", 29, -1), new Among("k\u00E9nt", 29, -1),
-              new Among("ank\u00E9nt", 32, -1), new Among("enk\u00E9nt", 32, -1),
-              new Among("onk\u00E9nt", 32, -1), new Among("ot", 29, -1),
-              new Among("\u00E9rt", 29, -1), new Among("\u00F6t", 29, -1),
-              new Among("hez", -1, -1), new Among("hoz", -1, -1),
-              new Among("h\u00F6z", -1, -1), new Among("v\u00E1", -1, -1),
-              new Among("v\u00E9", -1, -1)
-            ],
-            a_5 = [new Among("\u00E1n", -1, 2),
-              new Among("\u00E9n", -1, 1), new Among("\u00E1nk\u00E9nt", -1, 3)
-            ],
-            a_6 = [
-              new Among("stul", -1, 2), new Among("astul", 0, 1),
-              new Among("\u00E1stul", 0, 3), new Among("st\u00FCl", -1, 2),
-              new Among("est\u00FCl", 3, 1), new Among("\u00E9st\u00FCl", 3, 4)
-            ],
-            a_7 = [
-              new Among("\u00E1", -1, 1), new Among("\u00E9", -1, 2)
-            ],
-            a_8 = [
-              new Among("k", -1, 7), new Among("ak", 0, 4),
-              new Among("ek", 0, 6), new Among("ok", 0, 5),
-              new Among("\u00E1k", 0, 1), new Among("\u00E9k", 0, 2),
-              new Among("\u00F6k", 0, 3)
-            ],
-            a_9 = [new Among("\u00E9i", -1, 7),
-              new Among("\u00E1\u00E9i", 0, 6), new Among("\u00E9\u00E9i", 0, 5),
-              new Among("\u00E9", -1, 9), new Among("k\u00E9", 3, 4),
-              new Among("ak\u00E9", 4, 1), new Among("ek\u00E9", 4, 1),
-              new Among("ok\u00E9", 4, 1), new Among("\u00E1k\u00E9", 4, 3),
-              new Among("\u00E9k\u00E9", 4, 2), new Among("\u00F6k\u00E9", 4, 1),
-              new Among("\u00E9\u00E9", 3, 8)
-            ],
-            a_10 = [new Among("a", -1, 18),
-              new Among("ja", 0, 17), new Among("d", -1, 16),
-              new Among("ad", 2, 13), new Among("ed", 2, 13),
-              new Among("od", 2, 13), new Among("\u00E1d", 2, 14),
-              new Among("\u00E9d", 2, 15), new Among("\u00F6d", 2, 13),
-              new Among("e", -1, 18), new Among("je", 9, 17),
-              new Among("nk", -1, 4), new Among("unk", 11, 1),
-              new Among("\u00E1nk", 11, 2), new Among("\u00E9nk", 11, 3),
-              new Among("\u00FCnk", 11, 1), new Among("uk", -1, 8),
-              new Among("juk", 16, 7), new Among("\u00E1juk", 17, 5),
-              new Among("\u00FCk", -1, 8), new Among("j\u00FCk", 19, 7),
-              new Among("\u00E9j\u00FCk", 20, 6), new Among("m", -1, 12),
-              new Among("am", 22, 9), new Among("em", 22, 9),
-              new Among("om", 22, 9), new Among("\u00E1m", 22, 10),
-              new Among("\u00E9m", 22, 11), new Among("o", -1, 18),
-              new Among("\u00E1", -1, 19), new Among("\u00E9", -1, 20)
-            ],
-            a_11 = [
-              new Among("id", -1, 10), new Among("aid", 0, 9),
-              new Among("jaid", 1, 6), new Among("eid", 0, 9),
-              new Among("jeid", 3, 6), new Among("\u00E1id", 0, 7),
-              new Among("\u00E9id", 0, 8), new Among("i", -1, 15),
-              new Among("ai", 7, 14), new Among("jai", 8, 11),
-              new Among("ei", 7, 14), new Among("jei", 10, 11),
-              new Among("\u00E1i", 7, 12), new Among("\u00E9i", 7, 13),
-              new Among("itek", -1, 24), new Among("eitek", 14, 21),
-              new Among("jeitek", 15, 20), new Among("\u00E9itek", 14, 23),
-              new Among("ik", -1, 29), new Among("aik", 18, 26),
-              new Among("jaik", 19, 25), new Among("eik", 18, 26),
-              new Among("jeik", 21, 25), new Among("\u00E1ik", 18, 27),
-              new Among("\u00E9ik", 18, 28), new Among("ink", -1, 20),
-              new Among("aink", 25, 17), new Among("jaink", 26, 16),
-              new Among("eink", 25, 17), new Among("jeink", 28, 16),
-              new Among("\u00E1ink", 25, 18), new Among("\u00E9ink", 25, 19),
-              new Among("aitok", -1, 21), new Among("jaitok", 32, 20),
-              new Among("\u00E1itok", -1, 22), new Among("im", -1, 5),
-              new Among("aim", 35, 4), new Among("jaim", 36, 1),
-              new Among("eim", 35, 4), new Among("jeim", 38, 1),
-              new Among("\u00E1im", 35, 2), new Among("\u00E9im", 35, 3)
-            ],
-            g_v = [
-              17, 65, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 17, 52, 14
-            ],
-            I_p1, sbp = new SnowballProgram();
-          this.setCurrent = function(word) {
-            sbp.setCurrent(word);
-          };
-          this.getCurrent = function() {
-            return sbp.getCurrent();
-          };
+      var BaseStemmer = lunr.stemmerSupport.BaseStemmer;
 
-          function r_mark_regions() {
-            var v_1 = sbp.cursor,
-              v_2;
-            I_p1 = sbp.limit;
-            if (sbp.in_grouping(g_v, 97, 252)) {
-              while (true) {
-                v_2 = sbp.cursor;
-                if (sbp.out_grouping(g_v, 97, 252)) {
-                  sbp.cursor = v_2;
-                  if (!sbp.find_among(a_0, 8)) {
-                    sbp.cursor = v_2;
-                    if (v_2 < sbp.limit)
-                      sbp.cursor++;
+      /* hungarian-stemmer.js, generated by Snowball 3.2.0 */
+      var Stemmer = (function() {
+        // Generated from hungarian.sbl by Snowball 3.2.0 - https://snowballstem.org/
+
+        // deno-lint-ignore-file ban-unused-ignore no-constant-condition no-empty prefer-const
+
+        const a_0 = [
+          ["\u00E1", 1],
+          ["\u00E9", 2]
+        ];
+
+        const /**@type {Array<string>}*/ as_0 = ["a", "e"];
+
+        const a_1 = [
+          ["bb", -1],
+          ["cc", -1],
+          ["dd", -1],
+          ["ff", -1],
+          ["gg", -1],
+          ["jj", -1],
+          ["kk", -1],
+          ["ll", -1],
+          ["mm", -1],
+          ["nn", -1],
+          ["pp", -1],
+          ["rr", -1],
+          ["ccs", -1],
+          ["ss", -1],
+          ["zzs", -1],
+          ["tt", -1],
+          ["vv", -1],
+          ["ggy", -1],
+          ["lly", -1],
+          ["nny", -1],
+          ["tty", -1],
+          ["ssz", -1],
+          ["zz", -1]
+        ];
+
+        const a_2 = [
+          ["al", 1],
+          ["el", 1]
+        ];
+
+        const a_3 = [
+          ["ba", -1],
+          ["ra", -1],
+          ["be", -1],
+          ["re", -1],
+          ["ig", -1],
+          ["nak", -1],
+          ["nek", -1],
+          ["val", -1],
+          ["vel", -1],
+          ["ul", -1],
+          ["n\u00E1l", -1],
+          ["n\u00E9l", -1],
+          ["b\u00F3l", -1],
+          ["r\u00F3l", -1],
+          ["t\u00F3l", -1],
+          ["\u00FCl", -1],
+          ["b\u0151l", -1],
+          ["r\u0151l", -1],
+          ["t\u0151l", -1],
+          ["n", -1],
+          ["an", -1, 1],
+          ["ban", -1, 1],
+          ["en", -1, 3],
+          ["ben", -1, 1],
+          ["k\u00E9ppen", -1, 2],
+          ["on", -1, 6],
+          ["\u00F6n", -1, 7],
+          ["k\u00E9pp", -1],
+          ["kor", -1],
+          ["t", -1],
+          ["at", -1, 1],
+          ["et", -1, 2],
+          ["k\u00E9nt", -1, 3],
+          ["ank\u00E9nt", -1, 1],
+          ["enk\u00E9nt", -1, 2],
+          ["onk\u00E9nt", -1, 3],
+          ["ot", -1, 7],
+          ["\u00E9rt", -1, 8],
+          ["\u00F6t", -1, 9],
+          ["hez", -1],
+          ["hoz", -1],
+          ["h\u00F6z", -1],
+          ["v\u00E1", -1],
+          ["v\u00E9", -1]
+        ];
+
+        const a_4 = [
+          ["\u00E1n", 2],
+          ["\u00E9n", 1],
+          ["\u00E1nk\u00E9nt", 2]
+        ];
+
+        const /**@type {Array<string>}*/ as_4 = ["e", "a"];
+
+        const a_5 = [
+          ["stul", 1],
+          ["astul", 1, 1],
+          ["\u00E1stul", 2, 2],
+          ["st\u00FCl", 1],
+          ["est\u00FCl", 1, 1],
+          ["\u00E9st\u00FCl", 3, 2]
+        ];
+
+        const /**@type {Array<string>}*/ as_5 = ["", "a", "e"];
+
+        const a_6 = [
+          ["\u00E1", 1],
+          ["\u00E9", 1]
+        ];
+
+        const a_7 = [
+          ["k", 3],
+          ["ak", 3, 1],
+          ["ek", 3, 2],
+          ["ok", 3, 3],
+          ["\u00E1k", 1, 4],
+          ["\u00E9k", 2, 5],
+          ["\u00F6k", 3, 6]
+        ];
+
+        const /**@type {Array<string>}*/ as_7 = ["a", "e", ""];
+
+        const a_8 = [
+          ["\u00E9i", 1],
+          ["\u00E1\u00E9i", 3, 1],
+          ["\u00E9\u00E9i", 2, 2],
+          ["\u00E9", 1],
+          ["k\u00E9", 1, 1],
+          ["ak\u00E9", 1, 1],
+          ["ek\u00E9", 1, 2],
+          ["ok\u00E9", 1, 3],
+          ["\u00E1k\u00E9", 3, 4],
+          ["\u00E9k\u00E9", 2, 5],
+          ["\u00F6k\u00E9", 1, 6],
+          ["\u00E9\u00E9", 2, 8]
+        ];
+
+        const /**@type {Array<string>}*/ as_8 = ["", "e", "a"];
+
+        const a_9 = [
+          ["a", 1],
+          ["ja", 1, 1],
+          ["d", 1],
+          ["ad", 1, 1],
+          ["ed", 1, 2],
+          ["od", 1, 3],
+          ["\u00E1d", 2, 4],
+          ["\u00E9d", 3, 5],
+          ["\u00F6d", 1, 6],
+          ["e", 1],
+          ["je", 1, 1],
+          ["nk", 1],
+          ["unk", 1, 1],
+          ["\u00E1nk", 2, 2],
+          ["\u00E9nk", 3, 3],
+          ["\u00FCnk", 1, 4],
+          ["uk", 1],
+          ["juk", 1, 1],
+          ["\u00E1juk", 2, 1],
+          ["\u00FCk", 1],
+          ["j\u00FCk", 1, 1],
+          ["\u00E9j\u00FCk", 3, 1],
+          ["m", 1],
+          ["am", 1, 1],
+          ["em", 1, 2],
+          ["om", 1, 3],
+          ["\u00E1m", 2, 4],
+          ["\u00E9m", 3, 5],
+          ["o", 1],
+          ["\u00E1", 2],
+          ["\u00E9", 3]
+        ];
+
+        const /**@type {Array<string>}*/ as_9 = ["", "a", "e"];
+
+        const a_10 = [
+          ["id", 1],
+          ["aid", 1, 1],
+          ["jaid", 1, 1],
+          ["eid", 1, 3],
+          ["jeid", 1, 1],
+          ["\u00E1id", 2, 5],
+          ["\u00E9id", 3, 6],
+          ["i", 1],
+          ["ai", 1, 1],
+          ["jai", 1, 1],
+          ["ei", 1, 3],
+          ["jei", 1, 1],
+          ["\u00E1i", 2, 5],
+          ["\u00E9i", 3, 6],
+          ["itek", 1],
+          ["eitek", 1, 1],
+          ["jeitek", 1, 1],
+          ["\u00E9itek", 3, 3],
+          ["ik", 1],
+          ["aik", 1, 1],
+          ["jaik", 1, 1],
+          ["eik", 1, 3],
+          ["jeik", 1, 1],
+          ["\u00E1ik", 2, 5],
+          ["\u00E9ik", 3, 6],
+          ["ink", 1],
+          ["aink", 1, 1],
+          ["jaink", 1, 1],
+          ["eink", 1, 3],
+          ["jeink", 1, 1],
+          ["\u00E1ink", 2, 5],
+          ["\u00E9ink", 3, 6],
+          ["aitok", 1],
+          ["jaitok", 1, 1],
+          ["\u00E1itok", 2],
+          ["im", 1],
+          ["aim", 1, 1],
+          ["jaim", 1, 1],
+          ["eim", 1, 3],
+          ["jeim", 1, 1],
+          ["\u00E1im", 2, 5],
+          ["\u00E9im", 3, 6]
+        ];
+
+        const /**@type {Array<string>}*/ as_10 = ["", "a", "e"];
+
+        const /**@type {Array<number>}*/ g_v = [17, 65, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 17, 36, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1];
+
+        var B = BaseStemmer;
+
+        return class extends B {
+
+
+          /** @return {boolean} */
+          #r_double() {
+            const /**@type {number}*/ v_1 = this.limit - this.c;
+            if (this.find_among_b(a_1) === 0) return false;
+            this.c = this.limit - v_1;
+            return true;
+          }
+
+          /** @return {boolean} */
+          #r_undouble() {
+            if (this.c <= this.limit_backward) return false;
+            this.c--;
+            this.ket = this.c;
+            if (this.c <= this.limit_backward) return false;
+            this.c--;
+            this.bra = this.c;
+            this.slice_del();
+            return true;
+          }
+
+          /** @return {boolean} */
+          #stem() {
+            let /**@type {number}*/ a;
+            let /**@type {number}*/ I_p1;
+            const /**@type {number}*/ v_1 = this.c;
+            // deno-lint-ignore no-unused-labels
+            lab0: {
+              I_p1 = this.limit;
+              // deno-lint-ignore no-unused-labels
+              lab1: {
+                const /**@type {number}*/ v_2 = this.c;
+                // deno-lint-ignore no-unused-labels
+                lab2: {
+                  if (!(this.in_grouping(g_v, 97, 369))) break lab2;
+                  const /**@type {number}*/ v_3 = this.c;
+                  // deno-lint-ignore no-unused-labels
+                  lab3: {
+                    if (!this.go_in_grouping(g_v, 97, 369)) break lab3;
+                    this.c++;
+                    I_p1 = this.c;
                   }
-                  I_p1 = sbp.cursor;
-                  return;
+                  this.c = v_3;
+                  break lab1;
                 }
-                sbp.cursor = v_2;
-                if (v_2 >= sbp.limit) {
-                  I_p1 = v_2;
-                  return;
-                }
-                sbp.cursor++;
+                this.c = v_2;
+                if (!this.go_out_grouping(g_v, 97, 369)) break lab0;
+                this.c++;
+                I_p1 = this.c;
               }
             }
-            sbp.cursor = v_1;
-            if (sbp.out_grouping(g_v, 97, 252)) {
-              while (!sbp.in_grouping(g_v, 97, 252)) {
-                if (sbp.cursor >= sbp.limit)
-                  return;
-                sbp.cursor++;
-              }
-              I_p1 = sbp.cursor;
+            this.c = v_1;
+            this.limit_backward = this.c;
+            this.c = this.limit;
+            const /**@type {number}*/ v_4 = this.limit - this.c;
+            // deno-lint-ignore no-unused-labels
+            lab4: {
+              this.ket = this.c;
+              if (this.find_among_b(a_2) === 0) break lab4;
+              this.bra = this.c;
+              if ( /**@type {boolean}*/ (I_p1 > this.c)) break lab4;
+              if (!this.#r_double()) break lab4;
+              this.slice_del();
+              if (!this.#r_undouble()) break lab4;
             }
-          }
-
-          function r_R1() {
-            return I_p1 <= sbp.cursor;
-          }
-
-          function r_v_ending() {
-            var among_var;
-            sbp.ket = sbp.cursor;
-            among_var = sbp.find_among_b(a_1, 2);
-            if (among_var) {
-              sbp.bra = sbp.cursor;
-              if (r_R1()) {
-                switch (among_var) {
-                  case 1:
-                    sbp.slice_from("a");
-                    break;
-                  case 2:
-                    sbp.slice_from("e");
-                    break;
-                }
-              }
+            this.c = this.limit - v_4;
+            const /**@type {number}*/ v_5 = this.limit - this.c;
+            // deno-lint-ignore no-unused-labels
+            lab5: {
+              this.ket = this.c;
+              if (this.find_among_b(a_3) === 0) break lab5;
+              this.bra = this.c;
+              if ( /**@type {boolean}*/ (I_p1 > this.c)) break lab5;
+              this.slice_del();
+              this.ket = this.c;
+              a = this.find_among_b(a_0);
+              if (a === 0) break lab5;
+              this.bra = this.c;
+              if ( /**@type {boolean}*/ (I_p1 > this.c)) break lab5;
+              this.slice_from(as_0[a - 1]);
             }
-          }
-
-          function r_double() {
-            var v_1 = sbp.limit - sbp.cursor;
-            if (!sbp.find_among_b(a_2, 23))
-              return false;
-            sbp.cursor = sbp.limit - v_1;
+            this.c = this.limit - v_5;
+            const /**@type {number}*/ v_6 = this.limit - this.c;
+            // deno-lint-ignore no-unused-labels
+            lab6: {
+              this.ket = this.c;
+              a = this.find_among_b(a_4);
+              if (a === 0) break lab6;
+              this.bra = this.c;
+              if ( /**@type {boolean}*/ (I_p1 > this.c)) break lab6;
+              this.slice_from(as_4[a - 1]);
+            }
+            this.c = this.limit - v_6;
+            const /**@type {number}*/ v_7 = this.limit - this.c;
+            // deno-lint-ignore no-unused-labels
+            lab7: {
+              this.ket = this.c;
+              a = this.find_among_b(a_5);
+              if (a === 0) break lab7;
+              this.bra = this.c;
+              if ( /**@type {boolean}*/ (I_p1 > this.c)) break lab7;
+              this.slice_from(as_5[a - 1]);
+            }
+            this.c = this.limit - v_7;
+            const /**@type {number}*/ v_8 = this.limit - this.c;
+            // deno-lint-ignore no-unused-labels
+            lab8: {
+              this.ket = this.c;
+              if (this.find_among_b(a_6) === 0) break lab8;
+              this.bra = this.c;
+              if ( /**@type {boolean}*/ (I_p1 > this.c)) break lab8;
+              if (!this.#r_double()) break lab8;
+              this.slice_del();
+              if (!this.#r_undouble()) break lab8;
+            }
+            this.c = this.limit - v_8;
+            const /**@type {number}*/ v_9 = this.limit - this.c;
+            // deno-lint-ignore no-unused-labels
+            lab9: {
+              this.ket = this.c;
+              a = this.find_among_b(a_8);
+              if (a === 0) break lab9;
+              this.bra = this.c;
+              if ( /**@type {boolean}*/ (I_p1 > this.c)) break lab9;
+              this.slice_from(as_8[a - 1]);
+            }
+            this.c = this.limit - v_9;
+            const /**@type {number}*/ v_10 = this.limit - this.c;
+            // deno-lint-ignore no-unused-labels
+            lab10: {
+              this.ket = this.c;
+              a = this.find_among_b(a_9);
+              if (a === 0) break lab10;
+              this.bra = this.c;
+              if ( /**@type {boolean}*/ (I_p1 > this.c)) break lab10;
+              this.slice_from(as_9[a - 1]);
+            }
+            this.c = this.limit - v_10;
+            const /**@type {number}*/ v_11 = this.limit - this.c;
+            // deno-lint-ignore no-unused-labels
+            lab11: {
+              this.ket = this.c;
+              a = this.find_among_b(a_10);
+              if (a === 0) break lab11;
+              this.bra = this.c;
+              if ( /**@type {boolean}*/ (I_p1 > this.c)) break lab11;
+              this.slice_from(as_10[a - 1]);
+            }
+            this.c = this.limit - v_11;
+            const /**@type {number}*/ v_12 = this.limit - this.c;
+            // deno-lint-ignore no-unused-labels
+            lab12: {
+              this.ket = this.c;
+              a = this.find_among_b(a_7);
+              if (a === 0) break lab12;
+              this.bra = this.c;
+              if ( /**@type {boolean}*/ (I_p1 > this.c)) break lab12;
+              this.slice_from(as_7[a - 1]);
+            }
+            this.c = this.limit - v_12;
+            this.c = this.limit_backward;
             return true;
           }
 
-          function r_undouble() {
-            if (sbp.cursor > sbp.limit_backward) {
-              sbp.cursor--;
-              sbp.ket = sbp.cursor;
-              var c = sbp.cursor - 1;
-              if (sbp.limit_backward <= c && c <= sbp.limit) {
-                sbp.cursor = c;
-                sbp.bra = c;
-                sbp.slice_del();
-              }
-            }
+          /**@return{string}*/
+          stem( /**@type {string}*/ input) {
+            this.setCurrent(input);
+            this.#stem();
+            return this.getCurrent();
           }
 
-          function r_instrum() {
-            var among_var;
-            sbp.ket = sbp.cursor;
-            among_var = sbp.find_among_b(a_3, 2);
-            if (among_var) {
-              sbp.bra = sbp.cursor;
-              if (r_R1()) {
-                if (among_var == 1 || among_var == 2)
-                  if (!r_double())
-                    return;
-                sbp.slice_del();
-                r_undouble();
-              }
-            }
-          }
+          stemWord = this.stem;
+        }
+      })();
 
-          function r_case() {
-            sbp.ket = sbp.cursor;
-            if (sbp.find_among_b(a_4, 44)) {
-              sbp.bra = sbp.cursor;
-              if (r_R1()) {
-                sbp.slice_del();
-                r_v_ending();
-              }
-            }
-          }
-
-          function r_case_special() {
-            var among_var;
-            sbp.ket = sbp.cursor;
-            among_var = sbp.find_among_b(a_5, 3);
-            if (among_var) {
-              sbp.bra = sbp.cursor;
-              if (r_R1()) {
-                switch (among_var) {
-                  case 1:
-                    sbp.slice_from("e");
-                    break;
-                  case 2:
-                  case 3:
-                    sbp.slice_from("a");
-                    break;
-                }
-              }
-            }
-          }
-
-          function r_case_other() {
-            var among_var;
-            sbp.ket = sbp.cursor;
-            among_var = sbp.find_among_b(a_6, 6);
-            if (among_var) {
-              sbp.bra = sbp.cursor;
-              if (r_R1()) {
-                switch (among_var) {
-                  case 1:
-                  case 2:
-                    sbp.slice_del();
-                    break;
-                  case 3:
-                    sbp.slice_from("a");
-                    break;
-                  case 4:
-                    sbp.slice_from("e");
-                    break;
-                }
-              }
-            }
-          }
-
-          function r_factive() {
-            var among_var;
-            sbp.ket = sbp.cursor;
-            among_var = sbp.find_among_b(a_7, 2);
-            if (among_var) {
-              sbp.bra = sbp.cursor;
-              if (r_R1()) {
-                if (among_var == 1 || among_var == 2)
-                  if (!r_double())
-                    return;
-                sbp.slice_del();
-                r_undouble()
-              }
-            }
-          }
-
-          function r_plural() {
-            var among_var;
-            sbp.ket = sbp.cursor;
-            among_var = sbp.find_among_b(a_8, 7);
-            if (among_var) {
-              sbp.bra = sbp.cursor;
-              if (r_R1()) {
-                switch (among_var) {
-                  case 1:
-                    sbp.slice_from("a");
-                    break;
-                  case 2:
-                    sbp.slice_from("e");
-                    break;
-                  case 3:
-                  case 4:
-                  case 5:
-                  case 6:
-                  case 7:
-                    sbp.slice_del();
-                    break;
-                }
-              }
-            }
-          }
-
-          function r_owned() {
-            var among_var;
-            sbp.ket = sbp.cursor;
-            among_var = sbp.find_among_b(a_9, 12);
-            if (among_var) {
-              sbp.bra = sbp.cursor;
-              if (r_R1()) {
-                switch (among_var) {
-                  case 1:
-                  case 4:
-                  case 7:
-                  case 9:
-                    sbp.slice_del();
-                    break;
-                  case 2:
-                  case 5:
-                  case 8:
-                    sbp.slice_from("e");
-                    break;
-                  case 3:
-                  case 6:
-                    sbp.slice_from("a");
-                    break;
-                }
-              }
-            }
-          }
-
-          function r_sing_owner() {
-            var among_var;
-            sbp.ket = sbp.cursor;
-            among_var = sbp.find_among_b(a_10, 31);
-            if (among_var) {
-              sbp.bra = sbp.cursor;
-              if (r_R1()) {
-                switch (among_var) {
-                  case 1:
-                  case 4:
-                  case 7:
-                  case 8:
-                  case 9:
-                  case 12:
-                  case 13:
-                  case 16:
-                  case 17:
-                  case 18:
-                    sbp.slice_del();
-                    break;
-                  case 2:
-                  case 5:
-                  case 10:
-                  case 14:
-                  case 19:
-                    sbp.slice_from("a");
-                    break;
-                  case 3:
-                  case 6:
-                  case 11:
-                  case 15:
-                  case 20:
-                    sbp.slice_from("e");
-                    break;
-                }
-              }
-            }
-          }
-
-          function r_plur_owner() {
-            var among_var;
-            sbp.ket = sbp.cursor;
-            among_var = sbp.find_among_b(a_11, 42);
-            if (among_var) {
-              sbp.bra = sbp.cursor;
-              if (r_R1()) {
-                switch (among_var) {
-                  case 1:
-                  case 4:
-                  case 5:
-                  case 6:
-                  case 9:
-                  case 10:
-                  case 11:
-                  case 14:
-                  case 15:
-                  case 16:
-                  case 17:
-                  case 20:
-                  case 21:
-                  case 24:
-                  case 25:
-                  case 26:
-                  case 29:
-                    sbp.slice_del();
-                    break;
-                  case 2:
-                  case 7:
-                  case 12:
-                  case 18:
-                  case 22:
-                  case 27:
-                    sbp.slice_from("a");
-                    break;
-                  case 3:
-                  case 8:
-                  case 13:
-                  case 19:
-                  case 23:
-                  case 28:
-                    sbp.slice_from("e");
-                    break;
-                }
-              }
-            }
-          }
-          this.stem = function() {
-            var v_1 = sbp.cursor;
-            r_mark_regions();
-            sbp.limit_backward = v_1;
-            sbp.cursor = sbp.limit;
-            r_instrum();
-            sbp.cursor = sbp.limit;
-            r_case();
-            sbp.cursor = sbp.limit;
-            r_case_special();
-            sbp.cursor = sbp.limit;
-            r_case_other();
-            sbp.cursor = sbp.limit;
-            r_factive();
-            sbp.cursor = sbp.limit;
-            r_owned();
-            sbp.cursor = sbp.limit;
-            r_sing_owner();
-            sbp.cursor = sbp.limit;
-            r_plur_owner();
-            sbp.cursor = sbp.limit;
-            r_plural();
-            return true;
-          }
-        };
+      var st = new Stemmer();
 
       /* and return a function that stems a word for the current locale */
       return function(token) {
-        // for lunr version 2
-        if (typeof token.update === "function") {
-          return token.update(function(word) {
-            st.setCurrent(word);
-            st.stem();
-            return st.getCurrent();
-          })
-        } else { // for lunr version <= 1
-          st.setCurrent(token);
-          st.stem();
-          return st.getCurrent();
-        }
+        return token.update(function(word) {
+          return st.stemWord(word);
+        })
       }
     })();
 
     lunr.Pipeline.registerFunction(lunr.hu.stemmer, 'stemmer-hu');
 
+    /* accent folding: indexes the token and its folded form (map from CLDR Latin-ASCII, build/accent-fold.js) */
+    lunr.hu.accentFold = lunr.stemmerSupport.generateAccentFold({
+      "\u00E1": "a",
+      "\u00E9": "e",
+      "\u00ED": "i",
+      "\u00F3": "o",
+      "\u00F6": "o",
+      "\u00FA": "u",
+      "\u00FC": "u",
+      "\u0151": "o",
+      "\u0171": "u"
+    });
+    lunr.hu.accentFold.isDefault = true;
+    lunr.Pipeline.registerFunction(lunr.hu.accentFold, "accentFold-hu");
 
-    lunr.hu.stopWordFilter = lunr.generateStopWordFilter('a abban ahhoz ahogy ahol aki akik akkor alatt amely amelyek amelyekben amelyeket amelyet amelynek ami amikor amit amolyan amíg annak arra arról az azok azon azonban azt aztán azután azzal azért be belül benne bár cikk cikkek cikkeket csak de e ebben eddig egy egyes egyetlen egyik egyre egyéb egész ehhez ekkor el ellen elsõ elég elõ elõször elõtt emilyen ennek erre ez ezek ezen ezt ezzel ezért fel felé hanem hiszen hogy hogyan igen ill ill. illetve ilyen ilyenkor ismét ison itt jobban jó jól kell kellett keressünk keresztül ki kívül között közül legalább legyen lehet lehetett lenne lenni lesz lett maga magát majd majd meg mellett mely melyek mert mi mikor milyen minden mindenki mindent mindig mint mintha mit mivel miért most már más másik még míg nagy nagyobb nagyon ne nekem neki nem nincs néha néhány nélkül olyan ott pedig persze rá s saját sem semmi sok sokat sokkal szemben szerint szinte számára talán tehát teljes tovább továbbá több ugyanis utolsó után utána vagy vagyis vagyok valaki valami valamint való van vannak vele vissza viszont volna volt voltak voltam voltunk által általában át én éppen és így õ õk õket össze úgy új újabb újra'.split(' '));
+    /* fold wildcard terms like the stemmer folds the index (generated by build/derive-fold-maps.js) */
+    lunr.hu.wildcardNormalizer = lunr.stemmerSupport.generateWildcardNormalizer({}, {
+      label: "accentFold-hu",
+      accentFold: lunr.hu.accentFold.map,
+      map: {}
+    });
+    lunr.hu.wildcardNormalizer.label = "wildcardNormalizer-hu";
+    lunr.hu.wildcardNormalizer.pipelineFunctionLabel = "stemmer-hu";
+    lunr.stemmerSupport.addQueryParserWildcardNormalizer(lunr, lunr.hu.wildcardNormalizer);
+
+
+    lunr.hu.stopWordFilter = lunr.generateStopWordFilter('a abban ahhoz ahogy ahol aki akik akkor alatt amely amelyek amelyekben amelyeket amelyet amelynek ami amikor amit amolyan amíg annak arra arról az azok azon azonban azt aztán azután azzal azért be belül benne bár cikk cikkek cikkeket csak de e ebben eddig egy egyes egyetlen egyik egyre egyéb egész ehhez ekkor el ellen első elég elő először előtt emilyen ennek erre ez ezek ezen ezt ezzel ezért fel felé hanem hiszen hogy hogyan igen ill ill. illetve ilyen ilyenkor ismét ison itt jobban jó jól kell kellett keressünk keresztül ki kívül között közül legalább legyen lehet lehetett lenne lenni lesz lett maga magát majd meg mellett mely melyek mert mi mikor milyen minden mindenki mindent mindig mint mintha mit mivel miért most már más másik még míg nagy nagyobb nagyon ne nekem neki nem nincs néha néhány nélkül olyan ott pedig persze rá s saját sem semmi sok sokat sokkal szemben szerint szinte számára talán tehát teljes tovább továbbá több ugyanis utolsó után utána vagy vagyis vagyok valaki valami valamint való van vannak vele vissza viszont volna volt voltak voltam voltunk által általában át én éppen és így össze úgy új újabb újra ő ők őket'.split(' '));
 
     lunr.Pipeline.registerFunction(lunr.hu.stopWordFilter, 'stopWordFilter-hu');
   };

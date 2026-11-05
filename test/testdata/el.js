@@ -20,8 +20,13 @@ module.exports = {
     ],
     tests: [
         {
+            // the full word with a wildcard: the index has the stem ελλαδ, the wildcard prefix is stemmed too
             what: "find the word %w",
             search: "Ελλάδα*",
+            found: 2
+        }, {
+            what: "find an inflected form of a word, like %w for Ελλάδα",
+            search: "Ελλάδας",
             found: 2
         }, {
             what: "find the word %w",

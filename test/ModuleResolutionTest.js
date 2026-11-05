@@ -16,7 +16,7 @@ function runNode(args) {
 describe('Package module resolution', function() {
   it('supports existing CommonJS subpath imports', function() {
     var script = [
-      "var ids = ['lunr-languages/lunr.de', 'lunr-languages/lunr.de.js', 'lunr-languages/min/lunr.de.min', 'lunr-languages/min/lunr.de.min.js', 'lunr-languages/tinyseg'];",
+      "var ids = ['lunr-languages/lunr.de', 'lunr-languages/lunr.de.js', 'lunr-languages/min/lunr.de.min', 'lunr-languages/min/lunr.de.min.js', 'lunr-languages/lunr.ja.tinyseg'];",
       "ids.forEach(function(id) {",
       "  if (typeof require(id) !== 'function') throw new Error(id);",
       "});"
@@ -30,7 +30,7 @@ describe('Package module resolution', function() {
 
   it('supports ESM subpath imports without file extensions', function() {
     var script = [
-      "var ids = ['lunr-languages/lunr.de', 'lunr-languages/lunr.stemmer.support', 'lunr-languages/min/lunr.de.min', 'lunr-languages/tinyseg'];",
+      "var ids = ['lunr-languages/lunr.de', 'lunr-languages/lunr.stemmer.support', 'lunr-languages/min/lunr.de.min', 'lunr-languages/lunr.ja.tinyseg'];",
       "for (const id of ids) {",
       "  const mod = await import(id);",
       "  if (typeof mod.default !== 'function') throw new Error(id);",

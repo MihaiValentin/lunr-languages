@@ -1,20 +1,43 @@
 /*!
  * Lunr languages, `Hindi` language
- * https://github.com/MiKr13/lunr-languages
+ * https://github.com/MihaiValentin/lunr-languages
  *
  * Copyright 2020, Mihir Kumar
  * http://www.mozilla.org/MPL/
  */
 /*!
- * based on
- * Snowball JavaScript Library v0.3
- * http://code.google.com/p/urim/
- * http://snowball.tartarus.org/
+ * The stemmer is generated from hindi.sbl by Snowball 3.2.0 (https://snowballstem.org/).
  *
- * Copyright 2010, Oleg Mazko
- * http://www.mozilla.org/MPL/
+ * Copyright (c) 2001, Dr Martin Porter
+ * Copyright (c) 2004,2005, Richard Boulton
+ * Copyright (c) 2013, Yoshiki Shibukawa
+ * Copyright (c) 2006-2025, Olly Betts
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *   1. Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *   2. Redistributions in binary form must reproduce the above copyright notice,
+ *      this list of conditions and the following disclaimer in the documentation
+ *      and/or other materials provided with the distribution.
+ *   3. Neither the name of the Snowball project nor the names of its contributors
+ *      may be used to endorse or promote products derived from this software
+ *      without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 /**
  * export the module via AMD, CommonJS or as a browser global
  * Export code from https://github.com/umdjs/umd/blob/master/returnExports.js
@@ -61,63 +84,228 @@
         lunr.hi.stemmer
       );
 
-      // change the tokenizer for japanese one
-      // if (isLunr2) { // for lunr version 2.0.0
-      //   this.tokenizer = lunr.hi.tokenizer;
-      // } else {
-      //   if (lunr.tokenizer) { // for lunr version 0.6.0
-      //     lunr.tokenizer = lunr.hi.tokenizer;
-      //   }
-      //   if (this.tokenizerFn) { // for lunr version 0.7.0 -> 1.0.0
-      //     this.tokenizerFn = lunr.hi.tokenizer;
-      //   }
-      // }
-
-      if (this.searchPipeline) {
-        this.searchPipeline.reset();
-        this.searchPipeline.add(lunr.hi.stemmer)
-      }
+      // every searched word is also trimmed and stemmed
+      this.searchPipeline.reset();
+      this.searchPipeline.add(
+        lunr.hi.trimmer,
+        lunr.hi.stemmer
+      )
     };
 
     /* lunr trimmer function */
-    lunr.hi.wordCharacters = "\u0900-\u0903\u0904-\u090f\u0910-\u091f\u0920-\u092f\u0930-\u093f\u0940-\u094f\u0950-\u095f\u0960-\u096f\u0970-\u097fa-zA-Zａ-ｚＡ-Ｚ0-9０-９";
-    // lunr.hi.wordCharacters = "ऀँंःऄअआइईउऊऋऌऍऎएऐऑऒओऔकखगघङचछजझञटठडढणतथदधनऩपफबभमयरऱलळऴवशषसहऺऻ़ऽािीुूृॄॅॆेैॉॊोौ्ॎॏॐ॒॑॓॔ॕॖॗक़ख़ग़ज़ड़ढ़फ़य़ॠॡॢॣ।॥०१२३४५६७८९॰ॱॲॳॴॵॶॷॸॹॺॻॼॽॾॿa-zA-Zａ-ｚＡ-Ｚ0-9０-９";
+    lunr.hi.wordCharacters = "\u0900-\u0950\u0955-\u0963\u0966-\u097F\uA8E0-\uA8FFA-Za-z\xAA\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02B8\u02E0-\u02E4\u1D00-\u1D25\u1D2C-\u1D5C\u1D62-\u1D65\u1D6B-\u1D77\u1D79-\u1DBE\u1E00-\u1EFF\u2071\u207F\u2090-\u209C\u212A\u212B\u2132\u214E\u2160-\u2188\u2C60-\u2C7F\uA722-\uA787\uA78B-\uA7DC\uA7F1-\uA7FF\uAB30-\uAB5A\uAB5C-\uAB64\uAB66-\uAB69\uFB00-\uFB06\uFF21-\uFF3A\uFF41-\uFF5A";
     lunr.hi.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.hi.wordCharacters);
 
     lunr.Pipeline.registerFunction(lunr.hi.trimmer, 'trimmer-hi');
-    /* lunr stop word filter */
-    lunr.hi.stopWordFilter = lunr.generateStopWordFilter(
-      'अत अपना अपनी अपने अभी अंदर आदि आप इत्यादि इन इनका इन्हीं इन्हें इन्हों इस इसका इसकी इसके इसमें इसी इसे उन उनका उनकी उनके उनको उन्हीं उन्हें उन्हों उस उसके उसी उसे एक एवं एस ऐसे और कई कर करता करते करना करने करें कहते कहा का काफ़ी कि कितना किन्हें किन्हों किया किर किस किसी किसे की कुछ कुल के को कोई कौन कौनसा गया घर जब जहाँ जा जितना जिन जिन्हें जिन्हों जिस जिसे जीधर जैसा जैसे जो तक तब तरह तिन तिन्हें तिन्हों तिस तिसे तो था थी थे दबारा दिया दुसरा दूसरे दो द्वारा न नके नहीं ना निहायत नीचे ने पर पहले पूरा पे फिर बनी बही बहुत बाद बाला बिलकुल भी भीतर मगर मानो मे में यदि यह यहाँ यही या यिह ये रखें रहा रहे ऱ्वासा लिए लिये लेकिन व वग़ैरह वर्ग वह वहाँ वहीं वाले वुह वे वो सकता सकते सबसे सभी साथ साबुत साभ सारा से सो संग ही हुआ हुई हुए है हैं हो होता होती होते होना होने'.split(' '));
+
+    /* throw error if lunr stemmer support is older than this file */
+    if ('function' !== typeof lunr.stemmerSupport.BaseStemmer) {
+      throw new Error('Lunr stemmer support is outdated. Please update lunr.stemmer.support.js to the same version as this script.');
+    }
+
     /* lunr stemmer function */
     lunr.hi.stemmer = (function() {
+      var BaseStemmer = lunr.stemmerSupport.BaseStemmer;
 
-      return function(word) {
-        // for lunr version 2
-        if (typeof word.update === "function") {
-          return word.update(function(word) {
-            return word;
-          })
-        } else { // for lunr version <= 1
-          return word;
+      /* hindi-stemmer.js, generated by Snowball 3.2.0 */
+      var Stemmer = (function() {
+        // Generated from hindi.sbl by Snowball 3.2.0 - https://snowballstem.org/
+
+        // deno-lint-ignore-file ban-unused-ignore no-constant-condition no-empty prefer-const
+
+        const a_0 = [
+          ["\u0906\u0901", -1],
+          ["\u093E\u0901", -1],
+          ["\u0907\u092F\u093E\u0901", -1, 1],
+          ["\u0906\u0907\u092F\u093E\u0901", -1, 1],
+          ["\u093E\u0907\u092F\u093E\u0901", -1, 2],
+          ["\u093F\u092F\u093E\u0901", -1, 4],
+          ["\u0906\u0902", -1],
+          ["\u0909\u0906\u0902", -1, 1],
+          ["\u0941\u0906\u0902", -1, 2],
+          ["\u0908\u0902", -1],
+          ["\u0906\u0908\u0902", -1, 1],
+          ["\u093E\u0908\u0902", -1, 2],
+          ["\u090F\u0902", -1],
+          ["\u0906\u090F\u0902", -1, 1],
+          ["\u0909\u090F\u0902", -1, 2],
+          ["\u093E\u090F\u0902", -1, 3],
+          ["\u0924\u093E\u090F\u0902", -1, 1, 1],
+          ["\u0905\u0924\u093E\u090F\u0902", -1, 1],
+          ["\u0928\u093E\u090F\u0902", -1, 3, 1],
+          ["\u0905\u0928\u093E\u090F\u0902", -1, 1],
+          ["\u0941\u090F\u0902", -1, 8],
+          ["\u0913\u0902", -1],
+          ["\u0906\u0913\u0902", -1, 1],
+          ["\u0909\u0913\u0902", -1, 2],
+          ["\u093E\u0913\u0902", -1, 3],
+          ["\u0924\u093E\u0913\u0902", -1, 1, 1],
+          ["\u0905\u0924\u093E\u0913\u0902", -1, 1],
+          ["\u0928\u093E\u0913\u0902", -1, 3, 1],
+          ["\u0905\u0928\u093E\u0913\u0902", -1, 1],
+          ["\u0941\u0913\u0902", -1, 8],
+          ["\u093E\u0902", -1],
+          ["\u0907\u092F\u093E\u0902", -1, 1],
+          ["\u0906\u0907\u092F\u093E\u0902", -1, 1],
+          ["\u093E\u0907\u092F\u093E\u0902", -1, 2],
+          ["\u093F\u092F\u093E\u0902", -1, 4],
+          ["\u0940\u0902", -1],
+          ["\u0924\u0940\u0902", -1, 1, 1],
+          ["\u0905\u0924\u0940\u0902", -1, 1],
+          ["\u0906\u0924\u0940\u0902", -1, 2],
+          ["\u093E\u0924\u0940\u0902", -1, 3],
+          ["\u0947\u0902", -1],
+          ["\u094B\u0902", -1],
+          ["\u0907\u092F\u094B\u0902", -1, 1],
+          ["\u0906\u0907\u092F\u094B\u0902", -1, 1],
+          ["\u093E\u0907\u092F\u094B\u0902", -1, 2],
+          ["\u093F\u092F\u094B\u0902", -1, 4],
+          ["\u0905", -1],
+          ["\u0906", -1],
+          ["\u0907", -1],
+          ["\u0908", -1],
+          ["\u0906\u0908", -1, 1],
+          ["\u093E\u0908", -1, 2],
+          ["\u0909", -1],
+          ["\u090A", -1],
+          ["\u090F", -1],
+          ["\u0906\u090F", -1, 1],
+          ["\u0907\u090F", -1, 2],
+          ["\u0906\u0907\u090F", -1, 1],
+          ["\u093E\u0907\u090F", -1, 2],
+          ["\u093E\u090F", -1, 5],
+          ["\u093F\u090F", -1, 6],
+          ["\u0913", -1],
+          ["\u0906\u0913", -1, 1],
+          ["\u093E\u0913", -1, 2],
+          ["\u0915\u0930", -1, 0, 1],
+          ["\u0905\u0915\u0930", -1, 1],
+          ["\u0906\u0915\u0930", -1, 2],
+          ["\u093E\u0915\u0930", -1, 3],
+          ["\u093E", -1],
+          ["\u090A\u0902\u0917\u093E", -1, 1],
+          ["\u0906\u090A\u0902\u0917\u093E", -1, 1],
+          ["\u093E\u090A\u0902\u0917\u093E", -1, 2],
+          ["\u0942\u0902\u0917\u093E", -1, 4],
+          ["\u090F\u0917\u093E", -1, 5],
+          ["\u0906\u090F\u0917\u093E", -1, 1],
+          ["\u093E\u090F\u0917\u093E", -1, 2],
+          ["\u0947\u0917\u093E", -1, 8],
+          ["\u0924\u093E", -1, 9, 1],
+          ["\u0905\u0924\u093E", -1, 1],
+          ["\u0906\u0924\u093E", -1, 2],
+          ["\u093E\u0924\u093E", -1, 3],
+          ["\u0928\u093E", -1, 13, 1],
+          ["\u0905\u0928\u093E", -1, 1],
+          ["\u0906\u0928\u093E", -1, 2],
+          ["\u093E\u0928\u093E", -1, 3],
+          ["\u0906\u092F\u093E", -1, 17],
+          ["\u093E\u092F\u093E", -1, 18],
+          ["\u093F", -1],
+          ["\u0940", -1],
+          ["\u090A\u0902\u0917\u0940", -1, 1],
+          ["\u0906\u090A\u0902\u0917\u0940", -1, 1],
+          ["\u093E\u090A\u0902\u0917\u0940", -1, 2],
+          ["\u090F\u0902\u0917\u0940", -1, 4],
+          ["\u0906\u090F\u0902\u0917\u0940", -1, 1],
+          ["\u093E\u090F\u0902\u0917\u0940", -1, 2],
+          ["\u0942\u0902\u0917\u0940", -1, 7],
+          ["\u0947\u0902\u0917\u0940", -1, 8],
+          ["\u090F\u0917\u0940", -1, 9],
+          ["\u0906\u090F\u0917\u0940", -1, 1],
+          ["\u093E\u090F\u0917\u0940", -1, 2],
+          ["\u0913\u0917\u0940", -1, 12],
+          ["\u0906\u0913\u0917\u0940", -1, 1],
+          ["\u093E\u0913\u0917\u0940", -1, 2],
+          ["\u0947\u0917\u0940", -1, 15],
+          ["\u094B\u0917\u0940", -1, 16],
+          ["\u0924\u0940", -1, 17, 1],
+          ["\u0905\u0924\u0940", -1, 1],
+          ["\u0906\u0924\u0940", -1, 2],
+          ["\u093E\u0924\u0940", -1, 3],
+          ["\u0928\u0940", -1, 21, 1],
+          ["\u0905\u0928\u0940", -1, 1],
+          ["\u0941", -1],
+          ["\u0942", -1],
+          ["\u0947", -1],
+          ["\u090F\u0902\u0917\u0947", -1, 1],
+          ["\u0906\u090F\u0902\u0917\u0947", -1, 1],
+          ["\u093E\u090F\u0902\u0917\u0947", -1, 2],
+          ["\u0947\u0902\u0917\u0947", -1, 4],
+          ["\u0913\u0917\u0947", -1, 5],
+          ["\u0906\u0913\u0917\u0947", -1, 1],
+          ["\u093E\u0913\u0917\u0947", -1, 2],
+          ["\u094B\u0917\u0947", -1, 8],
+          ["\u0924\u0947", -1, 9, 1],
+          ["\u0905\u0924\u0947", -1, 1],
+          ["\u0906\u0924\u0947", -1, 2],
+          ["\u093E\u0924\u0947", -1, 3],
+          ["\u0928\u0947", -1, 13, 1],
+          ["\u0905\u0928\u0947", -1, 1],
+          ["\u0906\u0928\u0947", -1, 2],
+          ["\u093E\u0928\u0947", -1, 3],
+          ["\u094B", -1],
+          ["\u094D", -1]
+        ];
+
+        const /**@type {Array<number>}*/ g_consonant = [255, 255, 255, 255, 159, 0, 0, 0, 248, 7];
+
+        var B = BaseStemmer;
+
+        return class extends B {
+
+
+          /** @return {boolean} */
+          #r_CONSONANT() {
+            return this.in_grouping_b(g_consonant, 2325, 2399);
+          }
+
+          /** @return {boolean} */
+          #stem() {
+            if (this.c >= this.limit) return false;
+            this.c++;
+            this.limit_backward = this.c;
+            this.c = this.limit;
+            this.ket = this.c;
+            if (this.find_among_b(a_0, this.#r_CONSONANT) === 0) return false;
+            this.bra = this.c;
+            this.slice_del();
+            this.c = this.limit_backward;
+            return true;
+          }
+
+          /**@return{string}*/
+          stem( /**@type {string}*/ input) {
+            this.setCurrent(input);
+            this.#stem();
+            return this.getCurrent();
+          }
+
+          stemWord = this.stem;
         }
+      })();
 
+      var st = new Stemmer();
+
+      /* and return a function that stems a word for the current locale */
+      return function(token) {
+        return token.update(function(word) {
+          return st.stemWord(word);
+        })
       }
     })();
 
-    var segmenter = lunr.wordcut;
-    segmenter.init();
-    lunr.hi.tokenizer = function(obj) {
-      if (!arguments.length || obj == null || obj == undefined) return []
-      if (Array.isArray(obj)) return obj.map(function(t) {
-        return isLunr2 ? new lunr.Token(t.toLowerCase()) : t.toLowerCase()
-      });
-
-      var str = obj.toString().toLowerCase().replace(/^\s+/, '');
-      return segmenter.cut(str).split('|');
-    }
-
     lunr.Pipeline.registerFunction(lunr.hi.stemmer, 'stemmer-hi');
-    lunr.Pipeline.registerFunction(lunr.hi.stopWordFilter, 'stopWordFilter-hi');
 
+    /* fold wildcard terms like the stemmer folds the index (generated by build/derive-fold-maps.js) */
+    lunr.hi.wildcardNormalizer = lunr.stemmerSupport.generateWildcardNormalizer({});
+    lunr.hi.wildcardNormalizer.label = "wildcardNormalizer-hi";
+    lunr.hi.wildcardNormalizer.pipelineFunctionLabel = "stemmer-hi";
+    lunr.stemmerSupport.addQueryParserWildcardNormalizer(lunr, lunr.hi.wildcardNormalizer);
+
+
+    lunr.hi.stopWordFilter = lunr.generateStopWordFilter('अंदर अत अपना अपनी अपने अभी आदि आप इत्यादि इन इनका इन्हीं इन्हें इन्हों इस इसका इसकी इसके इसमें इसी इसे उन उनका उनकी उनके उनको उन्हीं उन्हें उन्हों उस उसके उसी उसे एक एवं एस ऐसे और कई कर करता करते करना करने करें कहते कहा का काफ़ी कि कितना किन्हें किन्हों किया किर किस किसी किसे की कुछ कुल के को कोई कौन कौनसा गया घर जब जहाँ जा जितना जिन जिन्हें जिन्हों जिस जिसे जीधर जैसा जैसे जो तक तब तरह तिन तिन्हें तिन्हों तिस तिसे तो था थी थे दबारा दिया दुसरा दूसरे दो द्वारा न नके नहीं ना निहायत नीचे ने पर पहले पूरा पे फिर बनी बही बहुत बाद बाला बिलकुल भी भीतर मगर मानो मे में यदि यह यहाँ यही या यिह ये रखें रहा रहे ऱ्वासा लिए लिये लेकिन व वग़ैरह वर्ग वह वहाँ वहीं वाले वुह वे वो संग सकता सकते सबसे सभी साथ साबुत साभ सारा से सो ही हुआ हुई हुए है हैं हो होता होती होते होना होने'.split(' '));
+
+    lunr.Pipeline.registerFunction(lunr.hi.stopWordFilter, 'stopWordFilter-hi');
   };
 }))

@@ -6,15 +6,42 @@
  * http://www.mozilla.org/MPL/
  */
 /*!
- * based on
- * Snowball JavaScript Library v0.3
- * http://code.google.com/p/urim/
- * http://snowball.tartarus.org/
+ * The stemmer is generated from italian.sbl by Snowball 3.2.0 (https://snowballstem.org/).
  *
- * Copyright 2010, Oleg Mazko
- * http://www.mozilla.org/MPL/
+ * Copyright (c) 2001, Dr Martin Porter
+ * Copyright (c) 2004,2005, Richard Boulton
+ * Copyright (c) 2013, Yoshiki Shibukawa
+ * Copyright (c) 2006-2025, Olly Betts
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *   1. Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *   2. Redistributions in binary form must reproduce the above copyright notice,
+ *      this list of conditions and the following disclaimer in the documentation
+ *      and/or other materials provided with the distribution.
+ *   3. Neither the name of the Snowball project nor the names of its contributors
+ *      may be used to endorse or promote products derived from this software
+ *      without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
+/*!
+ * The accent folding map is derived from CLDR's Latin-ASCII transform (release-49, https://cldr.unicode.org/),
+ * Copyright © 2001-2026 Unicode, Inc., under the Unicode License V3 (licenses/Unicode-3.0.txt).
+ */
 /**
  * export the module via AMD, CommonJS or as a browser global
  * Export code from https://github.com/umdjs/umd/blob/master/returnExports.js
@@ -58,560 +85,790 @@
       this.pipeline.add(
         lunr.it.trimmer,
         lunr.it.stopWordFilter,
+        lunr.it.accentFold,
         lunr.it.stemmer
       );
 
-      // for lunr version 2
-      // this is necessary so that every searched word is also trimmed and stemmed before
-      // in lunr <= 1 this is not needed, as it is done using the normal pipeline
-      if (this.searchPipeline) {
-        this.searchPipeline.reset();
-        this.searchPipeline.add(
-          lunr.it.trimmer,
-          lunr.it.stemmer
-        )
-      }
+      // every searched word is also trimmed and stemmed
+      this.searchPipeline.reset();
+      this.searchPipeline.add(
+        lunr.it.trimmer,
+        lunr.it.accentFold,
+        lunr.it.stemmer
+      )
     };
 
     /* lunr trimmer function */
-    lunr.it.wordCharacters = "A-Za-z\xAA\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02B8\u02E0-\u02E4\u1D00-\u1D25\u1D2C-\u1D5C\u1D62-\u1D65\u1D6B-\u1D77\u1D79-\u1DBE\u1E00-\u1EFF\u2071\u207F\u2090-\u209C\u212A\u212B\u2132\u214E\u2160-\u2188\u2C60-\u2C7F\uA722-\uA787\uA78B-\uA7AD\uA7B0-\uA7B7\uA7F7-\uA7FF\uAB30-\uAB5A\uAB5C-\uAB64\uFB00-\uFB06\uFF21-\uFF3A\uFF41-\uFF5A";
+    lunr.it.wordCharacters = "A-Za-z\xAA\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02B8\u02E0-\u02E4\u1D00-\u1D25\u1D2C-\u1D5C\u1D62-\u1D65\u1D6B-\u1D77\u1D79-\u1DBE\u1E00-\u1EFF\u2071\u207F\u2090-\u209C\u212A\u212B\u2132\u214E\u2160-\u2188\u2C60-\u2C7F\uA722-\uA787\uA78B-\uA7DC\uA7F1-\uA7FF\uAB30-\uAB5A\uAB5C-\uAB64\uAB66-\uAB69\uFB00-\uFB06\uFF21-\uFF3A\uFF41-\uFF5A";
     lunr.it.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.it.wordCharacters);
 
     lunr.Pipeline.registerFunction(lunr.it.trimmer, 'trimmer-it');
 
+    /* throw error if lunr stemmer support is older than this file */
+    if ('function' !== typeof lunr.stemmerSupport.BaseStemmer) {
+      throw new Error('Lunr stemmer support is outdated. Please update lunr.stemmer.support.js to the same version as this script.');
+    }
+
     /* lunr stemmer function */
     lunr.it.stemmer = (function() {
-      /* create the wrapped stemmer object */
-      var Among = lunr.stemmerSupport.Among,
-        SnowballProgram = lunr.stemmerSupport.SnowballProgram,
-        st = new function ItalianStemmer() {
-          var a_0 = [new Among("", -1, 7), new Among("qu", 0, 6),
-              new Among("\u00E1", 0, 1), new Among("\u00E9", 0, 2),
-              new Among("\u00ED", 0, 3), new Among("\u00F3", 0, 4),
-              new Among("\u00FA", 0, 5)
-            ],
-            a_1 = [new Among("", -1, 3),
-              new Among("I", 0, 1), new Among("U", 0, 2)
-            ],
-            a_2 = [
-              new Among("la", -1, -1), new Among("cela", 0, -1),
-              new Among("gliela", 0, -1), new Among("mela", 0, -1),
-              new Among("tela", 0, -1), new Among("vela", 0, -1),
-              new Among("le", -1, -1), new Among("cele", 6, -1),
-              new Among("gliele", 6, -1), new Among("mele", 6, -1),
-              new Among("tele", 6, -1), new Among("vele", 6, -1),
-              new Among("ne", -1, -1), new Among("cene", 12, -1),
-              new Among("gliene", 12, -1), new Among("mene", 12, -1),
-              new Among("sene", 12, -1), new Among("tene", 12, -1),
-              new Among("vene", 12, -1), new Among("ci", -1, -1),
-              new Among("li", -1, -1), new Among("celi", 20, -1),
-              new Among("glieli", 20, -1), new Among("meli", 20, -1),
-              new Among("teli", 20, -1), new Among("veli", 20, -1),
-              new Among("gli", 20, -1), new Among("mi", -1, -1),
-              new Among("si", -1, -1), new Among("ti", -1, -1),
-              new Among("vi", -1, -1), new Among("lo", -1, -1),
-              new Among("celo", 31, -1), new Among("glielo", 31, -1),
-              new Among("melo", 31, -1), new Among("telo", 31, -1),
-              new Among("velo", 31, -1)
-            ],
-            a_3 = [new Among("ando", -1, 1),
-              new Among("endo", -1, 1), new Among("ar", -1, 2),
-              new Among("er", -1, 2), new Among("ir", -1, 2)
-            ],
-            a_4 = [
-              new Among("ic", -1, -1), new Among("abil", -1, -1),
-              new Among("os", -1, -1), new Among("iv", -1, 1)
-            ],
-            a_5 = [
-              new Among("ic", -1, 1), new Among("abil", -1, 1),
-              new Among("iv", -1, 1)
-            ],
-            a_6 = [new Among("ica", -1, 1),
-              new Among("logia", -1, 3), new Among("osa", -1, 1),
-              new Among("ista", -1, 1), new Among("iva", -1, 9),
-              new Among("anza", -1, 1), new Among("enza", -1, 5),
-              new Among("ice", -1, 1), new Among("atrice", 7, 1),
-              new Among("iche", -1, 1), new Among("logie", -1, 3),
-              new Among("abile", -1, 1), new Among("ibile", -1, 1),
-              new Among("usione", -1, 4), new Among("azione", -1, 2),
-              new Among("uzione", -1, 4), new Among("atore", -1, 2),
-              new Among("ose", -1, 1), new Among("ante", -1, 1),
-              new Among("mente", -1, 1), new Among("amente", 19, 7),
-              new Among("iste", -1, 1), new Among("ive", -1, 9),
-              new Among("anze", -1, 1), new Among("enze", -1, 5),
-              new Among("ici", -1, 1), new Among("atrici", 25, 1),
-              new Among("ichi", -1, 1), new Among("abili", -1, 1),
-              new Among("ibili", -1, 1), new Among("ismi", -1, 1),
-              new Among("usioni", -1, 4), new Among("azioni", -1, 2),
-              new Among("uzioni", -1, 4), new Among("atori", -1, 2),
-              new Among("osi", -1, 1), new Among("anti", -1, 1),
-              new Among("amenti", -1, 6), new Among("imenti", -1, 6),
-              new Among("isti", -1, 1), new Among("ivi", -1, 9),
-              new Among("ico", -1, 1), new Among("ismo", -1, 1),
-              new Among("oso", -1, 1), new Among("amento", -1, 6),
-              new Among("imento", -1, 6), new Among("ivo", -1, 9),
-              new Among("it\u00E0", -1, 8), new Among("ist\u00E0", -1, 1),
-              new Among("ist\u00E8", -1, 1), new Among("ist\u00EC", -1, 1)
-            ],
-            a_7 = [
-              new Among("isca", -1, 1), new Among("enda", -1, 1),
-              new Among("ata", -1, 1), new Among("ita", -1, 1),
-              new Among("uta", -1, 1), new Among("ava", -1, 1),
-              new Among("eva", -1, 1), new Among("iva", -1, 1),
-              new Among("erebbe", -1, 1), new Among("irebbe", -1, 1),
-              new Among("isce", -1, 1), new Among("ende", -1, 1),
-              new Among("are", -1, 1), new Among("ere", -1, 1),
-              new Among("ire", -1, 1), new Among("asse", -1, 1),
-              new Among("ate", -1, 1), new Among("avate", 16, 1),
-              new Among("evate", 16, 1), new Among("ivate", 16, 1),
-              new Among("ete", -1, 1), new Among("erete", 20, 1),
-              new Among("irete", 20, 1), new Among("ite", -1, 1),
-              new Among("ereste", -1, 1), new Among("ireste", -1, 1),
-              new Among("ute", -1, 1), new Among("erai", -1, 1),
-              new Among("irai", -1, 1), new Among("isci", -1, 1),
-              new Among("endi", -1, 1), new Among("erei", -1, 1),
-              new Among("irei", -1, 1), new Among("assi", -1, 1),
-              new Among("ati", -1, 1), new Among("iti", -1, 1),
-              new Among("eresti", -1, 1), new Among("iresti", -1, 1),
-              new Among("uti", -1, 1), new Among("avi", -1, 1),
-              new Among("evi", -1, 1), new Among("ivi", -1, 1),
-              new Among("isco", -1, 1), new Among("ando", -1, 1),
-              new Among("endo", -1, 1), new Among("Yamo", -1, 1),
-              new Among("iamo", -1, 1), new Among("avamo", -1, 1),
-              new Among("evamo", -1, 1), new Among("ivamo", -1, 1),
-              new Among("eremo", -1, 1), new Among("iremo", -1, 1),
-              new Among("assimo", -1, 1), new Among("ammo", -1, 1),
-              new Among("emmo", -1, 1), new Among("eremmo", 54, 1),
-              new Among("iremmo", 54, 1), new Among("immo", -1, 1),
-              new Among("ano", -1, 1), new Among("iscano", 58, 1),
-              new Among("avano", 58, 1), new Among("evano", 58, 1),
-              new Among("ivano", 58, 1), new Among("eranno", -1, 1),
-              new Among("iranno", -1, 1), new Among("ono", -1, 1),
-              new Among("iscono", 65, 1), new Among("arono", 65, 1),
-              new Among("erono", 65, 1), new Among("irono", 65, 1),
-              new Among("erebbero", -1, 1), new Among("irebbero", -1, 1),
-              new Among("assero", -1, 1), new Among("essero", -1, 1),
-              new Among("issero", -1, 1), new Among("ato", -1, 1),
-              new Among("ito", -1, 1), new Among("uto", -1, 1),
-              new Among("avo", -1, 1), new Among("evo", -1, 1),
-              new Among("ivo", -1, 1), new Among("ar", -1, 1),
-              new Among("ir", -1, 1), new Among("er\u00E0", -1, 1),
-              new Among("ir\u00E0", -1, 1), new Among("er\u00F2", -1, 1),
-              new Among("ir\u00F2", -1, 1)
-            ],
-            g_v = [17, 65, 16, 0, 0, 0, 0, 0, 0,
-              0, 0, 0, 0, 0, 0, 128, 128, 8, 2, 1
-            ],
-            g_AEIO = [17, 65, 0, 0, 0, 0,
-              0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 128, 8, 2
-            ],
-            g_CG = [17],
-            I_p2, I_p1, I_pV, sbp = new SnowballProgram();
-          this.setCurrent = function(word) {
-            sbp.setCurrent(word);
-          };
-          this.getCurrent = function() {
-            return sbp.getCurrent();
-          };
+      var BaseStemmer = lunr.stemmerSupport.BaseStemmer;
 
-          function habr1(c1, c2, v_1) {
-            if (sbp.eq_s(1, c1)) {
-              sbp.ket = sbp.cursor;
-              if (sbp.in_grouping(g_v, 97, 249)) {
-                sbp.slice_from(c2);
-                sbp.cursor = v_1;
-                return true;
-              }
-            }
-            return false;
-          }
+      /* italian-stemmer.js, generated by Snowball 3.2.0 */
+      var Stemmer = (function() {
+        // Generated from italian.sbl by Snowball 3.2.0 - https://snowballstem.org/
 
-          function r_prelude() {
-            var among_var, v_1 = sbp.cursor,
-              v_2, v_3, v_4;
-            while (true) {
-              sbp.bra = sbp.cursor;
-              among_var = sbp.find_among(a_0, 7);
-              if (among_var) {
-                sbp.ket = sbp.cursor;
-                switch (among_var) {
-                  case 1:
-                    sbp.slice_from("\u00E0");
-                    continue;
-                  case 2:
-                    sbp.slice_from("\u00E8");
-                    continue;
-                  case 3:
-                    sbp.slice_from("\u00EC");
-                    continue;
-                  case 4:
-                    sbp.slice_from("\u00F2");
-                    continue;
-                  case 5:
-                    sbp.slice_from("\u00F9");
-                    continue;
-                  case 6:
-                    sbp.slice_from("qU");
-                    continue;
-                  case 7:
-                    if (sbp.cursor >= sbp.limit)
-                      break;
-                    sbp.cursor++;
-                    continue;
-                }
-              }
-              break;
+        // deno-lint-ignore-file ban-unused-ignore no-constant-condition no-empty prefer-const
+
+        const a_0 = [
+          ["all'", -1],
+          ["d'", -1],
+          ["dall'", -1],
+          ["dell'", -1],
+          ["gl'", -1],
+          ["l'", -1],
+          ["m'", -1],
+          ["nell'", -1],
+          ["quell'", -1],
+          ["quest'", -1],
+          ["s'", -1],
+          ["sull'", -1],
+          ["t'", -1],
+          ["tutt'", -1],
+          ["un'", -1],
+          ["v'", -1]
+        ];
+
+        const a_1 = [
+          ["", 7],
+          ["qu", 6, 1],
+          ["\u00E1", 1, 2],
+          ["\u00E9", 2, 3],
+          ["\u00ED", 3, 4],
+          ["\u00F3", 4, 5],
+          ["\u00FA", 5, 6]
+        ];
+
+        const a_2 = [
+          ["", 3],
+          ["I", 1, 1],
+          ["U", 2, 2]
+        ];
+
+        const a_3 = [
+          ["la", -1],
+          ["cela", -1, 1],
+          ["gliela", -1, 2],
+          ["mela", -1, 3],
+          ["tela", -1, 4],
+          ["vela", -1, 5],
+          ["le", -1],
+          ["cele", -1, 1],
+          ["gliele", -1, 2],
+          ["mele", -1, 3],
+          ["tele", -1, 4],
+          ["vele", -1, 5],
+          ["ne", -1],
+          ["cene", -1, 1],
+          ["gliene", -1, 2],
+          ["mene", -1, 3],
+          ["sene", -1, 4],
+          ["tene", -1, 5],
+          ["vene", -1, 6],
+          ["ci", -1],
+          ["li", -1],
+          ["celi", -1, 1],
+          ["glieli", -1, 2],
+          ["meli", -1, 3],
+          ["teli", -1, 4],
+          ["veli", -1, 5],
+          ["gli", -1, 6],
+          ["mi", -1],
+          ["si", -1],
+          ["ti", -1],
+          ["vi", -1],
+          ["lo", -1],
+          ["celo", -1, 1],
+          ["glielo", -1, 2],
+          ["melo", -1, 3],
+          ["telo", -1, 4],
+          ["velo", -1, 5]
+        ];
+
+        const a_4 = [
+          ["ando", 1],
+          ["endo", 1],
+          ["ar", 2],
+          ["er", 2],
+          ["ir", 2]
+        ];
+
+        const /**@type {Array<string>}*/ as_4 = ["", "e"];
+
+        const a_5 = [
+          ["ic", -1],
+          ["abil", -1],
+          ["os", -1],
+          ["iv", 1]
+        ];
+
+        const a_6 = [
+          ["ic", 1],
+          ["abil", 1],
+          ["iv", 1]
+        ];
+
+        const a_7 = [
+          ["ica", 1],
+          ["logia", 3],
+          ["osa", 1],
+          ["ista", 1],
+          ["iva", 9],
+          ["anza", 1],
+          ["enza", 5],
+          ["ice", 1],
+          ["atrice", 1, 1],
+          ["iche", 1],
+          ["logie", 3],
+          ["abile", 1],
+          ["ibile", 1],
+          ["usione", 4],
+          ["azione", 2],
+          ["uzione", 4],
+          ["atore", 2],
+          ["ose", 1],
+          ["ante", 1],
+          ["mente", 1],
+          ["amente", 7, 1],
+          ["iste", 1],
+          ["ive", 9],
+          ["anze", 1],
+          ["enze", 5],
+          ["ici", 1],
+          ["atrici", 1, 1],
+          ["ichi", 1],
+          ["abili", 1],
+          ["ibili", 1],
+          ["ismi", 1],
+          ["usioni", 4],
+          ["azioni", 2],
+          ["uzioni", 4],
+          ["atori", 2],
+          ["osi", 1],
+          ["anti", 1],
+          ["amenti", 6],
+          ["imenti", 6],
+          ["isti", 1],
+          ["ivi", 9],
+          ["ico", 1],
+          ["ismo", 1],
+          ["oso", 1],
+          ["amento", 6],
+          ["imento", 6],
+          ["ivo", 9],
+          ["it\u00E0", 8],
+          ["ist\u00E0", 1],
+          ["ist\u00E8", 1],
+          ["ist\u00EC", 1]
+        ];
+
+        const a_8 = [
+          ["isca", 1],
+          ["enda", 1],
+          ["ata", 1],
+          ["ita", 1],
+          ["uta", 1],
+          ["ava", 1],
+          ["eva", 1],
+          ["iva", 1],
+          ["erebbe", 1],
+          ["irebbe", 1],
+          ["isce", 1],
+          ["ende", 1],
+          ["are", 1],
+          ["ere", 1],
+          ["ire", 1],
+          ["asse", 1],
+          ["ate", 1],
+          ["avate", 1, 1],
+          ["evate", 1, 2],
+          ["ivate", 1, 3],
+          ["ete", 1],
+          ["erete", 1, 1],
+          ["irete", 1, 2],
+          ["ite", 1],
+          ["ereste", 1],
+          ["ireste", 1],
+          ["ute", 1],
+          ["erai", 1],
+          ["irai", 1],
+          ["isci", 1],
+          ["endi", 1],
+          ["erei", 1],
+          ["irei", 1],
+          ["assi", 1],
+          ["ati", 1],
+          ["iti", 1],
+          ["eresti", 1],
+          ["iresti", 1],
+          ["uti", 1],
+          ["avi", 1],
+          ["evi", 1],
+          ["ivi", 1],
+          ["isco", 1],
+          ["ando", 1],
+          ["endo", 1],
+          ["Yamo", 1],
+          ["iamo", 1],
+          ["avamo", 1],
+          ["evamo", 1],
+          ["ivamo", 1],
+          ["eremo", 1],
+          ["iremo", 1],
+          ["assimo", 1],
+          ["ammo", 1],
+          ["emmo", 1],
+          ["eremmo", 1, 1],
+          ["iremmo", 1, 2],
+          ["immo", 1],
+          ["ano", 1],
+          ["iscano", 1, 1],
+          ["avano", 1, 2],
+          ["evano", 1, 3],
+          ["ivano", 1, 4],
+          ["eranno", 1],
+          ["iranno", 1],
+          ["ono", 1],
+          ["iscono", 1, 1],
+          ["arono", 1, 2],
+          ["erono", 1, 3],
+          ["irono", 1, 4],
+          ["erebbero", 1],
+          ["irebbero", 1],
+          ["assero", 1],
+          ["essero", 1],
+          ["issero", 1],
+          ["ato", 1],
+          ["ito", 1],
+          ["uto", 1],
+          ["avo", 1],
+          ["evo", 1],
+          ["ivo", 1],
+          ["ar", 1],
+          ["ir", 1],
+          ["er\u00E0", 1],
+          ["ir\u00E0", 1],
+          ["er\u00F2", 1],
+          ["ir\u00F2", 1]
+        ];
+
+        const /**@type {Array<number>}*/ g_v = [17, 65, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 128, 8, 2, 1];
+
+        const /**@type {Array<number>}*/ g_AEIO = [17, 65, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 128, 8, 2];
+
+        const /**@type {Array<number>}*/ g_CG = [17];
+
+        var B = BaseStemmer;
+
+        return class extends B {
+
+
+          /** @return {boolean} */
+          #stem() {
+            let /**@type {number}*/ a;
+            let /**@type {number}*/ I_p2;
+            let /**@type {number}*/ I_p1;
+            let /**@type {number}*/ I_pV;
+            const /**@type {number}*/ v_1 = this.c;
+            // deno-lint-ignore no-unused-labels
+            lab0: {
+              this.bra = this.c;
+              if (this.find_among(a_0) === 0) break lab0;
+              this.ket = this.c;
+              if ( /**@type {boolean}*/ (this.c >= this.limit)) break lab0;
+              this.slice_del();
             }
-            sbp.cursor = v_1;
-            while (true) {
-              v_2 = sbp.cursor;
+            this.c = v_1;
+            const /**@type {number}*/ v_2 = this.c;
+            // deno-lint-ignore no-unused-labels
+            lab1: {
+              const /**@type {number}*/ v_3 = this.c;
               while (true) {
-                v_3 = sbp.cursor;
-                if (sbp.in_grouping(g_v, 97, 249)) {
-                  sbp.bra = sbp.cursor;
-                  v_4 = sbp.cursor;
-                  if (habr1("u", "U", v_3))
-                    break;
-                  sbp.cursor = v_4;
-                  if (habr1("i", "I", v_3))
-                    break;
-                }
-                sbp.cursor = v_3;
-                if (sbp.cursor >= sbp.limit) {
-                  sbp.cursor = v_2;
-                  return;
-                }
-                sbp.cursor++;
-              }
-            }
-          }
-
-          function habr2(v_1) {
-            sbp.cursor = v_1;
-            if (!sbp.in_grouping(g_v, 97, 249))
-              return false;
-            while (!sbp.out_grouping(g_v, 97, 249)) {
-              if (sbp.cursor >= sbp.limit)
-                return false;
-              sbp.cursor++;
-            }
-            return true;
-          }
-
-          function habr3() {
-            if (sbp.in_grouping(g_v, 97, 249)) {
-              var v_1 = sbp.cursor;
-              if (sbp.out_grouping(g_v, 97, 249)) {
-                while (!sbp.in_grouping(g_v, 97, 249)) {
-                  if (sbp.cursor >= sbp.limit)
-                    return habr2(v_1);
-                  sbp.cursor++;
-                }
-                return true;
-              }
-              return habr2(v_1);
-            }
-            return false;
-          }
-
-          function habr4() {
-            var v_1 = sbp.cursor,
-              v_2;
-            if (!habr3()) {
-              sbp.cursor = v_1;
-              if (!sbp.out_grouping(g_v, 97, 249))
-                return;
-              v_2 = sbp.cursor;
-              if (sbp.out_grouping(g_v, 97, 249)) {
-                while (!sbp.in_grouping(g_v, 97, 249)) {
-                  if (sbp.cursor >= sbp.limit) {
-                    sbp.cursor = v_2;
-                    if (sbp.in_grouping(g_v, 97, 249) &&
-                      sbp.cursor < sbp.limit)
-                      sbp.cursor++;
-                    return;
+                const /**@type {number}*/ v_4 = this.c;
+                // deno-lint-ignore no-unused-labels
+                lab2: {
+                  this.bra = this.c;
+                  a = this.find_among(a_1);
+                  this.ket = this.c;
+                  switch (a) {
+                    case 1: {
+                      this.slice_from("\u00E0");
+                      break;
+                    }
+                    case 2: {
+                      this.slice_from("\u00E8");
+                      break;
+                    }
+                    case 3: {
+                      this.slice_from("\u00EC");
+                      break;
+                    }
+                    case 4: {
+                      this.slice_from("\u00F2");
+                      break;
+                    }
+                    case 5: {
+                      this.slice_from("\u00F9");
+                      break;
+                    }
+                    case 6: {
+                      this.slice_from("qU");
+                      break;
+                    }
+                    case 7: {
+                      if (this.c >= this.limit) break lab2;
+                      this.c++;
+                      break;
+                    }
                   }
-                  sbp.cursor++;
+                  continue;
                 }
-                I_pV = sbp.cursor;
-                return;
+                this.c = v_4;
+                break;
               }
-              sbp.cursor = v_2;
-              if (!sbp.in_grouping(g_v, 97, 249) || sbp.cursor >= sbp.limit)
-                return;
-              sbp.cursor++;
-            }
-            I_pV = sbp.cursor;
-          }
-
-          function habr5() {
-            while (!sbp.in_grouping(g_v, 97, 249)) {
-              if (sbp.cursor >= sbp.limit)
-                return false;
-              sbp.cursor++;
-            }
-            while (!sbp.out_grouping(g_v, 97, 249)) {
-              if (sbp.cursor >= sbp.limit)
-                return false;
-              sbp.cursor++;
-            }
-            return true;
-          }
-
-          function r_mark_regions() {
-            var v_1 = sbp.cursor;
-            I_pV = sbp.limit;
-            I_p1 = I_pV;
-            I_p2 = I_pV;
-            habr4();
-            sbp.cursor = v_1;
-            if (habr5()) {
-              I_p1 = sbp.cursor;
-              if (habr5())
-                I_p2 = sbp.cursor;
-            }
-          }
-
-          function r_postlude() {
-            var among_var;
-            while (true) {
-              sbp.bra = sbp.cursor;
-              among_var = sbp.find_among(a_1, 3);
-              if (!among_var)
-                break;
-              sbp.ket = sbp.cursor;
-              switch (among_var) {
-                case 1:
-                  sbp.slice_from("i");
-                  break;
-                case 2:
-                  sbp.slice_from("u");
-                  break;
-                case 3:
-                  if (sbp.cursor >= sbp.limit)
-                    return;
-                  sbp.cursor++;
-                  break;
-              }
-            }
-          }
-
-          function r_RV() {
-            return I_pV <= sbp.cursor;
-          }
-
-          function r_R1() {
-            return I_p1 <= sbp.cursor;
-          }
-
-          function r_R2() {
-            return I_p2 <= sbp.cursor;
-          }
-
-          function r_attached_pronoun() {
-            var among_var;
-            sbp.ket = sbp.cursor;
-            if (sbp.find_among_b(a_2, 37)) {
-              sbp.bra = sbp.cursor;
-              among_var = sbp.find_among_b(a_3, 5);
-              if (among_var && r_RV()) {
-                switch (among_var) {
-                  case 1:
-                    sbp.slice_del();
-                    break;
-                  case 2:
-                    sbp.slice_from("e");
-                    break;
-                }
-              }
-            }
-          }
-
-          function r_standard_suffix() {
-            var among_var;
-            sbp.ket = sbp.cursor;
-            among_var = sbp.find_among_b(a_6, 51);
-            if (!among_var)
-              return false;
-            sbp.bra = sbp.cursor;
-            switch (among_var) {
-              case 1:
-                if (!r_R2())
-                  return false;
-                sbp.slice_del();
-                break;
-              case 2:
-                if (!r_R2())
-                  return false;
-                sbp.slice_del();
-                sbp.ket = sbp.cursor;
-                if (sbp.eq_s_b(2, "ic")) {
-                  sbp.bra = sbp.cursor;
-                  if (r_R2())
-                    sbp.slice_del();
-                }
-                break;
-              case 3:
-                if (!r_R2())
-                  return false;
-                sbp.slice_from("log");
-                break;
-              case 4:
-                if (!r_R2())
-                  return false;
-                sbp.slice_from("u");
-                break;
-              case 5:
-                if (!r_R2())
-                  return false;
-                sbp.slice_from("ente");
-                break;
-              case 6:
-                if (!r_RV())
-                  return false;
-                sbp.slice_del();
-                break;
-              case 7:
-                if (!r_R1())
-                  return false;
-                sbp.slice_del();
-                sbp.ket = sbp.cursor;
-                among_var = sbp.find_among_b(a_4, 4);
-                if (among_var) {
-                  sbp.bra = sbp.cursor;
-                  if (r_R2()) {
-                    sbp.slice_del();
-                    if (among_var == 1) {
-                      sbp.ket = sbp.cursor;
-                      if (sbp.eq_s_b(2, "at")) {
-                        sbp.bra = sbp.cursor;
-                        if (r_R2())
-                          sbp.slice_del();
+              this.c = v_3;
+              while (true) {
+                const /**@type {number}*/ v_5 = this.c;
+                // deno-lint-ignore no-unused-labels
+                lab3: {
+                  // deno-lint-ignore no-unused-labels
+                  golab4: while (true) {
+                    const /**@type {number}*/ v_6 = this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab5: {
+                      if (!(this.in_grouping(g_v, 97, 249))) break lab5;
+                      this.bra = this.c;
+                      // deno-lint-ignore no-unused-labels
+                      lab6: {
+                        const /**@type {number}*/ v_7 = this.c;
+                        // deno-lint-ignore no-unused-labels
+                        lab7: {
+                          if (!(this.eq_s("u"))) break lab7;
+                          this.ket = this.c;
+                          if (!(this.in_grouping(g_v, 97, 249))) break lab7;
+                          this.slice_from("U");
+                          break lab6;
+                        }
+                        this.c = v_7;
+                        if (!(this.eq_s("i"))) break lab5;
+                        this.ket = this.c;
+                        if (!(this.in_grouping(g_v, 97, 249))) break lab5;
+                        this.slice_from("I");
                       }
+                      this.c = v_6;
+                      break golab4;
                     }
+                    this.c = v_6;
+                    if (this.c >= this.limit) break lab3;
+                    this.c++;
                   }
+                  continue;
                 }
+                this.c = v_5;
                 break;
-              case 8:
-                if (!r_R2())
-                  return false;
-                sbp.slice_del();
-                sbp.ket = sbp.cursor;
-                among_var = sbp.find_among_b(a_5, 3);
-                if (among_var) {
-                  sbp.bra = sbp.cursor;
-                  if (among_var == 1)
-                    if (r_R2())
-                      sbp.slice_del();
-                }
-                break;
-              case 9:
-                if (!r_R2())
-                  return false;
-                sbp.slice_del();
-                sbp.ket = sbp.cursor;
-                if (sbp.eq_s_b(2, "at")) {
-                  sbp.bra = sbp.cursor;
-                  if (r_R2()) {
-                    sbp.slice_del();
-                    sbp.ket = sbp.cursor;
-                    if (sbp.eq_s_b(2, "ic")) {
-                      sbp.bra = sbp.cursor;
-                      if (r_R2())
-                        sbp.slice_del();
-                    }
-                  }
-                }
-                break;
+              }
             }
+            this.c = v_2;
+            // deno-lint-ignore no-unused-labels
+            lab8: {
+              I_pV = this.limit;
+              I_p1 = this.limit;
+              I_p2 = this.limit;
+              const /**@type {number}*/ v_8 = this.c;
+              // deno-lint-ignore no-unused-labels
+              lab9: {
+                // deno-lint-ignore no-unused-labels
+                lab10: {
+                  const /**@type {number}*/ v_9 = this.c;
+                  // deno-lint-ignore no-unused-labels
+                  lab11: {
+                    if (!(this.in_grouping(g_v, 97, 249))) break lab11;
+                    // deno-lint-ignore no-unused-labels
+                    lab12: {
+                      const /**@type {number}*/ v_10 = this.c;
+                      // deno-lint-ignore no-unused-labels
+                      lab13: {
+                        if (!(this.out_grouping(g_v, 97, 249))) break lab13;
+                        if (!this.go_out_grouping(g_v, 97, 249)) break lab13;
+                        this.c++;
+                        break lab12;
+                      }
+                      this.c = v_10;
+                      if (!(this.in_grouping(g_v, 97, 249))) break lab11;
+                      if (!this.go_in_grouping(g_v, 97, 249)) break lab11;
+                      this.c++;
+                    }
+                    break lab10;
+                  }
+                  this.c = v_9;
+                  // deno-lint-ignore no-unused-labels
+                  lab14: {
+                    if (!(this.eq_s("divan"))) break lab14;
+                    break lab10;
+                  }
+                  this.c = v_9;
+                  if (!(this.out_grouping(g_v, 97, 249))) break lab9;
+                  // deno-lint-ignore no-unused-labels
+                  lab15: {
+                    const /**@type {number}*/ v_11 = this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab16: {
+                      if (!(this.out_grouping(g_v, 97, 249))) break lab16;
+                      if (!this.go_out_grouping(g_v, 97, 249)) break lab16;
+                      this.c++;
+                      break lab15;
+                    }
+                    this.c = v_11;
+                    if (!(this.in_grouping(g_v, 97, 249))) break lab9;
+                    if (this.c >= this.limit) break lab9;
+                    this.c++;
+                  }
+                }
+                I_pV = this.c;
+              }
+              this.c = v_8;
+              const /**@type {number}*/ v_12 = this.c;
+              // deno-lint-ignore no-unused-labels
+              lab17: {
+                if (!this.go_out_grouping(g_v, 97, 249)) break lab17;
+                this.c++;
+                if (!this.go_in_grouping(g_v, 97, 249)) break lab17;
+                this.c++;
+                I_p1 = this.c;
+                if (!this.go_out_grouping(g_v, 97, 249)) break lab17;
+                this.c++;
+                if (!this.go_in_grouping(g_v, 97, 249)) break lab17;
+                this.c++;
+                I_p2 = this.c;
+              }
+              this.c = v_12;
+            }
+            this.limit_backward = this.c;
+            this.c = this.limit;
+            const /**@type {number}*/ v_13 = this.limit - this.c;
+            // deno-lint-ignore no-unused-labels
+            lab18: {
+              this.ket = this.c;
+              if (this.find_among_b(a_3) === 0) break lab18;
+              this.bra = this.c;
+              a = this.find_among_b(a_4);
+              if (a === 0) break lab18;
+              if ( /**@type {boolean}*/ (I_pV > this.c)) break lab18;
+              this.slice_from(as_4[a - 1]);
+            }
+            this.c = this.limit - v_13;
+            const /**@type {number}*/ v_14 = this.limit - this.c;
+            // deno-lint-ignore no-unused-labels
+            lab19: {
+              // deno-lint-ignore no-unused-labels
+              lab20: {
+                const /**@type {number}*/ v_15 = this.limit - this.c;
+                // deno-lint-ignore no-unused-labels
+                lab21: {
+                  this.ket = this.c;
+                  a = this.find_among_b(a_7);
+                  if (a === 0) break lab21;
+                  this.bra = this.c;
+                  switch (a) {
+                    case 1: {
+                      if ( /**@type {boolean}*/ (I_p2 > this.c)) break lab21;
+                      this.slice_del();
+                      break;
+                    }
+                    case 2: {
+                      if ( /**@type {boolean}*/ (I_p2 > this.c)) break lab21;
+                      this.slice_del();
+                      const /**@type {number}*/ v_16 = this.limit - this.c;
+                      // deno-lint-ignore no-unused-labels
+                      lab22: {
+                        this.ket = this.c;
+                        if (!(this.eq_s_b("ic"))) {
+                          this.c = this.limit - v_16;
+                          break lab22;
+                        }
+                        this.bra = this.c;
+                        if ( /**@type {boolean}*/ (I_p2 > this.c)) {
+                          this.c = this.limit - v_16;
+                          break lab22;
+                        }
+                        this.slice_del();
+                      }
+                      break;
+                    }
+                    case 3: {
+                      if ( /**@type {boolean}*/ (I_p2 > this.c)) break lab21;
+                      this.slice_from("log");
+                      break;
+                    }
+                    case 4: {
+                      if ( /**@type {boolean}*/ (I_p2 > this.c)) break lab21;
+                      this.slice_from("u");
+                      break;
+                    }
+                    case 5: {
+                      if ( /**@type {boolean}*/ (I_p2 > this.c)) break lab21;
+                      this.slice_from("ente");
+                      break;
+                    }
+                    case 6: {
+                      if ( /**@type {boolean}*/ (I_pV > this.c)) break lab21;
+                      this.slice_del();
+                      break;
+                    }
+                    case 7: {
+                      if ( /**@type {boolean}*/ (I_p1 > this.c)) break lab21;
+                      this.slice_del();
+                      const /**@type {number}*/ v_17 = this.limit - this.c;
+                      // deno-lint-ignore no-unused-labels
+                      lab23: {
+                        this.ket = this.c;
+                        a = this.find_among_b(a_5);
+                        if (a === 0) {
+                          this.c = this.limit - v_17;
+                          break lab23;
+                        }
+                        this.bra = this.c;
+                        if ( /**@type {boolean}*/ (I_p2 > this.c)) {
+                          this.c = this.limit - v_17;
+                          break lab23;
+                        }
+                        this.slice_del();
+                        switch (a) {
+                          case 1: {
+                            this.ket = this.c;
+                            if (!(this.eq_s_b("at"))) {
+                              this.c = this.limit - v_17;
+                              break lab23;
+                            }
+                            this.bra = this.c;
+                            if ( /**@type {boolean}*/ (I_p2 > this.c)) {
+                              this.c = this.limit - v_17;
+                              break lab23;
+                            }
+                            this.slice_del();
+                            break;
+                          }
+                        }
+                      }
+                      break;
+                    }
+                    case 8: {
+                      if ( /**@type {boolean}*/ (I_p2 > this.c)) break lab21;
+                      this.slice_del();
+                      const /**@type {number}*/ v_18 = this.limit - this.c;
+                      // deno-lint-ignore no-unused-labels
+                      lab24: {
+                        this.ket = this.c;
+                        if (this.find_among_b(a_6) === 0) {
+                          this.c = this.limit - v_18;
+                          break lab24;
+                        }
+                        this.bra = this.c;
+                        if ( /**@type {boolean}*/ (I_p2 > this.c)) {
+                          this.c = this.limit - v_18;
+                          break lab24;
+                        }
+                        this.slice_del();
+                      }
+                      break;
+                    }
+                    case 9: {
+                      if ( /**@type {boolean}*/ (I_p2 > this.c)) break lab21;
+                      this.slice_del();
+                      const /**@type {number}*/ v_19 = this.limit - this.c;
+                      // deno-lint-ignore no-unused-labels
+                      lab25: {
+                        this.ket = this.c;
+                        if (!(this.eq_s_b("at"))) {
+                          this.c = this.limit - v_19;
+                          break lab25;
+                        }
+                        this.bra = this.c;
+                        if ( /**@type {boolean}*/ (I_p2 > this.c)) {
+                          this.c = this.limit - v_19;
+                          break lab25;
+                        }
+                        this.slice_del();
+                        this.ket = this.c;
+                        if (!(this.eq_s_b("ic"))) {
+                          this.c = this.limit - v_19;
+                          break lab25;
+                        }
+                        this.bra = this.c;
+                        if ( /**@type {boolean}*/ (I_p2 > this.c)) {
+                          this.c = this.limit - v_19;
+                          break lab25;
+                        }
+                        this.slice_del();
+                      }
+                      break;
+                    }
+                  }
+                  break lab20;
+                }
+                this.c = this.limit - v_15;
+                if (this.c < I_pV) break lab19;
+                const /**@type {number}*/ v_20 = this.limit_backward;
+                this.limit_backward = I_pV;
+                this.ket = this.c;
+                if (this.find_among_b(a_8) === 0) {
+                  this.limit_backward = v_20;
+                  break lab19;
+                }
+                this.bra = this.c;
+                this.slice_del();
+                this.limit_backward = v_20;
+              }
+            }
+            this.c = this.limit - v_14;
+            const /**@type {number}*/ v_21 = this.limit - this.c;
+            // deno-lint-ignore no-unused-labels
+            lab26: {
+              const /**@type {number}*/ v_22 = this.limit - this.c;
+              // deno-lint-ignore no-unused-labels
+              lab27: {
+                this.ket = this.c;
+                if (!(this.in_grouping_b(g_AEIO, 97, 242))) {
+                  this.c = this.limit - v_22;
+                  break lab27;
+                }
+                this.bra = this.c;
+                if ( /**@type {boolean}*/ (I_pV > this.c)) {
+                  this.c = this.limit - v_22;
+                  break lab27;
+                }
+                this.slice_del();
+                this.ket = this.c;
+                if (!(this.eq_s_b("i"))) {
+                  this.c = this.limit - v_22;
+                  break lab27;
+                }
+                this.bra = this.c;
+                if ( /**@type {boolean}*/ (I_pV > this.c)) {
+                  this.c = this.limit - v_22;
+                  break lab27;
+                }
+                this.slice_del();
+              }
+              const /**@type {number}*/ v_23 = this.limit - this.c;
+              // deno-lint-ignore no-unused-labels
+              lab28: {
+                this.ket = this.c;
+                if (!(this.eq_s_b("h"))) {
+                  this.c = this.limit - v_23;
+                  break lab28;
+                }
+                this.bra = this.c;
+                if (!(this.in_grouping_b(g_CG, 99, 103))) {
+                  this.c = this.limit - v_23;
+                  break lab28;
+                }
+                if ( /**@type {boolean}*/ (I_pV > this.c)) {
+                  this.c = this.limit - v_23;
+                  break lab28;
+                }
+                this.slice_del();
+              }
+            }
+            this.c = this.limit - v_21;
+            this.c = this.limit_backward;
+            const /**@type {number}*/ v_24 = this.c;
+            // deno-lint-ignore no-unused-labels
+            lab29: {
+              while (true) {
+                const /**@type {number}*/ v_25 = this.c;
+                // deno-lint-ignore no-unused-labels
+                lab30: {
+                  this.bra = this.c;
+                  a = this.find_among(a_2);
+                  this.ket = this.c;
+                  switch (a) {
+                    case 1: {
+                      this.slice_from("i");
+                      break;
+                    }
+                    case 2: {
+                      this.slice_from("u");
+                      break;
+                    }
+                    case 3: {
+                      if (this.c >= this.limit) break lab30;
+                      this.c++;
+                      break;
+                    }
+                  }
+                  continue;
+                }
+                this.c = v_25;
+                break;
+              }
+            }
+            this.c = v_24;
             return true;
           }
 
-          function r_verb_suffix() {
-            var among_var, v_1;
-            if (sbp.cursor >= I_pV) {
-              v_1 = sbp.limit_backward;
-              sbp.limit_backward = I_pV;
-              sbp.ket = sbp.cursor;
-              among_var = sbp.find_among_b(a_7, 87);
-              if (among_var) {
-                sbp.bra = sbp.cursor;
-                if (among_var == 1)
-                  sbp.slice_del();
-              }
-              sbp.limit_backward = v_1;
-            }
+          /**@return{string}*/
+          stem( /**@type {string}*/ input) {
+            this.setCurrent(input);
+            this.#stem();
+            return this.getCurrent();
           }
 
-          function habr6() {
-            var v_1 = sbp.limit - sbp.cursor;
-            sbp.ket = sbp.cursor;
-            if (sbp.in_grouping_b(g_AEIO, 97, 242)) {
-              sbp.bra = sbp.cursor;
-              if (r_RV()) {
-                sbp.slice_del();
-                sbp.ket = sbp.cursor;
-                if (sbp.eq_s_b(1, "i")) {
-                  sbp.bra = sbp.cursor;
-                  if (r_RV()) {
-                    sbp.slice_del();
-                    return;
-                  }
-                }
-              }
-            }
-            sbp.cursor = sbp.limit - v_1;
-          }
+          stemWord = this.stem;
+        }
+      })();
 
-          function r_vowel_suffix() {
-            habr6();
-            sbp.ket = sbp.cursor;
-            if (sbp.eq_s_b(1, "h")) {
-              sbp.bra = sbp.cursor;
-              if (sbp.in_grouping_b(g_CG, 99, 103))
-                if (r_RV())
-                  sbp.slice_del();
-            }
-          }
-          this.stem = function() {
-            var v_1 = sbp.cursor;
-            r_prelude();
-            sbp.cursor = v_1;
-            r_mark_regions();
-            sbp.limit_backward = v_1;
-            sbp.cursor = sbp.limit;
-            r_attached_pronoun();
-            sbp.cursor = sbp.limit;
-            if (!r_standard_suffix()) {
-              sbp.cursor = sbp.limit;
-              r_verb_suffix();
-            }
-            sbp.cursor = sbp.limit;
-            r_vowel_suffix();
-            sbp.cursor = sbp.limit_backward;
-            r_postlude();
-            return true;
-          }
-        };
+      var st = new Stemmer();
 
       /* and return a function that stems a word for the current locale */
       return function(token) {
-        // for lunr version 2
-        if (typeof token.update === "function") {
-          return token.update(function(word) {
-            st.setCurrent(word);
-            st.stem();
-            return st.getCurrent();
-          })
-        } else { // for lunr version <= 1
-          st.setCurrent(token);
-          st.stem();
-          return st.getCurrent();
-        }
+        return token.update(function(word) {
+          return st.stemWord(word);
+        })
       }
     })();
 
     lunr.Pipeline.registerFunction(lunr.it.stemmer, 'stemmer-it');
+
+    /* accent folding: indexes the token and its folded form (map from CLDR Latin-ASCII, build/accent-fold.js) */
+    lunr.it.accentFold = lunr.stemmerSupport.generateAccentFold({
+      "\u00E0": "a",
+      "\u00E8": "e",
+      "\u00E9": "e",
+      "\u00EC": "i",
+      "\u00F2": "o",
+      "\u00F9": "u"
+    });
+    lunr.it.accentFold.isDefault = true;
+    lunr.Pipeline.registerFunction(lunr.it.accentFold, "accentFold-it");
+
+    /* fold wildcard terms like the stemmer folds the index (generated by build/derive-fold-maps.js) */
+    lunr.it.wildcardNormalizer = lunr.stemmerSupport.generateWildcardNormalizer({
+      "^d'": "",
+      "^l'": "",
+      "^un'": "",
+      "\u00E9": "\u00E8"
+    }, {
+      label: "accentFold-it",
+      accentFold: lunr.it.accentFold.map,
+      map: {
+        "^d'": "",
+        "^l'": "",
+        "^un'": ""
+      }
+    });
+    lunr.it.wildcardNormalizer.label = "wildcardNormalizer-it";
+    lunr.it.wildcardNormalizer.pipelineFunctionLabel = "stemmer-it";
+    lunr.stemmerSupport.addQueryParserWildcardNormalizer(lunr, lunr.it.wildcardNormalizer);
 
 
     lunr.it.stopWordFilter = lunr.generateStopWordFilter('a abbia abbiamo abbiano abbiate ad agl agli ai al all alla alle allo anche avemmo avendo avesse avessero avessi avessimo aveste avesti avete aveva avevamo avevano avevate avevi avevo avrai avranno avrebbe avrebbero avrei avremmo avremo avreste avresti avrete avrà avrò avuta avute avuti avuto c che chi ci coi col come con contro cui da dagl dagli dai dal dall dalla dalle dallo degl degli dei del dell della delle dello di dov dove e ebbe ebbero ebbi ed era erano eravamo eravate eri ero essendo faccia facciamo facciano facciate faccio facemmo facendo facesse facessero facessi facessimo faceste facesti faceva facevamo facevano facevate facevi facevo fai fanno farai faranno farebbe farebbero farei faremmo faremo fareste faresti farete farà farò fece fecero feci fosse fossero fossi fossimo foste fosti fu fui fummo furono gli ha hai hanno ho i il in io l la le lei li lo loro lui ma mi mia mie miei mio ne negl negli nei nel nell nella nelle nello noi non nostra nostre nostri nostro o per perché più quale quanta quante quanti quanto quella quelle quelli quello questa queste questi questo sarai saranno sarebbe sarebbero sarei saremmo saremo sareste saresti sarete sarà sarò se sei si sia siamo siano siate siete sono sta stai stando stanno starai staranno starebbe starebbero starei staremmo staremo stareste staresti starete starà starò stava stavamo stavano stavate stavi stavo stemmo stesse stessero stessi stessimo steste stesti stette stettero stetti stia stiamo stiano stiate sto su sua sue sugl sugli sui sul sull sulla sulle sullo suo suoi ti tra tu tua tue tuo tuoi tutti tutto un una uno vi voi vostra vostre vostri vostro è'.split(' '));

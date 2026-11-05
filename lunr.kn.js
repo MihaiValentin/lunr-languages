@@ -61,10 +61,8 @@
         lunr.kn.stemmer
       );
 
-      if (this.searchPipeline) {
-        this.searchPipeline.reset();
-        this.searchPipeline.add(lunr.kn.stemmer)
-      }
+      this.searchPipeline.reset();
+      this.searchPipeline.add(lunr.kn.stemmer)
     };
 
     /* lunr trimmer function */
@@ -79,29 +77,11 @@
     lunr.kn.stemmer = (function() {
 
       return function(word) {
-        // for lunr version 2
-        if (typeof word.update === "function") {
-          return word.update(function(word) {
-            return word;
-          })
-        } else { // for lunr version <= 1
+        return word.update(function(word) {
           return word;
-        }
-
+        })
       }
     })();
-
-    var segmenter = lunr.wordcut;
-    segmenter.init();
-    lunr.kn.tokenizer = function(obj) {
-      if (!arguments.length || obj == null || obj == undefined) return []
-      if (Array.isArray(obj)) return obj.map(function(t) {
-        return isLunr2 ? new lunr.Token(t.toLowerCase()) : t.toLowerCase()
-      });
-
-      var str = obj.toString().toLowerCase().replace(/^\s+/, '');
-      return segmenter.cut(str).split('|');
-    }
 
     lunr.Pipeline.registerFunction(lunr.kn.stemmer, 'stemmer-kn');
     lunr.Pipeline.registerFunction(lunr.kn.stopWordFilter, 'stopWordFilter-kn');

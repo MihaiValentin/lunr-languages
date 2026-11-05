@@ -6,15 +6,38 @@
  * http://www.mozilla.org/MPL/
  */
 /*!
- * based on
- * Snowball JavaScript Library v0.3
- * http://code.google.com/p/urim/
- * http://snowball.tartarus.org/
+ * The stemmer is generated from german.sbl by Snowball 3.2.0 (https://snowballstem.org/).
  *
- * Copyright 2010, Oleg Mazko
- * http://www.mozilla.org/MPL/
+ * Copyright (c) 2001, Dr Martin Porter
+ * Copyright (c) 2004,2005, Richard Boulton
+ * Copyright (c) 2013, Yoshiki Shibukawa
+ * Copyright (c) 2006-2025, Olly Betts
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *   1. Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *   2. Redistributions in binary form must reproduce the above copyright notice,
+ *      this list of conditions and the following disclaimer in the documentation
+ *      and/or other materials provided with the distribution.
+ *   3. Neither the name of the Snowball project nor the names of its contributors
+ *      may be used to endorse or promote products derived from this software
+ *      without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 /**
  * export the module via AMD, CommonJS or as a browser global
  * Export code from https://github.com/umdjs/umd/blob/master/returnExports.js
@@ -61,336 +84,514 @@
         lunr.de.stemmer
       );
 
-      // for lunr version 2
-      // this is necessary so that every searched word is also trimmed and stemmed before
-      // in lunr <= 1 this is not needed, as it is done using the normal pipeline
-      if (this.searchPipeline) {
-        this.searchPipeline.reset();
-        this.searchPipeline.add(
-          lunr.de.trimmer,
-          lunr.de.stemmer
-        )
-      }
+      // every searched word is also trimmed and stemmed
+      this.searchPipeline.reset();
+      this.searchPipeline.add(
+        lunr.de.trimmer,
+        lunr.de.stemmer
+      )
     };
 
     /* lunr trimmer function */
-    lunr.de.wordCharacters = "A-Za-z\xAA\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02B8\u02E0-\u02E4\u1D00-\u1D25\u1D2C-\u1D5C\u1D62-\u1D65\u1D6B-\u1D77\u1D79-\u1DBE\u1E00-\u1EFF\u2071\u207F\u2090-\u209C\u212A\u212B\u2132\u214E\u2160-\u2188\u2C60-\u2C7F\uA722-\uA787\uA78B-\uA7AD\uA7B0-\uA7B7\uA7F7-\uA7FF\uAB30-\uAB5A\uAB5C-\uAB64\uFB00-\uFB06\uFF21-\uFF3A\uFF41-\uFF5A";
+    lunr.de.wordCharacters = "A-Za-z\xAA\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02B8\u02E0-\u02E4\u1D00-\u1D25\u1D2C-\u1D5C\u1D62-\u1D65\u1D6B-\u1D77\u1D79-\u1DBE\u1E00-\u1EFF\u2071\u207F\u2090-\u209C\u212A\u212B\u2132\u214E\u2160-\u2188\u2C60-\u2C7F\uA722-\uA787\uA78B-\uA7DC\uA7F1-\uA7FF\uAB30-\uAB5A\uAB5C-\uAB64\uAB66-\uAB69\uFB00-\uFB06\uFF21-\uFF3A\uFF41-\uFF5A";
     lunr.de.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.de.wordCharacters);
 
     lunr.Pipeline.registerFunction(lunr.de.trimmer, 'trimmer-de');
 
+    /* throw error if lunr stemmer support is older than this file */
+    if ('function' !== typeof lunr.stemmerSupport.BaseStemmer) {
+      throw new Error('Lunr stemmer support is outdated. Please update lunr.stemmer.support.js to the same version as this script.');
+    }
+
     /* lunr stemmer function */
     lunr.de.stemmer = (function() {
-      /* create the wrapped stemmer object */
-      var Among = lunr.stemmerSupport.Among,
-        SnowballProgram = lunr.stemmerSupport.SnowballProgram,
-        st = new function GermanStemmer() {
-          var a_0 = [new Among("", -1, 6), new Among("U", 0, 2),
-              new Among("Y", 0, 1), new Among("\u00E4", 0, 3),
-              new Among("\u00F6", 0, 4), new Among("\u00FC", 0, 5)
-            ],
-            a_1 = [
-              new Among("e", -1, 2), new Among("em", -1, 1),
-              new Among("en", -1, 2), new Among("ern", -1, 1),
-              new Among("er", -1, 1), new Among("s", -1, 3),
-              new Among("es", 5, 2)
-            ],
-            a_2 = [new Among("en", -1, 1),
-              new Among("er", -1, 1), new Among("st", -1, 2),
-              new Among("est", 2, 1)
-            ],
-            a_3 = [new Among("ig", -1, 1),
-              new Among("lich", -1, 1)
-            ],
-            a_4 = [new Among("end", -1, 1),
-              new Among("ig", -1, 2), new Among("ung", -1, 1),
-              new Among("lich", -1, 3), new Among("isch", -1, 2),
-              new Among("ik", -1, 2), new Among("heit", -1, 3),
-              new Among("keit", -1, 4)
-            ],
-            g_v = [17, 65, 16, 1, 0, 0, 0, 0, 0, 0,
-              0, 0, 0, 0, 0, 0, 8, 0, 32, 8
-            ],
-            g_s_ending = [117, 30, 5],
-            g_st_ending = [
-              117, 30, 4
-            ],
-            I_x, I_p2, I_p1, sbp = new SnowballProgram();
-          this.setCurrent = function(word) {
-            sbp.setCurrent(word);
-          };
-          this.getCurrent = function() {
-            return sbp.getCurrent();
-          };
+      var BaseStemmer = lunr.stemmerSupport.BaseStemmer;
 
-          function habr1(c1, c2, v_1) {
-            if (sbp.eq_s(1, c1)) {
-              sbp.ket = sbp.cursor;
-              if (sbp.in_grouping(g_v, 97, 252)) {
-                sbp.slice_from(c2);
-                sbp.cursor = v_1;
-                return true;
-              }
-            }
-            return false;
-          }
+      /* german-stemmer.js, generated by Snowball 3.2.0 */
+      var Stemmer = (function() {
+        // Generated from german.sbl by Snowball 3.2.0 - https://snowballstem.org/
 
-          function r_prelude() {
-            var v_1 = sbp.cursor,
-              v_2, v_3, v_4, v_5;
-            while (true) {
-              v_2 = sbp.cursor;
-              sbp.bra = v_2;
-              if (sbp.eq_s(1, "\u00DF")) {
-                sbp.ket = sbp.cursor;
-                sbp.slice_from("ss");
-              } else {
-                if (v_2 >= sbp.limit)
-                  break;
-                sbp.cursor = v_2 + 1;
-              }
-            }
-            sbp.cursor = v_1;
-            while (true) {
-              v_3 = sbp.cursor;
+        // deno-lint-ignore-file ban-unused-ignore no-constant-condition no-empty prefer-const
+
+        const a_0 = [
+          ["", 5],
+          ["ae", 2, 1],
+          ["oe", 3, 2],
+          ["qu", -1, 3],
+          ["ue", 4, 4],
+          ["\u00DF", 1, 5]
+        ];
+
+        const a_1 = [
+          ["", 5],
+          ["U", 2, 1],
+          ["Y", 1, 2],
+          ["\u00E4", 3, 3],
+          ["\u00F6", 4, 4],
+          ["\u00FC", 2, 5]
+        ];
+
+        const a_2 = [
+          ["e", 3],
+          ["em", 1],
+          ["en", 3],
+          ["erinnen", 2, 1],
+          ["erin", 2],
+          ["ln", 5],
+          ["ern", 2],
+          ["er", 2],
+          ["s", 4],
+          ["es", 3, 1],
+          ["lns", 5, 2]
+        ];
+
+        const a_3 = [
+          ["tick", -1],
+          ["plan", -1],
+          ["geordn", -1],
+          ["intern", -1],
+          ["tr", -1]
+        ];
+
+        const a_4 = [
+          ["en", 1],
+          ["er", 1],
+          ["et", 3],
+          ["st", 2],
+          ["est", 1, 1]
+        ];
+
+        const a_5 = [
+          ["ig", 1],
+          ["lich", 1]
+        ];
+
+        const a_6 = [
+          ["end", 1],
+          ["ig", 2],
+          ["ung", 1],
+          ["lich", 3],
+          ["isch", 2],
+          ["ik", 2],
+          ["heit", 3],
+          ["keit", 4]
+        ];
+
+        const a_7 = [
+          ["'", 1],
+          ["'sch", 1],
+          ["'s", 1]
+        ];
+
+        const /**@type {Array<number>}*/ g_v = [17, 65, 16, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 32, 8];
+
+        const /**@type {Array<number>}*/ g_et_ending = [1, 128, 198, 227, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128];
+
+        const /**@type {Array<number>}*/ g_s_ending = [117, 30, 5];
+
+        const /**@type {Array<number>}*/ g_st_ending = [117, 30, 4];
+
+        var B = BaseStemmer;
+
+        return class extends B {
+
+
+          /** @return {boolean} */
+          #stem() {
+            let /**@type {number}*/ a;
+            let /**@type {number}*/ I_x;
+            let /**@type {number}*/ I_p2;
+            let /**@type {number}*/ I_p1;
+            const /**@type {number}*/ v_1 = this.c;
+            // deno-lint-ignore no-unused-labels
+            lab0: {
+              const /**@type {number}*/ v_2 = this.c;
               while (true) {
-                v_4 = sbp.cursor;
-                if (sbp.in_grouping(g_v, 97, 252)) {
-                  v_5 = sbp.cursor;
-                  sbp.bra = v_5;
-                  if (habr1("u", "U", v_4))
-                    break;
-                  sbp.cursor = v_5;
-                  if (habr1("y", "Y", v_4))
-                    break;
-                }
-                if (v_4 >= sbp.limit) {
-                  sbp.cursor = v_3;
-                  return;
-                }
-                sbp.cursor = v_4 + 1;
-              }
-            }
-          }
-
-          function habr2() {
-            while (!sbp.in_grouping(g_v, 97, 252)) {
-              if (sbp.cursor >= sbp.limit)
-                return true;
-              sbp.cursor++;
-            }
-            while (!sbp.out_grouping(g_v, 97, 252)) {
-              if (sbp.cursor >= sbp.limit)
-                return true;
-              sbp.cursor++;
-            }
-            return false;
-          }
-
-          function r_mark_regions() {
-            I_p1 = sbp.limit;
-            I_p2 = I_p1;
-            var c = sbp.cursor + 3;
-            if (0 <= c && c <= sbp.limit) {
-              I_x = c;
-              if (!habr2()) {
-                I_p1 = sbp.cursor;
-                if (I_p1 < I_x)
-                  I_p1 = I_x;
-                if (!habr2())
-                  I_p2 = sbp.cursor;
-              }
-            }
-          }
-
-          function r_postlude() {
-            var among_var, v_1;
-            while (true) {
-              v_1 = sbp.cursor;
-              sbp.bra = v_1;
-              among_var = sbp.find_among(a_0, 6);
-              if (!among_var)
-                return;
-              sbp.ket = sbp.cursor;
-              switch (among_var) {
-                case 1:
-                  sbp.slice_from("y");
-                  break;
-                case 2:
-                case 5:
-                  sbp.slice_from("u");
-                  break;
-                case 3:
-                  sbp.slice_from("a");
-                  break;
-                case 4:
-                  sbp.slice_from("o");
-                  break;
-                case 6:
-                  if (sbp.cursor >= sbp.limit)
-                    return;
-                  sbp.cursor++;
-                  break;
-              }
-            }
-          }
-
-          function r_R1() {
-            return I_p1 <= sbp.cursor;
-          }
-
-          function r_R2() {
-            return I_p2 <= sbp.cursor;
-          }
-
-          function r_standard_suffix() {
-            var among_var, v_1 = sbp.limit - sbp.cursor,
-              v_2, v_3, v_4;
-            sbp.ket = sbp.cursor;
-            among_var = sbp.find_among_b(a_1, 7);
-            if (among_var) {
-              sbp.bra = sbp.cursor;
-              if (r_R1()) {
-                switch (among_var) {
-                  case 1:
-                    sbp.slice_del();
-                    break;
-                  case 2:
-                    sbp.slice_del();
-                    sbp.ket = sbp.cursor;
-                    if (sbp.eq_s_b(1, "s")) {
-                      sbp.bra = sbp.cursor;
-                      if (sbp.eq_s_b(3, "nis"))
-                        sbp.slice_del();
-                    }
-                    break;
-                  case 3:
-                    if (sbp.in_grouping_b(g_s_ending, 98, 116))
-                      sbp.slice_del();
-                    break;
-                }
-              }
-            }
-            sbp.cursor = sbp.limit - v_1;
-            sbp.ket = sbp.cursor;
-            among_var = sbp.find_among_b(a_2, 4);
-            if (among_var) {
-              sbp.bra = sbp.cursor;
-              if (r_R1()) {
-                switch (among_var) {
-                  case 1:
-                    sbp.slice_del();
-                    break;
-                  case 2:
-                    if (sbp.in_grouping_b(g_st_ending, 98, 116)) {
-                      var c = sbp.cursor - 3;
-                      if (sbp.limit_backward <= c && c <= sbp.limit) {
-                        sbp.cursor = c;
-                        sbp.slice_del();
+                const /**@type {number}*/ v_3 = this.c;
+                // deno-lint-ignore no-unused-labels
+                lab1: {
+                  // deno-lint-ignore no-unused-labels
+                  golab2: while (true) {
+                    const /**@type {number}*/ v_4 = this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab3: {
+                      if (!(this.in_grouping(g_v, 97, 252))) break lab3;
+                      this.bra = this.c;
+                      // deno-lint-ignore no-unused-labels
+                      lab4: {
+                        const /**@type {number}*/ v_5 = this.c;
+                        // deno-lint-ignore no-unused-labels
+                        lab5: {
+                          if (!(this.eq_s("u"))) break lab5;
+                          this.ket = this.c;
+                          if (!(this.in_grouping(g_v, 97, 252))) break lab5;
+                          this.slice_from("U");
+                          break lab4;
+                        }
+                        this.c = v_5;
+                        if (!(this.eq_s("y"))) break lab3;
+                        this.ket = this.c;
+                        if (!(this.in_grouping(g_v, 97, 252))) break lab3;
+                        this.slice_from("Y");
                       }
+                      this.c = v_4;
+                      break golab2;
                     }
-                    break;
+                    this.c = v_4;
+                    if (this.c >= this.limit) break lab1;
+                    this.c++;
+                  }
+                  continue;
                 }
+                this.c = v_3;
+                break;
+              }
+              this.c = v_2;
+              while (true) {
+                const /**@type {number}*/ v_6 = this.c;
+                // deno-lint-ignore no-unused-labels
+                lab6: {
+                  this.bra = this.c;
+                  a = this.find_among(a_0);
+                  this.ket = this.c;
+                  switch (a) {
+                    case 1: {
+                      this.slice_from("ss");
+                      break;
+                    }
+                    case 2: {
+                      this.slice_from("\u00E4");
+                      break;
+                    }
+                    case 3: {
+                      this.slice_from("\u00F6");
+                      break;
+                    }
+                    case 4: {
+                      this.slice_from("\u00FC");
+                      break;
+                    }
+                    case 5: {
+                      if (this.c >= this.limit) break lab6;
+                      this.c++;
+                      break;
+                    }
+                  }
+                  continue;
+                }
+                this.c = v_6;
+                break;
               }
             }
-            sbp.cursor = sbp.limit - v_1;
-            sbp.ket = sbp.cursor;
-            among_var = sbp.find_among_b(a_4, 8);
-            if (among_var) {
-              sbp.bra = sbp.cursor;
-              if (r_R2()) {
-                switch (among_var) {
-                  case 1:
-                    sbp.slice_del();
-                    sbp.ket = sbp.cursor;
-                    if (sbp.eq_s_b(2, "ig")) {
-                      sbp.bra = sbp.cursor;
-                      v_2 = sbp.limit - sbp.cursor;
-                      if (!sbp.eq_s_b(1, "e")) {
-                        sbp.cursor = sbp.limit - v_2;
-                        if (r_R2())
-                          sbp.slice_del();
+            this.c = v_1;
+            const /**@type {number}*/ v_7 = this.c;
+            // deno-lint-ignore no-unused-labels
+            lab7: {
+              I_p1 = this.limit;
+              I_p2 = this.limit;
+              const /**@type {number}*/ v_8 = this.c;
+              if (this.c + 3 > this.limit) break lab7;
+              this.c += 3;
+              I_x = this.c;
+              this.c = v_8;
+              if (!this.go_out_grouping(g_v, 97, 252)) break lab7;
+              this.c++;
+              if (!this.go_in_grouping(g_v, 97, 252)) break lab7;
+              this.c++;
+              I_p1 = this.c;
+              // deno-lint-ignore no-unused-labels
+              lab8: {
+                if ( /**@type {boolean}*/ (I_p1 >= I_x)) break lab8;
+                I_p1 = I_x;
+              }
+              if (!this.go_out_grouping(g_v, 97, 252)) break lab7;
+              this.c++;
+              if (!this.go_in_grouping(g_v, 97, 252)) break lab7;
+              this.c++;
+              I_p2 = this.c;
+            }
+            this.c = v_7;
+            this.limit_backward = this.c;
+            this.c = this.limit;
+            // deno-lint-ignore no-unused-labels
+            lab9: {
+              const /**@type {number}*/ v_9 = this.limit - this.c;
+              // deno-lint-ignore no-unused-labels
+              lab10: {
+                this.ket = this.c;
+                a = this.find_among_b(a_2);
+                if (a === 0) break lab10;
+                this.bra = this.c;
+                if ( /**@type {boolean}*/ (I_p1 > this.c)) break lab10;
+                switch (a) {
+                  case 1: {
+                    // deno-lint-ignore no-unused-labels
+                    lab11: {
+                      if (!(this.eq_s_b("syst"))) break lab11;
+                      break lab10;
+                    }
+                    this.slice_del();
+                    break;
+                  }
+                  case 2: {
+                    this.slice_del();
+                    break;
+                  }
+                  case 3: {
+                    this.slice_del();
+                    const /**@type {number}*/ v_10 = this.limit - this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab12: {
+                      this.ket = this.c;
+                      if (!(this.eq_s_b("s"))) {
+                        this.c = this.limit - v_10;
+                        break lab12;
                       }
+                      this.bra = this.c;
+                      if (!(this.eq_s_b("nis"))) {
+                        this.c = this.limit - v_10;
+                        break lab12;
+                      }
+                      this.slice_del();
                     }
                     break;
-                  case 2:
-                    v_3 = sbp.limit - sbp.cursor;
-                    if (!sbp.eq_s_b(1, "e")) {
-                      sbp.cursor = sbp.limit - v_3;
-                      sbp.slice_del();
-                    }
+                  }
+                  case 4: {
+                    if (!(this.in_grouping_b(g_s_ending, 98, 116))) break lab10;
+                    this.slice_del();
                     break;
-                  case 3:
-                    sbp.slice_del();
-                    sbp.ket = sbp.cursor;
-                    v_4 = sbp.limit - sbp.cursor;
-                    if (!sbp.eq_s_b(2, "er")) {
-                      sbp.cursor = sbp.limit - v_4;
-                      if (!sbp.eq_s_b(2, "en"))
-                        break;
-                    }
-                    sbp.bra = sbp.cursor;
-                    if (r_R1())
-                      sbp.slice_del();
+                  }
+                  case 5: {
+                    this.slice_from("l");
                     break;
-                  case 4:
-                    sbp.slice_del();
-                    sbp.ket = sbp.cursor;
-                    among_var = sbp.find_among_b(a_3, 2);
-                    if (among_var) {
-                      sbp.bra = sbp.cursor;
-                      if (r_R2() && among_var == 1)
-                        sbp.slice_del();
-                    }
-                    break;
+                  }
                 }
               }
+              this.c = this.limit - v_9;
+              const /**@type {number}*/ v_11 = this.limit - this.c;
+              // deno-lint-ignore no-unused-labels
+              lab13: {
+                this.ket = this.c;
+                a = this.find_among_b(a_4);
+                if (a === 0) break lab13;
+                this.bra = this.c;
+                if ( /**@type {boolean}*/ (I_p1 > this.c)) break lab13;
+                switch (a) {
+                  case 1: {
+                    this.slice_del();
+                    break;
+                  }
+                  case 2: {
+                    if (!(this.in_grouping_b(g_st_ending, 98, 116))) break lab13;
+                    if (this.c - 3 < this.limit_backward) break lab13;
+                    this.c -= 3;
+                    this.slice_del();
+                    break;
+                  }
+                  case 3: {
+                    const /**@type {number}*/ v_12 = this.limit - this.c;
+                    if (!(this.in_grouping_b(g_et_ending, 85, 228))) break lab13;
+                    this.c = this.limit - v_12;
+                    {
+                      const /**@type {number}*/ v_13 = this.limit - this.c;
+                      // deno-lint-ignore no-unused-labels
+                      lab14: {
+                        if (this.find_among_b(a_3) === 0) break lab14;
+                        break lab13;
+                      }
+                      this.c = this.limit - v_13;
+                    }
+                    this.slice_del();
+                    break;
+                  }
+                }
+              }
+              this.c = this.limit - v_11;
+              const /**@type {number}*/ v_14 = this.limit - this.c;
+              // deno-lint-ignore no-unused-labels
+              lab15: {
+                this.ket = this.c;
+                a = this.find_among_b(a_6);
+                if (a === 0) break lab15;
+                this.bra = this.c;
+                if ( /**@type {boolean}*/ (I_p2 > this.c)) break lab15;
+                switch (a) {
+                  case 1: {
+                    this.slice_del();
+                    const /**@type {number}*/ v_15 = this.limit - this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab16: {
+                      this.ket = this.c;
+                      if (!(this.eq_s_b("ig"))) {
+                        this.c = this.limit - v_15;
+                        break lab16;
+                      }
+                      this.bra = this.c;
+                      // deno-lint-ignore no-unused-labels
+                      lab17: {
+                        if (!(this.eq_s_b("e"))) break lab17;
+                        this.c = this.limit - v_15;
+                        break lab16;
+                      }
+                      if ( /**@type {boolean}*/ (I_p2 > this.c)) {
+                        this.c = this.limit - v_15;
+                        break lab16;
+                      }
+                      this.slice_del();
+                    }
+                    break;
+                  }
+                  case 2: {
+                    // deno-lint-ignore no-unused-labels
+                    lab18: {
+                      if (!(this.eq_s_b("e"))) break lab18;
+                      break lab15;
+                    }
+                    this.slice_del();
+                    break;
+                  }
+                  case 3: {
+                    this.slice_del();
+                    const /**@type {number}*/ v_16 = this.limit - this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab19: {
+                      this.ket = this.c;
+                      // deno-lint-ignore no-unused-labels
+                      lab20: {
+                        // deno-lint-ignore no-unused-labels
+                        lab21: {
+                          if (!(this.eq_s_b("er"))) break lab21;
+                          break lab20;
+                        }
+                        if (!(this.eq_s_b("en"))) {
+                          this.c = this.limit - v_16;
+                          break lab19;
+                        }
+                      }
+                      this.bra = this.c;
+                      if ( /**@type {boolean}*/ (I_p1 > this.c)) {
+                        this.c = this.limit - v_16;
+                        break lab19;
+                      }
+                      this.slice_del();
+                    }
+                    break;
+                  }
+                  case 4: {
+                    this.slice_del();
+                    const /**@type {number}*/ v_17 = this.limit - this.c;
+                    // deno-lint-ignore no-unused-labels
+                    lab22: {
+                      this.ket = this.c;
+                      if (this.find_among_b(a_5) === 0) {
+                        this.c = this.limit - v_17;
+                        break lab22;
+                      }
+                      this.bra = this.c;
+                      if ( /**@type {boolean}*/ (I_p2 > this.c)) {
+                        this.c = this.limit - v_17;
+                        break lab22;
+                      }
+                      this.slice_del();
+                    }
+                    break;
+                  }
+                }
+              }
+              this.c = this.limit - v_14;
+              const /**@type {number}*/ v_18 = this.limit - this.c;
+              // deno-lint-ignore no-unused-labels
+              lab23: {
+                this.ket = this.c;
+                if (this.find_among_b(a_7) === 0) break lab23;
+                this.bra = this.c;
+                if (this.c <= this.limit_backward) break lab23;
+                this.c--;
+                if ( /**@type {boolean}*/ (this.c <= this.limit_backward)) break lab23;
+                this.slice_del();
+              }
+              this.c = this.limit - v_18;
             }
-          }
-          this.stem = function() {
-            var v_1 = sbp.cursor;
-            r_prelude();
-            sbp.cursor = v_1;
-            r_mark_regions();
-            sbp.limit_backward = v_1;
-            sbp.cursor = sbp.limit;
-            r_standard_suffix();
-            sbp.cursor = sbp.limit_backward;
-            r_postlude();
+            this.c = this.limit_backward;
+            const /**@type {number}*/ v_19 = this.c;
+            // deno-lint-ignore no-unused-labels
+            lab24: {
+              while (true) {
+                const /**@type {number}*/ v_20 = this.c;
+                // deno-lint-ignore no-unused-labels
+                lab25: {
+                  this.bra = this.c;
+                  a = this.find_among(a_1);
+                  this.ket = this.c;
+                  switch (a) {
+                    case 1: {
+                      this.slice_from("y");
+                      break;
+                    }
+                    case 2: {
+                      this.slice_from("u");
+                      break;
+                    }
+                    case 3: {
+                      this.slice_from("a");
+                      break;
+                    }
+                    case 4: {
+                      this.slice_from("o");
+                      break;
+                    }
+                    case 5: {
+                      if (this.c >= this.limit) break lab25;
+                      this.c++;
+                      break;
+                    }
+                  }
+                  continue;
+                }
+                this.c = v_20;
+                break;
+              }
+            }
+            this.c = v_19;
             return true;
           }
-        };
+
+          /**@return{string}*/
+          stem( /**@type {string}*/ input) {
+            this.setCurrent(input);
+            this.#stem();
+            return this.getCurrent();
+          }
+
+          stemWord = this.stem;
+        }
+      })();
+
+      var st = new Stemmer();
 
       /* and return a function that stems a word for the current locale */
       return function(token) {
-        // for lunr version 2
-        if (typeof token.update === "function") {
-          return token.update(function(word) {
-            st.setCurrent(word);
-            st.stem();
-            return st.getCurrent();
-          })
-        } else { // for lunr version <= 1
-          st.setCurrent(token);
-          st.stem();
-          return st.getCurrent();
-        }
+        return token.update(function(word) {
+          return st.stemWord(word);
+        })
       }
     })();
 
     lunr.Pipeline.registerFunction(lunr.de.stemmer, 'stemmer-de');
 
-    lunr.de.wildcardNormalizer = function(term) {
-      return term
-        .replace(/[\u00DF\u1E9E]/g, "ss")
-        .replace(/[\u00E4\u00C4]/g, "a")
-        .replace(/[\u00F6\u00D6]/g, "o")
-        .replace(/[\u00FC\u00DC]/g, "u");
-    };
-
+    /* fold wildcard terms like the stemmer folds the index (generated by build/derive-fold-maps.js) */
+    lunr.de.wildcardNormalizer = lunr.stemmerSupport.generateWildcardNormalizer({
+      "ae": "a",
+      "oe": "o",
+      "\u00DF": "ss",
+      "\u00E4": "a",
+      "\u00F6": "o",
+      "\u00FC": "u"
+    });
     lunr.de.wildcardNormalizer.label = "wildcardNormalizer-de";
     lunr.de.wildcardNormalizer.pipelineFunctionLabel = "stemmer-de";
     lunr.stemmerSupport.addQueryParserWildcardNormalizer(lunr, lunr.de.wildcardNormalizer);
+
 
     lunr.de.stopWordFilter = lunr.generateStopWordFilter('aber alle allem allen aller alles als also am an ander andere anderem anderen anderer anderes anderm andern anderr anders auch auf aus bei bin bis bist da damit dann das dasselbe dazu daß dein deine deinem deinen deiner deines dem demselben den denn denselben der derer derselbe derselben des desselben dessen dich die dies diese dieselbe dieselben diesem diesen dieser dieses dir doch dort du durch ein eine einem einen einer eines einig einige einigem einigen einiger einiges einmal er es etwas euch euer eure eurem euren eurer eures für gegen gewesen hab habe haben hat hatte hatten hier hin hinter ich ihm ihn ihnen ihr ihre ihrem ihren ihrer ihres im in indem ins ist jede jedem jeden jeder jedes jene jenem jenen jener jenes jetzt kann kein keine keinem keinen keiner keines können könnte machen man manche manchem manchen mancher manches mein meine meinem meinen meiner meines mich mir mit muss musste nach nicht nichts noch nun nur ob oder ohne sehr sein seine seinem seinen seiner seines selbst sich sie sind so solche solchem solchen solcher solches soll sollte sondern sonst um und uns unse unsem unsen unser unses unter viel vom von vor war waren warst was weg weil weiter welche welchem welchen welcher welches wenn werde werden wie wieder will wir wird wirst wo wollen wollte während würde würden zu zum zur zwar zwischen über'.split(' '));
 

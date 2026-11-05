@@ -52,12 +52,6 @@
       throw new Error('Lunr stemmer support is not present. Please include / require Lunr stemmer support before this script.');
     }
 
-    /*
-    Thai tokenization is the same to Japanense, which does not take into account spaces.
-    So, it uses the same logic to assign tokenization function due to different Lunr versions.
-    */
-    var isLunr2 = lunr.version[0] == "2";
-
     /* register specific locale function */
     lunr.th = function() {
       this.pipeline.reset();
@@ -66,16 +60,11 @@
         lunr.th.trimmer
       );
 
-      if (isLunr2) { // for lunr version 2.0.0
-        this.tokenizer = lunr.th.tokenizer;
-      } else {
-        if (lunr.tokenizer) { // for lunr version 0.6.0
-          lunr.tokenizer = lunr.th.tokenizer;
-        }
-        if (this.tokenizerFn) { // for lunr version 0.7.0 -> 1.0.0
-          this.tokenizerFn = lunr.th.tokenizer;
-        }
-      }
+      // Thai has no stemmer; searched words are trimmed like indexed ones (not stemmed with lunr's English stemmer)
+      this.searchPipeline.reset();
+      this.searchPipeline.add(lunr.th.trimmer);
+
+      this.tokenizer = lunr.th.tokenizer;
     };
 
     /* lunr trimmer function */
@@ -83,17 +72,16 @@
     lunr.th.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.th.wordCharacters);
     lunr.Pipeline.registerFunction(lunr.th.trimmer, 'trimmer-th');
 
-    var segmenter = lunr.wordcut;
-    segmenter.init();
-    lunr.th.tokenizer = function(obj) {
-      //console.log(obj);
-      if (!arguments.length || obj == null || obj == undefined) return []
-      if (Array.isArray(obj)) return obj.map(function(t) {
-        return isLunr2 ? new lunr.Token(t) : t
-      })
-
-      var str = obj.toString().replace(/^\s+/, '');
-      return segmenter.cut(str).split('|');
-    }
+    /*
+     * Thai is written without spaces between words: segmented with Intl.Segmenter (ICU's Thai dictionary),
+     * or with wordcut when lunr.th.wordcut.js is loaded (before or after this file). Without both,
+     * tokenizing throws.
+     */
+    lunr.th.tokenizer = lunr.stemmerSupport.generateSegmentingTokenizer('th', {
+      intlLocale: 'th',
+      missing: 'Thai tokenization needs Intl.Segmenter or lunr.th.wordcut.js. In runtimes without ' +
+        'Intl.Segmenter, load lunr.th.wordcut.js.'
+    });
+    lunr.stemmerSupport.addTokenizer('th', lunr.th.tokenizer);
   };
 }))
