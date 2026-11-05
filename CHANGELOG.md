@@ -7,6 +7,14 @@
 - Requires lunr 2 (`lunr@^2.0.0`); lunr 0.x and 1.x stay on lunr-languages 1.x.
 - `lunr.stemmerSupport.Among` and `lunr.stemmerSupport.SnowballProgram`, the Snowball 0.3 runtime of 1.x, are removed. Stemmers extend `lunr.stemmerSupport.BaseStemmer` (Snowball 3.x) now.
 
+### Armenian (hy)
+
+- Searches no longer go through lunr's English stemmer: a Latin word in an Armenian index (`running`) is found by itself again.
+
+### Chinese (zh)
+
+- Searches no longer go through lunr's English stemmer: a Latin word in a Chinese index (`running`) is found by itself again.
+
 ### Danish (da)
 
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change.
@@ -55,6 +63,7 @@
 ### Japanese (ja)
 
 - The deprecated `jp` locale and its `stemmer-jp`, `trimmer-jp` and `stopWordFilter-jp` labels are removed; use `ja`.
+- Searches no longer go through lunr's English stemmer: a Latin word in a Japanese index (`running`) is found by itself again.
 
 ### Norwegian (no)
 
@@ -96,9 +105,17 @@
 - Stop words: Snowball's current list; `sitt` instead of `sitta`.
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change.
 
+### Thai (th)
+
+- Searches no longer go through lunr's English stemmer: a Latin word in a Thai index (`running`) is found by itself again.
+
 ### Turkish (tr)
 
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change.
 - Wildcard terms are folded like the stemmer folds the index.
 - Accent folding on by default: `kiz` finds `kız`, wildcards too (`ı` as `i`). Opt-out: remove `lunr.tr.accentFold` from both pipelines.
 - `I` and `İ` are lowercased the Turkish way (`ı`, `i`) in indexed text and searches, before lunr lowercases: `İSTANBUL` finds `istanbul`, `KIZLAR` stems like `kızlar`. lunr's `toLowerCase()` gave `i̇` (with a combining dot) and `i`, so such words were not found.
+
+### Vietnamese (vi)
+
+- Searches no longer go through lunr's English stemmer: a Latin word in a Vietnamese index (`running`) is found by itself again.

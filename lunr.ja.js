@@ -66,6 +66,10 @@
         lunr.ja.stemmer
       );
 
+      // searched words are stemmed like indexed ones (not with lunr's English stemmer)
+      this.searchPipeline.reset();
+      this.searchPipeline.add(lunr.ja.stemmer);
+
       // change the tokenizer for japanese one
       this.tokenizer = lunr.ja.tokenizer;
     };

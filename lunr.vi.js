@@ -59,6 +59,10 @@
         lunr.vi.trimmer,
         lunr.vi.stopWordFilter
       );
+
+      // searched words are trimmed like indexed ones (not stemmed with lunr's English stemmer)
+      this.searchPipeline.reset();
+      this.searchPipeline.add(lunr.vi.trimmer);
     };
 
     /* lunr trimmer function */

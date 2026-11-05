@@ -518,6 +518,35 @@ lunrVersions.forEach(function (lunrVersion) {
             })
         })
 
+        describe("should not stem searched words with lunr's English stemmer", function () {
+            var samples = { ja: '日本語', zh: '中文', th: 'ภาษาไทย', hy: 'հայերեն', vi: 'tiếng' };
+
+            Object.keys(samples).forEach(function (language) {
+                delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+                var lunr = require('./lunr/' + lunrVersion.lunr);
+                require('../lunr.stemmer.support.js')(lunr);
+                if (language === 'ja') {
+                    require('../tinyseg')(lunr);
+                }
+                if (language === 'th') {
+                    lunr.wordcut = require('../wordcut');
+                }
+                require('../lunr.' + language + '.js')(lunr);
+
+                var idx = lunr(function () {
+                    this.use(lunr[language]);
+                    this.field('body');
+                    this.add({ "body": "running " + samples[language], "id": 1 });
+                });
+
+                it("should find the unstemmed word 'running' in " + language.toUpperCase(), function () {
+                    assert.equal(idx.search('running').length, 1)
+                    assert.equal(idx.toJSON().pipeline.indexOf('stemmer'), -1)
+                });
+            });
+        });
+
         describe("should lowercase Turkish I and İ the Turkish way", function () {
             delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
 

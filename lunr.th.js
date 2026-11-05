@@ -64,6 +64,10 @@
         lunr.th.trimmer
       );
 
+      // Thai has no stemmer; searched words are trimmed like indexed ones (not stemmed with lunr's English stemmer)
+      this.searchPipeline.reset();
+      this.searchPipeline.add(lunr.th.trimmer);
+
       this.tokenizer = lunr.th.tokenizer;
     };
 
