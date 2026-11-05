@@ -240,7 +240,6 @@ lunrVersions.forEach(function (lunrVersion) {
 
             var lunr = require('./lunr/' + lunrVersion.lunr);
             require('../lunr.stemmer.support.js')(lunr);
-            lunr.wordcut = require('../wordcut');
             require('../lunr.th.js')(lunr);
 
             it("should trim Thai punctuation", function () {
@@ -297,7 +296,6 @@ lunrVersions.forEach(function (lunrVersion) {
 
             var lunr = require('./lunr/' + lunrVersion.lunr);
             require('../lunr.stemmer.support.js')(lunr);
-            lunr.wordcut = require('../wordcut');
             require('../lunr.hi.js')(lunr);
 
             // NFC writes the nukta letters of these stop words decomposed
@@ -496,9 +494,6 @@ lunrVersions.forEach(function (lunrVersion) {
                 if (language === 'ja') {    // for japanese, we must also load the tinyseg tokenizer
                     require('../tinyseg')(lunr);
                 }
-                if (language === 'th') {    // for thai, we must also load the wordcut tokenizer
-                    lunr.wordcut = require('../wordcut');
-                }
                 require('../lunr.' + language + '.js')(lunr);
 
                 var idx = lunr(function () {
@@ -531,9 +526,6 @@ lunrVersions.forEach(function (lunrVersion) {
                 if (language === 'ja') {
                     require('../tinyseg')(lunr);
                 }
-                if (language === 'th') {
-                    lunr.wordcut = require('../wordcut');
-                }
                 require('../lunr.' + language + '.js')(lunr);
 
                 var idx = lunr(function () {
@@ -555,7 +547,6 @@ lunrVersions.forEach(function (lunrVersion) {
             var lunr = require('./lunr/' + lunrVersion.lunr);
             require('../lunr.stemmer.support.js')(lunr);
             require('../tinyseg')(lunr);
-            lunr.wordcut = require('../wordcut');
             require('../lunr.ja.js')(lunr);
             require('../lunr.zh.js')(lunr);
             require('../lunr.th.js')(lunr);
@@ -612,12 +603,79 @@ lunrVersions.forEach(function (lunrVersion) {
             });
         });
 
+        describe("should segment Thai with Intl.Segmenter, or wordcut when it is loaded", function () {
+            // order: the files in the order to load them ('support', 'th', 'wordcut')
+            var load = function (order) {
+                delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+                var lunr = require('./lunr/' + lunrVersion.lunr);
+                order.forEach(function (name) {
+                    var file = { support: '../lunr.stemmer.support.js', th: '../lunr.th.js', wordcut: '../lunr.th.wordcut.js' }[name];
+                    delete require.cache[require.resolve(file)];
+                    require(file)(lunr);
+                });
+                return lunr;
+            };
+            var words = function (lunr, text) {
+                return lunr.th.tokenizer(text).map(function (t) { return t.toString(); });
+            };
+            var withoutIntlSegmenter = function (fn) {
+                var original = Intl.Segmenter;
+                Intl.Segmenter = undefined;
+                try {
+                    return fn();
+                } finally {
+                    Intl.Segmenter = original;
+                }
+            };
+
+            it("should use Intl.Segmenter by default", function () {
+                var lunr = load(['support', 'th']);
+                assert.equal(lunr.th.tokenizer.segmenter(), 'Intl.Segmenter');
+                assert.deepEqual(words(lunr, 'ฉันกินข้าว'), ['ฉัน', 'กิน', 'ข้าว']);
+            });
+
+            it("should use wordcut when lunr.th.wordcut.js is loaded, before or after lunr.th.js", function () {
+                [['wordcut', 'support', 'th'], ['support', 'th', 'wordcut']].forEach(function (order) {
+                    var lunr = load(order);
+                    assert.equal(lunr.th.tokenizer.segmenter(), 'wordcut');
+                    assert.deepEqual(words(lunr, 'ฉันกินข้าว, ฉัน'), ['ฉัน', 'กิน', 'ข้าว', 'ฉัน']);
+                });
+            });
+
+            it("should load lunr.th.wordcut.js twice without harm", function () {
+                var lunr = load(['support', 'wordcut', 'th', 'wordcut']);
+                assert.deepEqual(words(lunr, 'ฉันกินข้าว'), ['ฉัน', 'กิน', 'ข้าว']);
+            });
+
+            it("should work with wordcut where Intl.Segmenter is missing", function () {
+                var lunr = load(['support', 'th', 'wordcut']);
+                withoutIntlSegmenter(function () {
+                    assert.deepEqual(words(lunr, 'ฉันกินข้าว'), ['ฉัน', 'กิน', 'ข้าว']);
+                });
+            });
+
+            it("should fail with a clear error when tokenizing without both", function () {
+                var lunr = load(['support', 'th']);
+                withoutIntlSegmenter(function () {
+                    assert.throws(function () { words(lunr, 'ฉันกินข้าว'); }, /Intl\.Segmenter or lunr\.th\.wordcut\.js/);
+                });
+            });
+
+            it("should set position metadata like lunr's tokenizer", function () {
+                [load(['support', 'th']), load(['support', 'th', 'wordcut'])].forEach(function (lunr) {
+                    var tokens = lunr.th.tokenizer('ฉัน กินข้าว', { fields: ['body'] });
+                    assert.deepEqual(tokens.map(function (t) { return t.metadata.position; }), [[0, 3], [4, 3], [7, 4]]);
+                    assert.deepEqual(tokens.map(function (t) { return t.metadata.index; }), [0, 1, 2]);
+                    assert.deepEqual(tokens[0].metadata.fields, ['body']);
+                });
+            });
+        });
+
         describe("should lowercase Thai text like lunr", function () {
             delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
 
             var lunr = require('./lunr/' + lunrVersion.lunr);
             require('../lunr.stemmer.support.js')(lunr);
-            lunr.wordcut = require('../wordcut');
             require('../lunr.th.js')(lunr);
 
             it("should lowercase Latin words in Thai text", function () {
@@ -956,9 +1014,6 @@ describe("should write the stop words of every language in Unicode NFC", functio
             require('../lunr.stemmer.support.js')(lunr);
             if (language === 'ja' || language === 'jp') {
                 require('../tinyseg')(lunr);
-            }
-            if (language === 'th' || language === 'hi' || language === 'ta' || language === 'sa' || language === 'kn' || language === 'te') {
-                lunr.wordcut = require('../wordcut');
             }
 
             // collect every stop word list the language hands to Lunr

@@ -166,6 +166,9 @@
 - Searches no longer go through lunr's English stemmer: a Latin word in a Thai index (`running`) is found by itself again.
 - Latin words in Thai text are lowercased like lunr's tokenizer does, so `Running` is found by `running`.
 - A search string written without spaces is segmented like the index, so a phrase finds the documents that contain its words (see Japanese).
+- Segmented with `Intl.Segmenter` (ICU's Thai dictionary) by default. `lunr.th.js` no longer fails to load with a TypeError when `wordcut.js` was not attached first (#101).
+- wordcut is an optional plugin, `lunr.th.wordcut.js` (was `wordcut.js`), loaded before or after `lunr.th.js`. The two agree on 28 of 30 words of the Thai test documents (`Intl.Segmenter` splits `แผ่นดิน` into `แผ่น ดิน`).
+- Segments that are not words (spaces, punctuation) are dropped, and tokens carry position metadata like lunr's tokenizer, for highlighting.
 
 ### Turkish (tr)
 

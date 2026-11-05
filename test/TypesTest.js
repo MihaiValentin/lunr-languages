@@ -7,7 +7,7 @@ var ts = require('typescript');
 test.describe("Type declarations", function () {
     test.it("should compile types/*.d.ts and test/types/usage.ts with --strict", function () {
         var root = path.join(__dirname, '..');
-        var files = ['types/index.d.ts', 'types/plugin.d.ts', 'types/wordcut.d.ts', 'test/types/usage.ts'].map(function (f) {
+        var files = ['types/index.d.ts', 'types/plugin.d.ts', 'test/types/usage.ts'].map(function (f) {
             return path.join(root, f);
         });
         var program = ts.createProgram(files, {

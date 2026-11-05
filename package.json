@@ -8,7 +8,6 @@
     "lunr.*.js",
     "min/lunr.*.min.js",
     "tinyseg.js",
-    "wordcut.js",
     "types"
   ],
   "type": "commonjs",
@@ -32,12 +31,6 @@
       ],
       "tinyseg": [
         "types/plugin.d.ts"
-      ],
-      "wordcut.js": [
-        "types/wordcut.d.ts"
-      ],
-      "wordcut": [
-        "types/wordcut.d.ts"
       ]
     }
   },
@@ -84,18 +77,6 @@
       "import": "./tinyseg.js",
       "require": "./tinyseg.js",
       "default": "./tinyseg.js"
-    },
-    "./wordcut.js": {
-      "types": "./types/wordcut.d.ts",
-      "import": "./wordcut.js",
-      "require": "./wordcut.js",
-      "default": "./wordcut.js"
-    },
-    "./wordcut": {
-      "types": "./types/wordcut.d.ts",
-      "import": "./wordcut.js",
-      "require": "./wordcut.js",
-      "default": "./wordcut.js"
     },
     "./*": "./*"
   },

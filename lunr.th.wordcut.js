@@ -1,4 +1,28 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}(g.lunr || (g.lunr = {})).wordcut = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/*!
+ * Lunr languages, Thai word segmentation with wordcut
+ * https://github.com/MihaiValentin/lunr-languages
+ *
+ * wordcut (https://github.com/veer66/wordcut), a dictionary-based Thai word segmenter, bundled with its
+ * Thai dictionary. Optional: lunr.th segments with Intl.Segmenter unless this file is loaded.
+ */
+
+/**
+ * export the module via AMD, CommonJS or as a browser global
+ * Export code from https://github.com/umdjs/umd/blob/master/returnExports.js
+ */
+;(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(factory)
+    } else if (typeof exports === 'object') {
+        // Node and CommonJS-like environments that support module.exports
+        module.exports = factory()
+    } else {
+        // Browser globals (root is window)
+        factory()(root.lunr);
+    }
+}(this, function () {
+    var createWordcut = function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var _ = require("underscore");
 
 var Acceptors = {
@@ -6705,4 +6729,33 @@ function wrappy (fn, cb) {
 }
 
 },{}]},{},[7])(7)
-});
+};
+    var wordcut;
+
+    /*
+     * Registers wordcut as the segmenter of lunr.th, in any order with lunr.th.js (lunr.th uses it from
+     * its next tokenization on). Loading it twice registers it once.
+     */
+    return function(lunr) {
+        if (!wordcut) {
+            wordcut = createWordcut();
+            wordcut.init();
+        }
+        var hasWordCharacter = /[\u0e00-\u0e7f0-9a-z]/;
+        lunr.segmenters = lunr.segmenters || {};
+        lunr.segmenters.th = {
+            name: 'wordcut',
+            // the words of a string with their offsets; spaces and punctuation are dropped
+            segment: function(str) {
+                var offset = 0;
+                return wordcut.cut(str).split('|').map(function(word) {
+                    var at = offset;
+                    offset += word.length;
+                    return { word: word, index: at };
+                }).filter(function(w) {
+                    return hasWordCharacter.test(w.word);
+                });
+            }
+        };
+    };
+}));

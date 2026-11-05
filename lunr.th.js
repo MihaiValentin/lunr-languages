@@ -52,10 +52,6 @@
       throw new Error('Lunr stemmer support is not present. Please include / require Lunr stemmer support before this script.');
     }
 
-    /*
-    Thai tokenization is the same to Japanense, which does not take into account spaces.
-    */
-
     /* register specific locale function */
     lunr.th = function() {
       this.pipeline.reset();
@@ -76,21 +72,16 @@
     lunr.th.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.th.wordCharacters);
     lunr.Pipeline.registerFunction(lunr.th.trimmer, 'trimmer-th');
 
-    var segmenter = lunr.wordcut;
-    segmenter.init();
-    lunr.th.tokenizer = function(obj) {
-      //console.log(obj);
-      if (!arguments.length || obj == null || obj == undefined) return []
-      // lowercase like lunr's tokenizer, so Latin words in Thai text match lowercased queries
-      if (Array.isArray(obj)) return obj.map(function(t) {
-        return new lunr.Token(t.toString().toLowerCase())
-      })
-
-      var str = obj.toString().toLowerCase().replace(/^\s+/, '');
-      return segmenter.cut(str).split('|').map(function(t) {
-        return new lunr.Token(t)
-      });
-    }
+    /*
+     * Thai is written without spaces between words: segmented with Intl.Segmenter (ICU's Thai dictionary),
+     * or with wordcut when lunr.th.wordcut.js is loaded (before or after this file). Without both,
+     * tokenizing throws.
+     */
+    lunr.th.tokenizer = lunr.stemmerSupport.generateSegmentingTokenizer('th', {
+      intlLocale: 'th',
+      missing: 'Thai tokenization needs Intl.Segmenter or lunr.th.wordcut.js. In runtimes without ' +
+        'Intl.Segmenter, load lunr.th.wordcut.js.'
+    });
     lunr.stemmerSupport.addTokenizer('th', lunr.th.tokenizer);
   };
 }))

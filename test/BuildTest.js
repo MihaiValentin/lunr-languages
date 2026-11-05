@@ -16,7 +16,7 @@ function freshLunr() {
 
 describe("Shipped files", function () {
     var acorn = require('acorn');
-    var files = fs.readdirSync(root).filter(function (f) { return /^lunr\..+\.js$/.test(f) || f === 'tinyseg.js' || f === 'wordcut.js'; })
+    var files = fs.readdirSync(root).filter(function (f) { return /^lunr\..+\.js$/.test(f) || f === 'tinyseg.js'; })
         .concat(fs.readdirSync(path.join(root, 'min')).map(function (f) { return 'min/' + f; }));
 
     files.forEach(function (file) {

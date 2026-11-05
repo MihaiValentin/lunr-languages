@@ -14,6 +14,7 @@ Wonderful! Here are the changes you need to do, then Open a *Pull request*. Make
 
 - [ ] If [Snowball](https://snowballstem.org/algorithms/) has a stemmer for your language, add an entry to the list in `build/build.js`: `locale`, `snowball` (the algorithm's name), `stopWords` and `script` (the Unicode script of its letters). `npm run fetch-data` then fetches the stemmer and derives its wildcard map, and `npm run build` generates `lunr.<locale>.js` from `build/lunr.template`. The comment above the list describes every option.
 - [ ] Otherwise, write `lunr.<locale>.js` by hand (copy a similar language) and add an entry with only `locale`; the build beautifies and minifies it.
+- [ ] For a language written without spaces, get the tokenizer from `lunr.stemmerSupport.generateSegmentingTokenizer(locale, options)` (Intl.Segmenter by default). Another segmenter goes into an optional plugin file `lunr.<locale>.<segmenter>.js` that sets `lunr.segmenters[<locale>] = { name, segment(str) }` (`segment` returns `[{ word, index }]`); it must not depend on being loaded before or after the language file.
 - [ ] write stop words, word characters and stemming rules for text in Unicode NFC, the form all languages expect their input in; the test suite checks that every stop word is in NFC
 - [ ] you must also test your new language
     - [ ] go to `test/testdata` and create a new file, then link it to `VersionsAndLanguagesTest.js`

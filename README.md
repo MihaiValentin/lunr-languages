@@ -220,6 +220,7 @@ An index built with lunr's built-in English must be rebuilt for `lunr.en`. In `l
 * Accent folding is on by default for French, Spanish, Portuguese, Italian, Dutch, Romanian, Polish, Turkish and Hungarian (see [Accent folding](#accent-folding)). French used to fold accents before the stemmer, and Spanish had it opt-in; to keep an index without the accent-free forms, remove `lunr.xx.accentFold` from both pipelines.
 * `lunr.stemmerSupport.Among` and `SnowballProgram` are removed. A third-party stemmer built on them has to extend `lunr.stemmerSupport.BaseStemmer` (Snowball 3.x) instead.
 * Greek: `lunr.el.normilizer` is replaced by `lunr.el.normalizer`, which is in the pipeline now.
+* Thai: `wordcut.js` is now the optional plugin `lunr.th.wordcut.js`; without it, Thai is segmented with `Intl.Segmenter`. Before: `lunr.wordcut = require('lunr-languages/wordcut')`, now: `require('lunr-languages/lunr.th.wordcut')(lunr)`. Rebuild Thai indexes with the segmenter you search with.
 * `du` is removed: use `nl` (`lunr-languages/lunr.nl`) for Dutch.
 * `jp` is removed: use `ja` (`lunr-languages/lunr.ja`) for Japanese. Its pipeline labels were `stemmer-jp`, `trimmer-jp` and `stopWordFilter-jp`; indexes saved with them must be rebuilt with `ja`.
 
@@ -258,6 +259,26 @@ var term = lunr.stemmerSupport.normalizeQueryTerm('Käs*', idx); // 'kas*'
 ```
 
 `addQueryTerms` takes plain text, without query syntax (`+`, `-`, `field:`, `~`, `^`). Words with `*` are wildcard terms and skip the search pipeline; stop words the index dropped are left out, so required words still match.
+
+---
+
+## Thai Tokenization
+
+Thai is written without spaces between words, so `lunr.th` segments it into words with `Intl.Segmenter` (Node.js 16+, Chrome/Edge 87+, Safari 14.1+, Firefox 125+), using ICU's Thai dictionary.
+
+To use wordcut instead, a dictionary-based Thai segmenter, or in runtimes without `Intl.Segmenter`, load `lunr.th.wordcut.js`, before or after `lunr.th.js`:
+
+```javascript
+require('lunr-languages/lunr.th.wordcut')(lunr);
+```
+
+```html
+<script src="lunr.th.wordcut.js"></script>
+```
+
+Without either, tokenizing Thai throws an error. Build and search an index with the same segmenter: load `lunr.th.wordcut.js` in both places or in neither, because the two can split some words differently.
+
+Search strings are segmented like the indexed text for Japanese, Chinese and Thai, so a phrase typed without spaces finds its words.
 
 ---
 

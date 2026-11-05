@@ -137,5 +137,4 @@ declare namespace lunr {
 
   /** The optional segmenters loaded, by locale (lunr.th.wordcut.js registers `th`). */
   var segmenters: { [locale: string]: LunrLanguagesSegmenter } | undefined;
-  var wordcut: any;
 }
