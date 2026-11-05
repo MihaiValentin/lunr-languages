@@ -75,7 +75,19 @@
     };
     var segmenter = new lunr.TinySegmenter(); // インスタンス生成
 
-    lunr.ja.tokenizer = function(obj) {
+    // the caller's metadata (lunr 2.3 passes the field) plus the token's own
+    var withMetadata = function(metadata, extra) {
+      var copy = {};
+      for (var key in metadata) {
+        copy[key] = metadata[key];
+      }
+      for (var key2 in extra) {
+        copy[key2] = extra[key2];
+      }
+      return copy;
+    };
+
+    lunr.ja.tokenizer = function(obj, metadata) {
       var i;
       var str;
       var len;
@@ -86,6 +98,7 @@
       var sliceStart;
       var sliceEnd;
       var segStart;
+      var lead;
 
       if (!arguments.length || obj == null || obj == undefined)
         return [];
@@ -93,12 +106,15 @@
       if (Array.isArray(obj)) {
         return obj.map(
           function(t) {
-            return new lunr.Token(t.toLowerCase());
+            return new lunr.Token(t.toLowerCase(), withMetadata(metadata, {}));
           }
         );
       }
 
-      str = obj.toString().toLowerCase().replace(/^\s+/, '');
+      str = obj.toString().toLowerCase();
+      // positions count from the start of the text, so the whitespace cut off here is added back
+      lead = str.length - str.replace(/^\s+/, '').length;
+      str = str.slice(lead);
       for (i = str.length - 1; i >= 0; i--) {
         if (/\S/.test(str.charAt(i))) {
           str = str.substring(0, i + 1);
@@ -124,10 +140,10 @@
             for (i = 0; i < segs.length; i++) {
               tokens.push(
                 new lunr.Token(
-                  segs[i], {
-                    position: [segStart, segs[i].length],
+                  segs[i], withMetadata(metadata, {
+                    position: [lead + segStart, segs[i].length],
                     index: tokens.length
-                  }
+                  })
                 )
               );
               segStart += segs[i].length;

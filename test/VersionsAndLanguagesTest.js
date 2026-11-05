@@ -600,6 +600,12 @@ lunrVersions.forEach(function (lunrVersion) {
                 assert.equal(idxJa.search('日本*').length, 1);
             });
 
+            it("should count Japanese token positions from the start of the text", function () {
+                var tokens = lunr.ja.tokenizer('  日本語の本', { fields: ['title'] });
+                assert.deepEqual(tokens.map(function (t) { return t.metadata.position; }), [[2, 3], [5, 1], [6, 1]]);
+                assert.deepEqual(tokens[0].metadata.fields, ['title']);
+            });
+
             it("should segment in multi-language indexes", function () {
                 var idxMulti = build(lunr.multiLanguage('en', 'ja'), [{ id: 1, title: 'book 日本語の本', body: '' }]);
                 assert.equal(idxMulti.search('日本語の本').length, 1);
