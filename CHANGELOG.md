@@ -59,6 +59,12 @@
 - `lunr.multiLanguage('en', …)` uses `lunr.en` when it is loaded and lunr's built-in English otherwise; the multi trimmer and tokenizer labels name lunr's built-in English `builtin` (`lunr-multi-trimmer-builtin-ru`), so they differ from those with `lunr.en`.
 - Stop words: Snowball's 174 plus the 35 of lunr's built-in list that Snowball's lacks (209), so `lunr.en` drops at least what lunr's English drops.
 
+### Esperanto (eo)
+
+- New: `lunr.eo`, Snowball 3.2.0's Esperanto stemmer, 128 stop words and a trimmer for Latin letters (#62). The stop words are the function words of stopwords-iso's Esperanto list (MIT); its titles, greetings, interjections, numerals and abbreviations are left out.
+- Accent folding on by default: `sipo` finds `ŝipo`. Opt-out: remove `lunr.eo.accentFold` from both pipelines.
+- The x-system is normalized before the stop words and the stemmer, in wildcard terms too: `mangxi` and `cxamb*` find `manĝi` and `ĉambroj` (`cx`, `gx`, `hx`, `jx`, `sx`, `ux`; Esperanto itself has no x).
+
 ### Finnish (fi)
 
 - Stop words: Snowball's current list; adds `joten`.

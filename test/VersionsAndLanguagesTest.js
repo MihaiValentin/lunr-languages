@@ -51,6 +51,7 @@ var testDocuments = {
     zh: require('./testdata/zh'),
     el: require('./testdata/el'),
     fa: require('./testdata/fa'),
+    eo: require('./testdata/eo'),
     ca: require('./testdata/ca'),
     id: require('./testdata/id'),
 };

@@ -92,6 +92,8 @@ describe("Wildcard searches", function () {
         // ca: cançons found without the ç, col·lecció also typed with a period or without the punt volat
         ['ca', 'cançons', ['canço*', 'canco*', 'cancons*']],
         ['ca', 'col·lecció', ['col·lecc*', 'col.lecc*', 'collecc*']],
+        // eo: ĉambroj found with its diacritics, without them, and in the x-system
+        ['eo', 'ĉambroj', ['ĉamb*', 'camb*', 'cxamb*']],
         // el: σπίτια found with and without the accent; αθεΐα, whose ΐ Snowball folds to η
         ['el', 'σπίτια', ['σπίτ*', 'σπιτ*']],
         ['el', 'αθεΐα', ['αθεΐ*']],

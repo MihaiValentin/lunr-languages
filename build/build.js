@@ -475,6 +475,18 @@ var list = [
             }
         }
     }, {
+        locale: 'eo',
+        snowball: 'esperanto',
+        // the function words of stopwords-iso's Esperanto list (MIT), see THIRD-PARTY-NOTICES.md
+        stopWords: { custom: 'eo.csv' },
+        script: 'Latin',
+        // keyboards often lack ĉ ĝ ĥ ĵ ŝ ŭ: typed as c g h j s u (accent folding) or in the x-system (cx, ux, …),
+        // which is normalized; Esperanto itself has no x
+        accentFold: { default: true },
+        normalize: {
+            map: { 'cx': 'ĉ', 'gx': 'ĝ', 'hx': 'ĥ', 'jx': 'ĵ', 'sx': 'ŝ', 'ux': 'ŭ' }
+        }
+    }, {
         locale: 'id',
         snowball: 'indonesian',
         stopWords: { snowball: 'indonesian' },

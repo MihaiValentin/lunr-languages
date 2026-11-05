@@ -30,6 +30,7 @@ declare namespace lunr {
   var de: LunrLanguagesLanguage;
   var el: LunrLanguagesLanguage;
   var en: LunrLanguagesLanguage;
+  var eo: LunrLanguagesLanguage;
   var es: LunrLanguagesLanguage;
   var fa: LunrLanguagesLanguage;
   var fi: LunrLanguagesLanguage;
