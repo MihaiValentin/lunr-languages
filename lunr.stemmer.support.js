@@ -686,6 +686,75 @@
                 }
                 this.tokenizers.push({ locale: locale, tokenizer: tokenizer });
             },
+            /*
+             * The tokenizer of a language written without spaces between words (ja, zh, th). Its words come
+             * from a segmenter, chosen at each tokenization, so the files can be loaded in any order:
+             *   - the one an optional file registered as lunr.segmenters[locale] (lunr.ja.tinyseg.js,
+             *     lunr.th.wordcut.js, lunr.zh.jieba.js): { name, segment(str) -> [{ word, index }] }
+             *   - else Intl.Segmenter (options.intlLocale), its word-like segments, optionally passed through
+             *     options.intlWords(words, str) (Chinese adds bigrams)
+             *   - else an error with options.missing
+             * Lowercases like lunr's tokenizer and sets position metadata like it, keeping the caller's metadata.
+             * `.segmenter()` is the name of the segmenter in use.
+             */
+            generateSegmentingTokenizer: function(locale, options) {
+                var intl;
+                var intlSegmenter = {
+                    name: 'Intl.Segmenter',
+                    segment: function(str) {
+                        if (!intl) {
+                            intl = new Intl.Segmenter(options.intlLocale, { granularity: 'word' });
+                        }
+                        var words = [];
+                        var segments = intl.segment(str)[Symbol.iterator]();
+                        for (var s = segments.next(); !s.done; s = segments.next()) {
+                            if (s.value.isWordLike) {
+                                words.push({ word: s.value.segment, index: s.value.index });
+                            }
+                        }
+                        return options.intlWords ? options.intlWords(words, str) : words;
+                    }
+                };
+                var current = function() {
+                    var registered = lunr.segmenters && lunr.segmenters[locale];
+                    if (registered) {
+                        return registered;
+                    }
+                    if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+                        return intlSegmenter;
+                    }
+                    throw new Error(options.missing);
+                };
+                var withMetadata = function(metadata, extra) {
+                    var copy = {};
+                    for (var key in metadata) {
+                        copy[key] = metadata[key];
+                    }
+                    for (var key2 in extra) {
+                        copy[key2] = extra[key2];
+                    }
+                    return copy;
+                };
+                var tokenizer = function(obj, metadata) {
+                    if (!arguments.length || obj == null) {
+                        return [];
+                    }
+                    if (Array.isArray(obj)) {
+                        return obj.map(function(t) {
+                            return new lunr.Token(t.toString().toLowerCase(), withMetadata(metadata, {}));
+                        });
+                    }
+                    return current().segment(obj.toString().toLowerCase()).filter(function(w) {
+                        return w.word;
+                    }).map(function(w, n) {
+                        return new lunr.Token(w.word, withMetadata(metadata, { position: [w.index, w.word.length], index: n }));
+                    });
+                };
+                tokenizer.segmenter = function() {
+                    return current().name;
+                };
+                return tokenizer;
+            },
             /* lunr's tokens plus the tokens of each tokenizer, without duplicates (as lunr.multi indexes) */
             combineTokenizers: function(tokenizers) {
                 var defaultTokenizer = lunr.tokenizer;

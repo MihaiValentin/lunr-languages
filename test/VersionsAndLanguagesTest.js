@@ -861,6 +861,42 @@ lunrVersions.forEach(function (lunrVersion) {
             });
         });
 
+        describe("should segment with the registered segmenter, else Intl.Segmenter", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            var tokenizer = lunr.stemmerSupport.generateSegmentingTokenizer('xx', { intlLocale: 'en', missing: 'no segmenter for xx' });
+            var fake = { name: 'fake', segment: function (str) { return [{ word: str.slice(0, 2), index: 0 }]; } };
+
+            it("should use Intl.Segmenter and set position metadata like lunr's tokenizer", function () {
+                assert.equal(tokenizer.segmenter(), 'Intl.Segmenter');
+                var tokens = tokenizer('Ab, cd', { fields: ['body'] });
+                assert.deepEqual(tokens.map(String), ['ab', 'cd']);
+                assert.deepEqual(tokens.map(function (t) { return t.metadata.position; }), [[0, 2], [4, 2]]);
+                assert.deepEqual(tokens[1].metadata.fields, ['body']);
+            });
+
+            it("should use a segmenter registered after the tokenizer was made", function () {
+                lunr.segmenters = { xx: fake };
+                try {
+                    assert.equal(tokenizer.segmenter(), 'fake');
+                    assert.deepEqual(tokenizer('abcd').map(String), ['ab']);
+                } finally {
+                    delete lunr.segmenters;
+                }
+            });
+
+            it("should fail with options.missing without both", function () {
+                var original = Intl.Segmenter;
+                Intl.Segmenter = undefined;
+                try {
+                    assert.throws(function () { tokenizer('abcd'); }, /no segmenter for xx/);
+                } finally {
+                    Intl.Segmenter = original;
+                }
+            });
+        });
+
         describe("should map special casing before lunr lowercases", function () {
             delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
             var lunr = require('./lunr/' + lunrVersion.lunr);

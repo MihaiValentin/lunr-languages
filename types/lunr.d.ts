@@ -107,6 +107,11 @@ declare namespace lunr {
     generateNormalizer(map: { [from: string]: string }): LunrLanguagesNormalizer;
     generateSpecialCasing(map: { [from: string]: string }): LunrLanguagesSpecialCasing;
     generateSpecialCasingTokenizer(specialCasing: LunrLanguagesSpecialCasing): (obj?: any, metadata?: any) => any[];
+    /** The tokenizer of a language written without spaces: the registered segmenter, else Intl.Segmenter. */
+    generateSegmentingTokenizer(
+      locale: string,
+      options: { intlLocale: string; missing: string; intlWords?: (words: Array<{ word: string; index: number }>, str: string) => Array<{ word: string; index: number }> }
+    ): ((obj?: any, metadata?: any) => any[]) & { segmenter(): string };
     /** Registers the tokenizer a language indexes with, found by tokenizerFor() from `-<locale>` labels. */
     addTokenizer(locale: string, tokenizer: (obj?: any, metadata?: any) => any[]): void;
     combineTokenizers(tokenizers: Array<(obj?: any, metadata?: any) => any[]>): (obj?: any, metadata?: any) => any[];
@@ -123,5 +128,14 @@ declare namespace lunr {
   var stemmerSupport: LunrLanguagesStemmerSupport;
   var trimmerSupport: any;
   var TinySegmenter: any;
+  /** A word segmenter of a language written without spaces, registered by lunr.<locale>.<segmenter>.js. */
+  interface LunrLanguagesSegmenter {
+    name: string;
+    /** The words of a string with their offsets. */
+    segment(str: string): Array<{ word: string; index: number }>;
+  }
+
+  /** The optional segmenters loaded, by locale (lunr.th.wordcut.js registers `th`). */
+  var segmenters: { [locale: string]: LunrLanguagesSegmenter } | undefined;
   var wordcut: any;
 }
