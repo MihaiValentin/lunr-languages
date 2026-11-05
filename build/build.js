@@ -7,9 +7,13 @@ var fs = require('fs');
 var beautify = require('js-beautify').js_beautify;
 var UglifyJS = require("uglify-js");
 
-// shortcut for minifying a piece of code
+// shortcut for minifying a piece of code; comments are dropped, license headers are prepended by the caller
 function compress(orig_code) {
-    return UglifyJS.minify(orig_code, { fromString: true, comments: true }).code;
+    var result = UglifyJS.minify(orig_code, { output: { comments: false } });
+    if (result.error) {
+        throw result.error;
+    }
+    return result.code;
 }
 
 // the leading /*! ... */ blocks of a hand-written file, kept in its minified

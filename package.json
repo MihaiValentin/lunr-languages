@@ -41,7 +41,9 @@
       ]
     }
   },
-  "engine": "node 0.10.1",
+  "engines": {
+    "node": ">=14.6"
+  },
   "peerDependencies": {
     "lunr": "^2.0.0"
   },
@@ -106,8 +108,8 @@
     "url": "https://github.com/MihaiValentin/lunr-languages"
   },
   "devDependencies": {
-    "js-beautify": "^1.5.1",
-    "uglify-js": "^2.4.15",
+    "js-beautify": "^2.0.3",
+    "uglify-js": "^3.19.3",
     "unicode-8.0.0": "^0.1.5"
   }
 }
