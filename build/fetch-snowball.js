@@ -10,6 +10,8 @@
  *   COPYING and NEWS into build/snowball/
  * - downloads <stemmer>/voc.txt from snowballstem/snowball-data at a pinned commit into
  *   build/cache/snowball-data/ (not committed); the wildcard maps are derived from it
+ * - downloads <stemmer>/output.txt likewise and writes a sample of word/stem pairs to
+ *   build/snowball/stem-samples.json, which the tests check the generated stemmers against
  * - downloads the stop word lists named in build.js (`stopWords: { snowball: '<name>' }`, i.e.
  *   algorithms/<name>/stop.txt) from snowballstem/snowball-website at a pinned commit into
  *   build/snowball/stopwords/
@@ -148,6 +150,56 @@ function fetchWordLists() {
     }, Promise.resolve());
 }
 
+/* <stemmer>/output.txt, Snowball's stem of each line of voc.txt, into the cache like voc.txt */
+function fetchStemList(name) {
+    var target = path.join(CACHE_DIR, name, 'output.txt');
+    if (fs.existsSync(target)) {
+        return Promise.resolve();
+    }
+    return download(DATA_URL + name + '/output.txt').catch(function() {
+        return download(DATA_URL + name + '/output.txt.gz').then(function(gz) {
+            return zlib.gunzipSync(gz);
+        });
+    }).then(function(stems) {
+        fs.writeFileSync(target, stems);
+        console.log('Fetched ' + name + '/output.txt');
+    }, function() {
+        throw new Error('snowball-data ' + DATA_COMMIT.slice(0, 8) + ': no output.txt or output.txt.gz for ' + name);
+    });
+}
+
+/*
+ * build/snowball/stem-samples.json: every n-th word of voc.txt with Snowball's stem from output.txt,
+ * STEM_SAMPLE_SIZE per stemmer, so the tests check the generated stemmers against Snowball's own output.
+ */
+var STEM_SAMPLE_SIZE = 200;
+function writeStemSamples() {
+    return STEMMERS.reduce(function(chain, name) {
+        return chain.then(function() {
+            return fetchStemList(name);
+        });
+    }, Promise.resolve()).then(function() {
+        var samples = {};
+        STEMMERS.forEach(function(name) {
+            var lines = function(file) {
+                // a stem can be empty, so only the line break at the end is dropped
+                return fs.readFileSync(path.join(CACHE_DIR, name, file), 'utf8').replace(/\r?\n$/, '').split(/\r?\n/);
+            };
+            var words = lines('voc.txt'), stems = lines('output.txt');
+            if (words.length !== stems.length) {
+                throw new Error(name + ': voc.txt has ' + words.length + ' lines, output.txt ' + stems.length);
+            }
+            var step = Math.max(1, Math.floor(words.length / STEM_SAMPLE_SIZE));
+            samples[name] = {};
+            for (var i = 0; i < words.length && Object.keys(samples[name]).length < STEM_SAMPLE_SIZE; i += step) {
+                samples[name][words[i]] = stems[i];
+            }
+        });
+        fs.writeFileSync(path.join(OUT_DIR, 'stem-samples.json'), JSON.stringify(samples, null, 1) + '\n');
+        console.log('Wrote stem-samples.json (' + STEM_SAMPLE_SIZE + ' words per stemmer)');
+    });
+}
+
 /*
  * stop.txt: comments start with `|`, each stop word stands at the start of a line.
  * Written as one word per line, sorted, without duplicates.
@@ -202,6 +254,7 @@ function writeVersion() {
 
 fetchStemmers()
     .then(fetchWordLists)
+    .then(writeStemSamples)
     .then(fetchStopWords)
     .then(writeVersion)
     .then(function() {

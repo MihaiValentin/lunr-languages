@@ -19,6 +19,7 @@ Wonderful! Here are the changes you need to do, then Open a *Pull request*. Make
     - [ ] go to `test/testdata` and create a new file, then link it to `VersionsAndLanguagesTest.js`
     - [ ] make sure you cover many testcases (wildcard, stemming)
     - [ ] your tests will automatically be run on all the Lunr versions
+    - [ ] for a Snowball language, `test/SnowballTest.js` checks its stems against Snowball's own output (`build/snowball/stem-samples.json`, written by `npm run fetch-data`) and needs a wildcard search case in its `cases` if the language has a wildcard map; it also re-derives the maps when the word lists are in `build/cache/snowball-data/`; `test/BuildTest.js` parses every shipped file as ES2022
 - [ ] add the new language to `README.md`
 - [ ] re-build the files (check section below)
 - [ ] open a *Pull request*. Make sure you include everything needed in the pull request (check below)

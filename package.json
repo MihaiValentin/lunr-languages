@@ -111,6 +111,7 @@
     "url": "https://github.com/MihaiValentin/lunr-languages"
   },
   "devDependencies": {
+    "acorn": "^8.19.0",
     "js-beautify": "^2.0.3",
     "uglify-js": "^3.19.3",
     "unicode-8.0.0": "^0.1.5"
