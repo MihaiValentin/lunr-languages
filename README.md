@@ -187,6 +187,7 @@ idx.search(query.normalize('NFC'));
 * Lunr 2 is required (`lunr@^2.0.0`). For Lunr 0.x or 1.x, stay on Lunr Languages 1.x.
 * An ES2022 runtime is required: Chrome/Edge 84+, Firefox 90+, Safari 15+, Node.js 14.6+. For Internet Explorer 11, stay on Lunr Languages 1.x.
 * Rebuild every index built with 1.x. The stems changed, but the pipeline labels (`stemmer-de`, …) did not, so an old index still loads and then misses words.
+* `lunr.stemmerSupport.Among` and `SnowballProgram` are removed. A third-party stemmer built on them has to extend `lunr.stemmerSupport.BaseStemmer` (Snowball 3.x) instead.
 * `du` is removed: use `nl` (`lunr-languages/lunr.nl`) for Dutch.
 * `jp` is removed: use `ja` (`lunr-languages/lunr.ja`) for Japanese. Its pipeline labels were `stemmer-jp`, `trimmer-jp` and `stopWordFilter-jp`; indexes saved with them must be rebuilt with `ja`.
 
