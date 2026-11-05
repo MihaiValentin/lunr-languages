@@ -24,10 +24,30 @@ function licenseHeader(code) {
     return match ? match[0].trim() + '\n' : '';
 }
 
-// take some of the stop words list from the stopwords-filter repo
-var stopwordsRepoFolder = './stopwords-filter/lib/stopwords/snowball/locales/';
-// and, since that repository does not include all the stopwords we want, we add more, custom stopwords lists
-var stopwordsCustomFolder = './stopwords-custom/';
+/*
+ * The stop word list of a language. `stopWords` names its source:
+ *   { snowball: '<name>' }  Snowball's list algorithms/<name>/stop.txt from snowball-website, fetched
+ *                           by fetch-snowball.js into build/snowball/stopwords/<name>.txt (one word per
+ *                           line). Snowball names these lists by language, not by algorithm: the list
+ *                           for dutch_porter is 'dutch'.
+ *   { custom: '<file>' }    build/stopwords-custom/<file> (comma-separated), for languages Snowball has
+ *                           no list for
+ */
+function stopWordsFile(language) {
+    var source = language.stopWords || {};
+    if (source.snowball) {
+        return 'build/snowball/stopwords/' + source.snowball + '.txt';
+    }
+    if (source.custom) {
+        return 'build/stopwords-custom/' + source.custom;
+    }
+    throw new Error(language.locale + ': unknown stopWords ' + JSON.stringify(language.stopWords));
+}
+
+function readStopWords(file) {
+    var text = fs.readFileSync(file, 'utf8');
+    return /\.txt$/.test(file) ? text.split(/\r?\n/).filter(Boolean) : text.split(',');
+}
 var stemmersCustomFolder = './custom-stemmers/';
 
 // Use the Unicode library to produce a regex for characters of a particular
@@ -185,7 +205,7 @@ function germanWildcardNormalizerFunction(locale) {
  *   script     Unicode script of the word characters (unicode-8.0.0 package), for the trimmer and
  *              for probing letters in the wildcard map derivation
  *   file       the stemmer from the old snowball-js submodule that the build still uses
- *   stopwords  the stop word list
+ *   stopWords  the source of the stop word list, see stopWordsFile()
  *
  * Languages without `file` are hand-written; the build only beautifies and minifies them.
  */
@@ -198,25 +218,25 @@ var list = [
         locale: 'da',
         file: 'DanishStemmer.js',
         snowball: 'danish',
-        stopwords: stopwordsRepoFolder + 'da.csv',
+        stopWords: { snowball: 'danish' },
         script: 'Latin'
     }, {
         locale: 'nl',
         file: 'DutchStemmer.js',
         snowball: 'dutch',
-        stopwords: stopwordsRepoFolder + 'nl.csv',
+        stopWords: { snowball: 'dutch' },
         script: 'Latin'
     }, {
         locale: 'fi',
         file: 'FinnishStemmer.js',
         snowball: 'finnish',
-        stopwords: stopwordsRepoFolder + 'fn.csv',
+        stopWords: { snowball: 'finnish' },
         script: 'Latin'
     }, {
         locale: 'fr',
         file: 'FrenchStemmer.js',
         snowball: 'french',
-        stopwords: stopwordsRepoFolder + 'fr.csv',
+        stopWords: { snowball: 'french' },
         script: 'Latin',
         defaultAccentFolding: true,
         wildcardNormalizer: accentFoldWildcardNormalizerFunction
@@ -224,20 +244,20 @@ var list = [
         locale: 'de',
         file: 'GermanStemmer.js',
         snowball: 'german',
-        stopwords: stopwordsRepoFolder + 'de.csv',
+        stopWords: { snowball: 'german' },
         script: 'Latin',
         wildcardNormalizer: germanWildcardNormalizerFunction
     }, {
         locale: 'hu',
         file: 'HungarianStemmer.js',
         snowball: 'hungarian',
-        stopwords: stopwordsRepoFolder + 'hu.csv',
+        stopWords: { snowball: 'hungarian' },
         script: 'Latin'
     }, {
         locale: 'it',
         file: 'ItalianStemmer.js',
         snowball: 'italian',
-        stopwords: stopwordsRepoFolder + 'it.csv',
+        stopWords: { snowball: 'italian' },
         script: 'Latin'
     }, {
         locale: 'ja'
@@ -247,38 +267,38 @@ var list = [
         locale: 'no',
         file: 'NorwegianStemmer.js',
         snowball: 'norwegian',
-        stopwords: stopwordsCustomFolder + 'no.csv',
+        stopWords: { snowball: 'norwegian' },
         script: 'Latin'
     }, {
         locale: 'pt',
         file: 'PortugueseStemmer.js',
         snowball: 'portuguese',
-        stopwords: stopwordsRepoFolder + 'pt.csv',
+        stopWords: { snowball: 'portuguese' },
         script: 'Latin'
     }, {
         locale: 'pl',
         file: 'PolishStemmer.js',
         snowball: 'polish',
         stemmer: stemmersCustomFolder + 'PolishStemmer.js',
-        stopwords: stopwordsCustomFolder + 'pl.csv',
+        stopWords: { custom: 'pl.csv' },
         script: 'Latin'
     }, {
         locale: 'ro',
         file: 'RomanianStemmer.js',
         snowball: 'romanian',
-        stopwords: stopwordsCustomFolder + 'ro.csv',
+        stopWords: { custom: 'ro.csv' },
         script: 'Latin'
     }, {
         locale: 'ru',
         file: 'RussianStemmer.js',
         snowball: 'russian',
-        stopwords: stopwordsCustomFolder + 'ru.csv',
+        stopWords: { snowball: 'russian' },
         script: 'Cyrillic'
     }, {
         locale: 'es',
         file: 'SpanishStemmer.js',
         snowball: 'spanish',
-        stopwords: stopwordsRepoFolder + 'es.csv',
+        stopWords: { snowball: 'spanish' },
         script: 'Latin',
         accentFolding: true
     }, {
@@ -287,7 +307,7 @@ var list = [
         locale: 'sv',
         file: 'SwedishStemmer.js',
         snowball: 'swedish',
-        stopwords: stopwordsCustomFolder + 'sv.csv',
+        stopWords: { snowball: 'swedish' },
         script: 'Latin'
     }, {
         locale: 'ta',
@@ -297,7 +317,7 @@ var list = [
         locale: 'tr',
         file: 'TurkishStemmer.js',
         snowball: 'turkish',
-        stopwords: stopwordsCustomFolder + 'tr.csv',
+        stopWords: { custom: 'tr.csv' },
         script: 'Latin'
     }, {
         locale: 'th',
@@ -332,11 +352,11 @@ function build() {
         var data;
         var stopWords;
         var f;
-        var fromTemplate = list[i].file && list[i].stopwords;
+        var fromTemplate = list[i].file && list[i].stopWords;
 
         if (fromTemplate) {
             data = fs.readFileSync('build/' + (list[i].stemmer || ('snowball-js/stemmer/src/ext/' + list[i].file)), 'utf8');
-            stopWords = fs.readFileSync('build/' + list[i].stopwords, 'utf8');
+            stopWords = readStopWords(stopWordsFile(list[i]));
             var languageExtras = [];
 
             if (list[i].accentFolding) {
@@ -356,7 +376,7 @@ function build() {
             f = cm + f;
             f = f.replace(/\{\{locale\}\}/g, list[i].locale);
             f = f.replace(/\{\{stemmerFunction\}\}/g, data.substring(data.indexOf('function')));
-            f = f.replace(/\{\{stopWords\}\}/g, stopWords.split(',').sort().join(' '));
+            f = f.replace(/\{\{stopWords\}\}/g, stopWords.sort().join(' '));
             f = f.replace(/\{\{languageName\}\}/g, list[i].file.replace(/Stemmer\.js/g, ''));
             f = f.replace(/\{\{wordCharacters\}\}/g, wordCharacters(list[i].script));
             f = f.replace(/\{\{pipelineBeforeStemmer\}\}/g, list[i].defaultAccentFolding ? '\n                lunr.' + list[i].locale + '.accentFold,' : '');
@@ -412,9 +432,19 @@ function snowballStemmers() {
     return sorted;
 }
 
+// the names of Snowball's stop word lists the list uses ({ snowball: '<name>' }), sorted, without duplicates
+function snowballStopWordLists() {
+    return list.map(function(language) {
+        return language.stopWords && language.stopWords.snowball;
+    }).filter(function(name, i, names) {
+        return name && names.indexOf(name) === i;
+    }).sort();
+}
+
 module.exports = {
     languages: list,
-    snowballStemmers: snowballStemmers
+    snowballStemmers: snowballStemmers,
+    snowballStopWordLists: snowballStopWordLists
 };
 
 if (require.main === module) {

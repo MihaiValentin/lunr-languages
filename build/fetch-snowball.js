@@ -10,6 +10,9 @@
  *   COPYING and NEWS into build/snowball/
  * - downloads <stemmer>/voc.txt from snowballstem/snowball-data at a pinned commit into
  *   build/cache/snowball-data/ (not committed); the wildcard maps are derived from it
+ * - downloads the stop word lists named in build.js (`stopWords: { snowball: '<name>' }`, i.e.
+ *   algorithms/<name>/stop.txt) from snowballstem/snowball-website at a pinned commit into
+ *   build/snowball/stopwords/
  * - writes build/snowball/VERSION
  *
  * Requires Node >= 18 (global fetch) and a `tar` on the PATH (Windows 10+, macOS and Linux ship one).
@@ -32,8 +35,15 @@ var TARBALL_SHA256 = '1d3f39267a15d0351312ff4d778de7bb8aae6480a63c4b318eda31032a
 var DATA_COMMIT = '019921c3a41c2b70063ee3feb215a00c8e594597';
 var DATA_URL = 'https://raw.githubusercontent.com/snowballstem/snowball-data/' + DATA_COMMIT + '/';
 
-// the Snowball algorithms of the languages configured in build.js
-var STEMMERS = Object.keys(require('./build').snowballStemmers());
+// snowball-website has no tags either; this is its state on the release day
+var WEBSITE_COMMIT = 'dc14fb462784e5bdf90f3210022b0f91d3881ffd';
+var WEBSITE_URL = 'https://raw.githubusercontent.com/snowballstem/snowball-website/' + WEBSITE_COMMIT + '/';
+
+// the Snowball algorithms and stop word lists of the languages configured in build.js
+var config = require('./build');
+var STEMMERS = Object.keys(config.snowballStemmers());
+var STOP_WORD_LISTS = config.snowballStopWordLists();
+var STOP_WORD_DIR = path.join(__dirname, 'snowball', 'stopwords');
 
 var OUT_DIR = path.join(__dirname, 'snowball');
 var CACHE_DIR = path.join(__dirname, 'cache', 'snowball-data');
@@ -138,11 +148,53 @@ function fetchWordLists() {
     }, Promise.resolve());
 }
 
+/*
+ * stop.txt: comments start with `|`, each stop word stands at the start of a line.
+ * Written as one word per line, sorted, without duplicates.
+ */
+function parseStopWords(name, text) {
+    var words = {};
+    text.split(/\r?\n/).forEach(function(line) {
+        line.split('|')[0].trim().split(/\s+/).forEach(function(word) {
+            if (!word) return;
+            if (word !== word.normalize('NFC') || word !== word.toLowerCase()) {
+                throw new Error(name + '/stop.txt: "' + word + '" is not lowercase NFC');
+            }
+            words[word] = true;
+        });
+    });
+    var list = Object.keys(words).sort();
+    if (list.length < 20) {
+        throw new Error(name + '/stop.txt: only ' + list.length + ' words, has the format changed?');
+    }
+    return list;
+}
+
+function fetchStopWords() {
+    fs.mkdirSync(STOP_WORD_DIR, { recursive: true });
+    // lists of languages that are no longer configured go away
+    fs.readdirSync(STOP_WORD_DIR).forEach(function(file) {
+        if (/\.txt$/.test(file)) {
+            fs.unlinkSync(path.join(STOP_WORD_DIR, file));
+        }
+    });
+    return STOP_WORD_LISTS.reduce(function(chain, name) {
+        return chain.then(function() {
+            return download(WEBSITE_URL + 'algorithms/' + name + '/stop.txt');
+        }).then(function(buffer) {
+            var words = parseStopWords(name, buffer.toString('utf8'));
+            fs.writeFileSync(path.join(STOP_WORD_DIR, name + '.txt'), words.join('\n') + '\n');
+            console.log('Fetched ' + name + '/stop.txt (' + words.length + ' words)');
+        });
+    }, Promise.resolve());
+}
+
 function writeVersion() {
     fs.writeFileSync(path.join(OUT_DIR, 'VERSION'), [
         'snowball ' + SNOWBALL_VERSION,
         TARBALL + ' sha256 ' + TARBALL_SHA256,
         'snowball-data ' + DATA_COMMIT,
+        'snowball-website ' + WEBSITE_COMMIT,
         'stemmers ' + STEMMERS.join(' '),
         ''
     ].join('\n'));
@@ -150,6 +202,7 @@ function writeVersion() {
 
 fetchStemmers()
     .then(fetchWordLists)
+    .then(fetchStopWords)
     .then(writeVersion)
     .then(function() {
         console.log('Done. Snowball ' + SNOWBALL_VERSION + ' is in ' + OUT_DIR);
