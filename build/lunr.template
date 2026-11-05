@@ -38,7 +38,7 @@
         lunr.{{locale}} = function () {{{useTokenizer}}
             this.pipeline.reset();
             this.pipeline.add(
-                lunr.{{locale}}.trimmer,
+                lunr.{{locale}}.trimmer,{{pipelineBeforeStopWords}}
                 lunr.{{locale}}.stopWordFilter,{{pipelineBeforeStemmer}}
                 lunr.{{locale}}.stemmer
             );
@@ -46,7 +46,7 @@
             // every searched word is also trimmed and stemmed
             this.searchPipeline.reset();
             this.searchPipeline.add(
-                lunr.{{locale}}.trimmer,{{pipelineBeforeStemmer}}
+                lunr.{{locale}}.trimmer,{{pipelineBeforeStopWords}}{{pipelineBeforeStemmer}}
                 lunr.{{locale}}.stemmer
             )
         };
@@ -71,18 +71,18 @@
 {{stemmerBody}}
             })();
 
-            var st = new Stemmer();
+            var st = new Stemmer();{{afterStemmer}}
 
             /* and return a function that stems a word for the current locale */
             return function(token) {
                 return token.update(function (word) {
-                    return st.stemWord(word);
+                    return {{stemCall}};
                 })
             }
         })();
 
         lunr.Pipeline.registerFunction(lunr.{{locale}}.stemmer, 'stemmer-{{locale}}');
-{{accentFold}}{{wildcardNormalizer}}{{specialCasing}}
+{{normalizer}}{{accentFold}}{{wildcardNormalizer}}{{specialCasing}}
 
         lunr.{{locale}}.stopWordFilter = lunr.generateStopWordFilter('{{stopWords}}'.split(' '));
 

@@ -43,6 +43,7 @@
             }).join('-');
             var wordCharacters = "";
             var pipeline = [];
+            var normalizers = [];
             var accentFolds = [];
             var stemmers = [];
             var tokenizers = [];
@@ -56,6 +57,10 @@
                     if (lunr[languages[i]].stopWordFilter) {
                         pipeline.unshift(lunr[languages[i]].stopWordFilter);
                     }
+                    // a language's normalizer (Persian) runs before the stop word filters, as in lunr.<locale>
+                    if (lunr[languages[i]].normalizer) {
+                        normalizers.push(lunr[languages[i]].normalizer);
+                    }
                     // a language's accent folding that is on by default runs before all stemmers
                     if (lunr[languages[i]].accentFold && lunr[languages[i]].accentFold.isDefault) {
                         accentFolds.push(lunr[languages[i]].accentFold);
@@ -68,8 +73,8 @@
                     }
                 }
             };
-            pipeline = pipeline.concat(accentFolds, stemmers);
-            var searchPipeline = accentFolds.concat(stemmers);
+            pipeline = normalizers.concat(pipeline, accentFolds, stemmers);
+            var searchPipeline = normalizers.concat(accentFolds, stemmers);
             var multiTrimmer = lunr.trimmerSupport.generateTrimmer(wordCharacters);
             lunr.Pipeline.registerFunction(multiTrimmer, 'lunr-multi-trimmer-' + nameSuffix);
             pipeline.unshift(multiTrimmer);

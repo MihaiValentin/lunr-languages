@@ -301,9 +301,22 @@ function lettersOf(words) {
  */
 function derive(name) {
     var Stemmer = loader.loadStemmer(name);
-    var stemmer = new Stemmer();
+    var snowballStemmer = new Stemmer();
+    // stems as the index has them: with afterStemmer, folded after the stemmer
+    var after = languages[name].afterStemmer ? support.stemmerSupport.generateFold(languages[name].afterStemmer) : null;
+    var stemmer = {
+        stemWord: function(w) {
+            var s = snowballStemmer.stemWord(w);
+            return after ? after(s) : s;
+        }
+    };
     var stem = function(w) { return stemmer.stemWord(w); };
     var words = readWords(name);
+    // with a normalizer, the index stems normalized words, so the map is learnt from them
+    if (languages[name].normalize) {
+        var normalize = support.stemmerSupport.generateNormalizer(languages[name].normalize).normalize;
+        words = words.map(normalize).filter(Boolean);
+    }
     var raw = learnMap(name, stemmer, words, words.map(stem), true);
     var result = { words: words.length, coverage: raw.coverage, map: raw.map, probed: raw.probed };
 
@@ -321,7 +334,8 @@ function derive(name) {
 
 /* letters of the script that the sample (almost) lacks: does the stemmer fold them to their base letter? */
 function probe(name, stemmer, words, stems, map) {
-    var script = require('unicode-8.0.0/scripts/' + languages[name].script + '/regex');
+    var scripts = [].concat(languages[name].script);   // several scripts: the language's own comes first
+    var script = require('unicode-8.0.0/scripts/' + scripts[0] + '/regex');
     var seen = {};
     words.forEach(function(w) {
         for (var i = 0; i < w.length; i++) seen[w[i]] = (seen[w[i]] || 0) + 1;

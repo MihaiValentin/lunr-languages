@@ -23,10 +23,13 @@ describe("Snowball stemmers", function () {
             it("should stem like Snowball's " + name + " (lunr." + locale + ", " + Object.keys(samples[name]).length + " words of snowball-data)", function () {
                 var lunr = freshLunr();
                 require('../lunr.' + locale + '.js')(lunr);
+                // with afterStemmer in the list, lunr folds Snowball's stems afterwards (Persian آ)
+                var after = stemmers[name].afterStemmer ? lunr.stemmerSupport.generateFold(stemmers[name].afterStemmer) : function (s) { return s; };
                 var wrong = [];
                 Object.keys(samples[name]).forEach(function (word) {
                     var stem = lunr[locale].stemmer(new lunr.Token(word)).toString();
-                    if (stem !== samples[name][word]) {
+                    var expected = after(samples[name][word]);
+                    if (stem !== expected) {
                         wrong.push(word + ' -> ' + stem + ' (Snowball: ' + samples[name][word] + ')');
                     }
                 });

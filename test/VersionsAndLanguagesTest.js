@@ -918,6 +918,13 @@ describe("Stemmer support for Snowball 3", function () {
         assert.equal(normalizer('ge*'), 'ge*');
     });
 
+    it("should normalize a token until nothing changes, and drop it if nothing is left", function () {
+        var normalizer = lunr.stemmerSupport.generateNormalizer({ 'a': 'b', 'bb': 'b', '-': '' });
+        assert.equal(normalizer.normalize('aaaa'), 'b');
+        assert.equal(String(normalizer(new lunr.Token('xab'))), 'xb');
+        assert.equal(normalizer(new lunr.Token('--')), undefined);
+    });
+
     it("should index a token and its accent-free form with an accent fold", function () {
         var accentFold = lunr.stemmerSupport.generateAccentFold({ 'è': 'e', 'é': 'e' });
         var forms = accentFold(new lunr.Token('rivière'));

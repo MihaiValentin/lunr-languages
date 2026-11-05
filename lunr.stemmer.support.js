@@ -535,6 +535,37 @@
                 };
             },
             /*
+             * A pipeline function that folds a token to one spelling before the stop word filter and the
+             * stemmer (Persian: Arabic yeh to Persian, harakat removed). The map is applied until nothing
+             * changes, so runs collapse (ZWNJ ZWNJ -> ZWNJ); a token folded to nothing is dropped.
+             * `.normalize` is the fold on strings, which the wildcard normalizer and the derivation use too.
+             */
+            generateNormalizer: function(map) {
+                var fold = this.generateFold(map);
+                var normalize = function(str) {
+                    for (var i = 0; i < 10; i++) {
+                        var next = fold(str);
+                        if (next === str) {
+                            break;
+                        }
+                        str = next;
+                    }
+                    return str;
+                };
+                var normalizer = function(token) {
+                    var normalized = normalize(token.toString());
+                    if (normalized === '') {
+                        return undefined;
+                    }
+                    return token.update(function() {
+                        return normalized;
+                    });
+                };
+                normalizer.map = map;
+                normalizer.normalize = normalize;
+                return normalizer;
+            },
+            /*
              * A pipeline function that indexes the token and its accent-free form (`rivière` ->
              * [rivière, riviere]). The original form still goes through the stemmer unchanged.
              * `.map` is the map, which the wildcard normalizer uses too.
@@ -565,9 +596,11 @@
              * With `accent` ({ label, accentFold, map }), a term searched in an index whose search
              * pipeline contains accent.label is accent folded first and then folded with accent.map,
              * the map derived for accent-free words; that index contains the stems of both forms.
+             * With `normalize` (a language's normalizer, see generateNormalizer), the term is normalized
+             * first, as the index was before stemming.
              * `.fold` is the raw fold of `map`, which the derivation uses too.
              */
-            generateWildcardNormalizer: function(map, accent) {
+            generateWildcardNormalizer: function(map, accent, normalize) {
                 var stemmerSupport = this;
                 var fold = this.generateFold(map);
                 var accentFold = accent && this.generateFold(accent.accentFold);
@@ -575,6 +608,9 @@
 
                 var normalizer = function(term, pipeline) {
                     var lower = term.toLowerCase();
+                    if (normalize) {
+                        lower = normalize.normalize(lower);
+                    }
                     var folded = accent && pipeline && stemmerSupport.pipelineContainsFunction(pipeline, accent.label) ?
                         foldedFold(accentFold(lower)) : fold(lower);
                     return folded.replace(/\*/g, '') === '' ? term : folded;

@@ -2,7 +2,7 @@
  * Lunr languages, `{{languageName}}` language
  * https://github.com/MihaiValentin/lunr-languages
  *
- * Copyright 2014, Mihai Valentin
+ * Copyright {{copyright}}
  * http://www.mozilla.org/MPL/
  */
 {{snowballLicense}}
