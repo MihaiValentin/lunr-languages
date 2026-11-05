@@ -183,6 +183,7 @@ idx.search(query.normalize('NFC'));
 ## Migrating from 1.x
 
 * Lunr 2 is required (`lunr@^2.0.0`). For Lunr 0.x or 1.x, stay on Lunr Languages 1.x.
+* `du` is removed: use `nl` (`lunr-languages/lunr.nl`) for Dutch.
 
 See [CHANGELOG.md](CHANGELOG.md) for the changes per language.
 
