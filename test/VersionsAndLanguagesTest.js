@@ -539,4 +539,24 @@ describe("Stemmer support for Snowball 3", function () {
         var normalizer = lunr.stemmerSupport.generateWildcardNormalizer({ '^ge': '' });
         assert.equal(normalizer('ge*'), 'ge*');
     });
+
+    it("should index a token and its accent-free form with an accent fold", function () {
+        var accentFold = lunr.stemmerSupport.generateAccentFold({ 'è': 'e', 'é': 'e' });
+        var forms = accentFold(new lunr.Token('rivière'));
+        assert.deepEqual(forms.map(String), ['rivière', 'riviere']);
+        assert.equal(String(accentFold(new lunr.Token('maison'))), 'maison');
+        assert.deepEqual(accentFold.map, { 'è': 'e', 'é': 'e' });
+    });
+
+    it("should accent fold wildcard terms only for an index with the accent fold", function () {
+        var normalizer = lunr.stemmerSupport.generateWildcardNormalizer({ 'é': 'e' }, {
+            label: 'accentFold-xx', accentFold: { 'è': 'e' }, map: { 'x': 'y' }
+        });
+        var withFold = new lunr.Pipeline();
+        var fold = function (t) { return t; };
+        lunr.Pipeline.registerFunction(fold, 'accentFold-xx');
+        withFold.add(fold);
+        assert.equal(normalizer('rivièrex*', withFold), 'rivierey*');
+        assert.equal(normalizer('rivièrex*', new lunr.Pipeline()), 'rivièrex*');
+    });
 });

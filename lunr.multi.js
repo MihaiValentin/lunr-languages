@@ -43,29 +43,34 @@
             }).join('-');
             var wordCharacters = "";
             var pipeline = [];
-            var searchPipeline = [];
+            var accentFolds = [];
+            var stemmers = [];
             var tokenizers = [];
             var defaultTokenizer = lunr.tokenizer;
             for (var i = 0; i < languages.length; ++i) {
                 if (languages[i] == 'en' && !lunr.en) {
                     wordCharacters += '\\w';
                     pipeline.unshift(lunr.stopWordFilter);
-                    pipeline.push(lunr.stemmer);
-                    searchPipeline.push(lunr.stemmer);
+                    stemmers.push(lunr.stemmer);
                 } else {
                     wordCharacters += lunr[languages[i]].wordCharacters;
                     if (lunr[languages[i]].stopWordFilter) {
                         pipeline.unshift(lunr[languages[i]].stopWordFilter);
                     }
+                    // a language's accent folding that is on by default runs before all stemmers
+                    if (lunr[languages[i]].accentFold && lunr[languages[i]].accentFold.isDefault) {
+                        accentFolds.push(lunr[languages[i]].accentFold);
+                    }
                     if (lunr[languages[i]].stemmer) {
-                        pipeline.push(lunr[languages[i]].stemmer);
-                        searchPipeline.push(lunr[languages[i]].stemmer);
+                        stemmers.push(lunr[languages[i]].stemmer);
                     }
                     if (lunr[languages[i]].tokenizer) {
                         tokenizers.push(lunr[languages[i]].tokenizer);
                     }
                 }
             };
+            pipeline = pipeline.concat(accentFolds, stemmers);
+            var searchPipeline = accentFolds.concat(stemmers);
             var multiTrimmer = lunr.trimmerSupport.generateTrimmer(wordCharacters);
             lunr.Pipeline.registerFunction(multiTrimmer, 'lunr-multi-trimmer-' + nameSuffix);
             pipeline.unshift(multiTrimmer);

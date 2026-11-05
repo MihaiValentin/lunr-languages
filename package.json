@@ -102,7 +102,8 @@
   "scripts": {
     "build": "node build/build.js",
     "derive-maps": "node build/derive-fold-maps.js",
-    "fetch-data": "node build/fetch-snowball.js && node build/derive-fold-maps.js",
+    "fetch-cldr": "node build/fetch-cldr.js",
+    "fetch-data": "node build/fetch-snowball.js && node build/fetch-cldr.js && node build/derive-fold-maps.js",
     "fetch-snowball": "node build/fetch-snowball.js",
     "test": "node --test test/*Test.js"
   },

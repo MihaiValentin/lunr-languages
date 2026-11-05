@@ -82,7 +82,7 @@
         })();
 
         lunr.Pipeline.registerFunction(lunr.{{locale}}.stemmer, 'stemmer-{{locale}}');
-{{wildcardNormalizer}}{{languageExtras}}
+{{accentFold}}{{wildcardNormalizer}}{{languageExtras}}
 
         lunr.{{locale}}.stopWordFilter = lunr.generateStopWordFilter('{{stopWords}}'.split(' '));
 

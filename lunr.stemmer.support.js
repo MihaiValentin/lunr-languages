@@ -510,13 +510,10 @@
             /* Snowball's base class of the generated stemmers (Snowball 3.x) */
             BaseStemmer: BaseStemmer,
             /*
-             * Folds a wildcard term the way a stemmer folds the index (`käs*` -> `kas*`), from a map
-             * derived by build/derive-fold-maps.js. One left-to-right pass, longest key first; a
-             * key starting with `^` only applies at the start of the term. If folding would leave
-             * nothing but wildcards (Dutch `ge*`), the term stays as it is.
-             * `.fold` is the raw fold, which the derivation uses too.
+             * A fold from a map: one left-to-right pass, longest key first; a key starting with `^`
+             * only applies at the start of the word.
              */
-            generateWildcardNormalizer: function(map) {
+            generateFold: function(map) {
                 var hasOwn = Object.prototype.hasOwnProperty;
                 var keys = Object.keys(map).sort(function(a, b) {
                     return b.length - a.length || (a < b ? -1 : 1);
@@ -528,7 +525,7 @@
                     return key.charAt(0) === '^' ? '^' + escapeRegExp(key.slice(1)) : escapeRegExp(key);
                 }).join('|'), 'g');
 
-                var fold = function(word) {
+                return function(word) {
                     if (!re) {
                         return word;
                     }
@@ -536,9 +533,50 @@
                         return offset === 0 && hasOwn.call(map, '^' + m) ? map['^' + m] : map[m];
                     });
                 };
+            },
+            /*
+             * A pipeline function that indexes the token and its accent-free form (`rivière` ->
+             * [rivière, riviere]). The original form still goes through the stemmer unchanged.
+             * `.map` is the map, which the wildcard normalizer uses too.
+             */
+            generateAccentFold: function(map) {
+                var fold = this.generateFold(map);
+                var accentFold = function(token) {
+                    if (!token) {
+                        return token;
+                    }
+                    var str = token.toString();
+                    var folded = fold(str);
+                    if (folded === str) {
+                        return token;
+                    }
+                    return [token, token.clone(function() {
+                        return folded;
+                    })];
+                };
+                accentFold.map = map;
+                return accentFold;
+            },
+            /*
+             * Folds a wildcard term the way a stemmer folds the index (`käs*` -> `kas*`), from a map
+             * derived by build/derive-fold-maps.js. If folding would leave nothing but wildcards
+             * (Dutch `ge*`), the term stays as it is.
+             *
+             * With `accent` ({ label, accentFold, map }), a term searched in an index whose search
+             * pipeline contains accent.label is accent folded first and then folded with accent.map,
+             * the map derived for accent-free words; that index contains the stems of both forms.
+             * `.fold` is the raw fold of `map`, which the derivation uses too.
+             */
+            generateWildcardNormalizer: function(map, accent) {
+                var stemmerSupport = this;
+                var fold = this.generateFold(map);
+                var accentFold = accent && this.generateFold(accent.accentFold);
+                var foldedFold = accent && this.generateFold(accent.map);
 
-                var normalizer = function(term) {
-                    var folded = fold(term.toLowerCase());
+                var normalizer = function(term, pipeline) {
+                    var lower = term.toLowerCase();
+                    var folded = accent && pipeline && stemmerSupport.pipelineContainsFunction(pipeline, accent.label) ?
+                        foldedFold(accentFold(lower)) : fold(lower);
                     return folded.replace(/\*/g, '') === '' ? term : folded;
                 };
                 normalizer.fold = fold;
@@ -611,7 +649,7 @@
                         continue;
                     }
 
-                    term = normalizers[i](term);
+                    term = normalizers[i](term, pipeline);
                 }
 
                 return term;

@@ -25,8 +25,9 @@
 
 var fs = require('fs');
 var path = require('path');
-var languages = require('./build').snowballStemmers();   // { <snowball>: { script, locales } }
+var languages = require('./build').snowballStemmers();   // { <snowball>: { script, locales, accentFold } }
 var loader = require('./snowball-loader');
+var accentFold = require('./accent-fold');
 
 var CACHE_DIR = path.join(__dirname, 'cache', 'snowball-data');
 var OUT_FILE = path.join(__dirname, 'fold-maps.json');
@@ -39,6 +40,7 @@ var CANDIDATES_PER_ROUND = 40;
 var PROBE_SEEN_LIMIT = 5;        // probe letters seen fewer times than this in the sample
 var PROBE_SAMPLES = 30;
 var PROBE_AGREEMENT = 0.9;
+var MIN_LETTER_COUNT = 3;        // letters of the word list that the accent fold map covers
 
 // nonspacing marks only, like CLDR's Latin-ASCII: spacing marks (Mc) are letters, e.g. Devanagari vowel signs
 var MARKS = /\p{Mn}/gu;
@@ -80,8 +82,7 @@ function readWords(name) {
 
 /*
  * The fold of the runtime normalizer in lunr.stemmer.support.js, so the derivation measures exactly what
- * the plugins do: one left-to-right pass, longest key first, `^` keys only at the start of the word
- * (Dutch `ge-`, Italian `l'`).
+ * the plugins do: one left-to-right pass, longest key first, `^` keys only at the start of the word.
  */
 var support = require('lunr');   // the peer dependency; the support file needs lunr 2
 require('../lunr.stemmer.support.js')(support);
@@ -167,11 +168,11 @@ function candidatesFor(block) {
     });
 }
 
-function derive(name) {
-    var Stemmer = loader.loadStemmer(name);
-    var stemmer = new Stemmer();
-    var words = readWords(name);
-    var stems = words.map(function(w) { return stemmer.stemWord(w); });
+/*
+ * The stem fold map for one set of words (raw, or accent folded) and their stems: greedy rules, then
+ * probing of rare letters (only for raw words, accent folded words have no accents left to probe).
+ */
+function learnMap(name, stemmer, words, stems, withProbe) {
     var count = words.length;
     var minGain = Math.max(MIN_GAIN, Math.ceil(count * MIN_GAIN_SHARE));
 
@@ -259,7 +260,7 @@ function derive(name) {
         });
     }
 
-    var probed = probe(name, stemmer, words, stems, map);
+    var probed = withProbe ? probe(name, stemmer, words, stems, map) : [];
     probed.forEach(function(rule) {
         map[rule[0]] = rule[1];
     });
@@ -272,7 +273,6 @@ function derive(name) {
     var final = words.filter(function(w, i) { return fold(w).indexOf(stems[i]) === 0; }).length;
 
     return {
-        words: count,
         coverage: {
             none: round(baseline / count),
             map: round(final / count)
@@ -280,6 +280,43 @@ function derive(name) {
         map: sorted,
         probed: probed.map(function(rule) { return rule[0]; }).sort()
     };
+}
+
+/* the letters of the word list, seen at least MIN_LETTER_COUNT times, sorted */
+function lettersOf(words) {
+    var seen = {};
+    words.forEach(function(w) {
+        Array.from(w).forEach(function(c) {
+            if (/^\p{L}$/u.test(c)) seen[c] = (seen[c] || 0) + 1;
+        });
+    });
+    return Object.keys(seen).filter(function(c) { return seen[c] >= MIN_LETTER_COUNT; }).sort();
+}
+
+/*
+ * The wildcard maps of one Snowball algorithm. With accentFold configured in build.js, also the accent
+ * fold map (CLDR Latin-ASCII for the letters of the word list, without `keep`) and the stem fold map
+ * for accent folded words: an index with accentFold contains the stems of both forms, and a wildcard
+ * term searched in it is accent folded before the stem fold.
+ */
+function derive(name) {
+    var Stemmer = loader.loadStemmer(name);
+    var stemmer = new Stemmer();
+    var stem = function(w) { return stemmer.stemWord(w); };
+    var words = readWords(name);
+    var raw = learnMap(name, stemmer, words, words.map(stem), true);
+    var result = { words: words.length, coverage: raw.coverage, map: raw.map, probed: raw.probed };
+
+    var accent = languages[name].accentFold;
+    if (accent) {
+        var foldMap = accentFold.accentFoldMap(lettersOf(words), accent.keep);
+        var fold = makeFold(foldMap);
+        var foldedWords = words.map(fold);
+        var folded = learnMap(name, stemmer, foldedWords, foldedWords.map(stem), false);
+        result.accentFold = foldMap;
+        result.folded = { coverage: folded.coverage, map: folded.map };
+    }
+    return result;
 }
 
 /* letters of the script that the sample (almost) lacks: does the stemmer fold them to their base letter? */
@@ -339,9 +376,16 @@ function run(names, accept) {
         var started = Date.now();
         var r = result[name] = derive(name);
         console.log(name + ': ' + r.words + ' words, coverage ' + r.coverage.none + ' -> ' + r.coverage.map +
-            ', ' + Object.keys(r.map).length + ' rules (' + ((Date.now() - started) / 1000).toFixed(1) + 's)');
-        if (previous[name] && r.coverage.map < previous[name].coverage.map - MAX_COVERAGE_DROP) {
-            dropped.push(name + ' ' + previous[name].coverage.map + ' -> ' + r.coverage.map);
+            ', ' + Object.keys(r.map).length + ' rules' +
+            (r.folded ? '; accent folded ' + r.folded.coverage.none + ' -> ' + r.folded.coverage.map + ', ' +
+                Object.keys(r.folded.map).length + ' rules, ' + Object.keys(r.accentFold).length + ' letters folded' : '') +
+            ' (' + ((Date.now() - started) / 1000).toFixed(1) + 's)');
+        var p = previous[name];
+        if (p && r.coverage.map < p.coverage.map - MAX_COVERAGE_DROP) {
+            dropped.push(name + ' ' + p.coverage.map + ' -> ' + r.coverage.map);
+        }
+        if (p && p.folded && r.folded && r.folded.coverage.map < p.folded.coverage.map - MAX_COVERAGE_DROP) {
+            dropped.push(name + ' (accent folded) ' + p.folded.coverage.map + ' -> ' + r.folded.coverage.map);
         }
     });
 
