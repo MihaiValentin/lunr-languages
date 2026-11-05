@@ -43,3 +43,7 @@ Should you decide to make mass-modifications (add stopwords, change stemming rul
 * `npm install` to install the dependencies needed for building
 * change the `build/*.template` files
 * run `node build/build.js` to generate the `lunr.<locale>.js` files (and the minified versions as well) and the `lunr.stemmer.support.js` file
+
+## Snowball
+
+`build/snowball/` holds the Snowball release lunr-languages is built from (stemmers, `base-stemmer.js`, its license and NEWS), so building needs no network. `npm run fetch-data` downloads it again from the pinned release (`build/fetch-snowball.js`: version and SHA-256) and caches Snowball's word lists in `build/cache/snowball-data/` (not committed). To update Snowball, change the pinned version and checksum, run it, and review the diff of `build/snowball/`.

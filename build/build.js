@@ -138,7 +138,20 @@ function germanWildcardNormalizerFunction(locale) {
     ].join('\n');
 }
 
-// list mapping between locale, stemmer file, stopwords file, and char pattern
+/*
+ * The configuration of every language. Everything else is driven by it: the build, and for Snowball
+ * languages also build/fetch-snowball.js and build/derive-fold-maps.js.
+ *
+ *   locale     the code in lunr.<locale>.js
+ *   snowball   Snowball's algorithm name: build/snowball/<snowball>-stemmer.js, its word list in
+ *              snowball-data and its wildcard map are fetched and derived for it
+ *   script     Unicode script of the word characters (unicode-8.0.0 package), for the trimmer and
+ *              for probing letters in the wildcard map derivation
+ *   file       the stemmer from the old snowball-js submodule that the build still uses
+ *   stopwords  the stop word list
+ *
+ * Languages without `file` are hand-written; the build only beautifies and minifies them.
+ */
 var list = [
     {
         locale: 'ar',
@@ -147,41 +160,48 @@ var list = [
     }, {
         locale: 'da',
         file: 'DanishStemmer.js',
+        snowball: 'danish',
         stopwords: stopwordsRepoFolder + 'da.csv',
-        wordCharacters: wordCharacters('Latin')
+        script: 'Latin'
     }, {
         locale: 'nl',
         file: 'DutchStemmer.js',
+        snowball: 'dutch',
         stopwords: stopwordsRepoFolder + 'nl.csv',
-        wordCharacters: wordCharacters('Latin')
+        script: 'Latin'
     }, {
         locale: 'fi',
         file: 'FinnishStemmer.js',
+        snowball: 'finnish',
         stopwords: stopwordsRepoFolder + 'fn.csv',
-        wordCharacters: wordCharacters('Latin')
+        script: 'Latin'
     }, {
         locale: 'fr',
         file: 'FrenchStemmer.js',
+        snowball: 'french',
         stopwords: stopwordsRepoFolder + 'fr.csv',
-        wordCharacters: wordCharacters('Latin'),
+        script: 'Latin',
         defaultAccentFolding: true,
         wildcardNormalizer: accentFoldWildcardNormalizerFunction
     }, {
         locale: 'de',
         file: 'GermanStemmer.js',
+        snowball: 'german',
         stopwords: stopwordsRepoFolder + 'de.csv',
-        wordCharacters: wordCharacters('Latin'),
+        script: 'Latin',
         wildcardNormalizer: germanWildcardNormalizerFunction
     }, {
         locale: 'hu',
         file: 'HungarianStemmer.js',
+        snowball: 'hungarian',
         stopwords: stopwordsRepoFolder + 'hu.csv',
-        wordCharacters: wordCharacters('Latin')
+        script: 'Latin'
     }, {
         locale: 'it',
         file: 'ItalianStemmer.js',
+        snowball: 'italian',
         stopwords: stopwordsRepoFolder + 'it.csv',
-        wordCharacters: wordCharacters('Latin')
+        script: 'Latin'
     }, {
         locale: 'ja'
     }, {
@@ -189,42 +209,49 @@ var list = [
     }, {
         locale: 'no',
         file: 'NorwegianStemmer.js',
+        snowball: 'norwegian',
         stopwords: stopwordsCustomFolder + 'no.csv',
-        wordCharacters: wordCharacters('Latin')
+        script: 'Latin'
     }, {
         locale: 'pt',
         file: 'PortugueseStemmer.js',
+        snowball: 'portuguese',
         stopwords: stopwordsRepoFolder + 'pt.csv',
-        wordCharacters: wordCharacters('Latin')
+        script: 'Latin'
     }, {
         locale: 'pl',
         file: 'PolishStemmer.js',
+        snowball: 'polish',
         stemmer: stemmersCustomFolder + 'PolishStemmer.js',
         stopwords: stopwordsCustomFolder + 'pl.csv',
-        wordCharacters: wordCharacters('Latin')
+        script: 'Latin'
     }, {
         locale: 'ro',
         file: 'RomanianStemmer.js',
+        snowball: 'romanian',
         stopwords: stopwordsCustomFolder + 'ro.csv',
-        wordCharacters: wordCharacters('Latin')
+        script: 'Latin'
     }, {
         locale: 'ru',
         file: 'RussianStemmer.js',
+        snowball: 'russian',
         stopwords: stopwordsCustomFolder + 'ru.csv',
-        wordCharacters: wordCharacters('Cyrillic')
+        script: 'Cyrillic'
     }, {
         locale: 'es',
         file: 'SpanishStemmer.js',
+        snowball: 'spanish',
         stopwords: stopwordsRepoFolder + 'es.csv',
-        wordCharacters: wordCharacters('Latin'),
+        script: 'Latin',
         accentFolding: true
     }, {
         locale: 'sa'
     }, {
         locale: 'sv',
         file: 'SwedishStemmer.js',
+        snowball: 'swedish',
         stopwords: stopwordsCustomFolder + 'sv.csv',
-        wordCharacters: wordCharacters('Latin')
+        script: 'Latin'
     }, {
         locale: 'ta',
     }, {
@@ -232,8 +259,9 @@ var list = [
     }, {
         locale: 'tr',
         file: 'TurkishStemmer.js',
+        snowball: 'turkish',
         stopwords: stopwordsCustomFolder + 'tr.csv',
-        wordCharacters: wordCharacters('Latin')
+        script: 'Latin'
     }, {
         locale: 'th',
     }, {
@@ -255,67 +283,83 @@ var list = [
     }
 ];
 
-console.log('Starting building lunr-languages ...');
-// read templates
-var tpl = fs.readFileSync('build/lunr.template', 'utf8');
-var cm = fs.readFileSync('build/lunr.comments', 'utf8');
+function build() {
+    console.log('Starting building lunr-languages ...');
+    // read templates
+    var tpl = fs.readFileSync('build/lunr.template', 'utf8');
+    var cm = fs.readFileSync('build/lunr.comments', 'utf8');
 
-// for each language, start building
-for (var i = 0; i < list.length; i++) {
-    console.log('Building for "' + list[i].locale + '"');
-    var data;
-    var stopWords;
-    var f;
-    var fromTemplate = list[i].file && list[i].stopwords;
+    // for each language, start building
+    for (var i = 0; i < list.length; i++) {
+        console.log('Building for "' + list[i].locale + '"');
+        var data;
+        var stopWords;
+        var f;
+        var fromTemplate = list[i].file && list[i].stopwords;
 
-    if (fromTemplate) {
-        data = fs.readFileSync('build/' + (list[i].stemmer || ('snowball-js/stemmer/src/ext/' + list[i].file)), 'utf8');
-        stopWords = fs.readFileSync('build/' + list[i].stopwords, 'utf8');
-        var languageExtras = [];
+        if (fromTemplate) {
+            data = fs.readFileSync('build/' + (list[i].stemmer || ('snowball-js/stemmer/src/ext/' + list[i].file)), 'utf8');
+            stopWords = fs.readFileSync('build/' + list[i].stopwords, 'utf8');
+            var languageExtras = [];
 
-        if (list[i].accentFolding) {
-            languageExtras.push(accentFoldFunction(list[i].locale));
+            if (list[i].accentFolding) {
+                languageExtras.push(accentFoldFunction(list[i].locale));
+            }
+
+            if (list[i].defaultAccentFolding) {
+                languageExtras.push(accentFoldTokenFunction(list[i].locale));
+            }
+
+            if (list[i].wildcardNormalizer) {
+                languageExtras.push(list[i].wildcardNormalizer(list[i].locale));
+            }
+
+            // start replacing the placeholders
+            f = tpl;
+            f = cm + f;
+            f = f.replace(/\{\{locale\}\}/g, list[i].locale);
+            f = f.replace(/\{\{stemmerFunction\}\}/g, data.substring(data.indexOf('function')));
+            f = f.replace(/\{\{stopWords\}\}/g, stopWords.split(',').sort().join(' '));
+            f = f.replace(/\{\{languageName\}\}/g, list[i].file.replace(/Stemmer\.js/g, ''));
+            f = f.replace(/\{\{wordCharacters\}\}/g, wordCharacters(list[i].script));
+            f = f.replace(/\{\{pipelineBeforeStemmer\}\}/g, list[i].defaultAccentFolding ? '\n                lunr.' + list[i].locale + '.accentFold,' : '');
+            f = f.replace(/\{\{languageExtras\}\}/g, languageExtras.join('\n'));
+        } else {
+            // beautify andminify languages not generated from the template.
+            f = fs.readFileSync('lunr.' + list[i].locale + '.js', 'utf8');
         }
 
-        if (list[i].defaultAccentFolding) {
-            languageExtras.push(accentFoldTokenFunction(list[i].locale));
-        }
-
-        if (list[i].wildcardNormalizer) {
-            languageExtras.push(list[i].wildcardNormalizer(list[i].locale));
-        }
-
-        // start replacing the placeholders
-        f = tpl;
-        f = cm + f;
-        f = f.replace(/\{\{locale\}\}/g, list[i].locale);
-        f = f.replace(/\{\{stemmerFunction\}\}/g, data.substring(data.indexOf('function')));
-        f = f.replace(/\{\{stopWords\}\}/g, stopWords.split(',').sort().join(' '));
-        f = f.replace(/\{\{languageName\}\}/g, list[i].file.replace(/Stemmer\.js/g, ''));
-        f = f.replace(/\{\{wordCharacters\}\}/g, list[i].wordCharacters);
-        f = f.replace(/\{\{pipelineBeforeStemmer\}\}/g, list[i].defaultAccentFolding ? '\n                lunr.' + list[i].locale + '.accentFold,' : '');
-        f = f.replace(/\{\{languageExtras\}\}/g, languageExtras.join('\n'));
-    } else {
-        // beautify andminify languages not generated from the template.
-        f = fs.readFileSync('lunr.' + list[i].locale + '.js', 'utf8');
+        // write the full file
+        fs.writeFileSync('lunr.' + list[i].locale + '.js', beautify(f, { indent_size: 2 }));
+        // and the minified version
+        fs.writeFileSync('min/lunr.' + list[i].locale + '.min.js',
+            fromTemplate ? cm.replace(/\{\{languageName\}\}/g, list[i].file.replace(/Stemmer\.js/g, '')) + compress(f) :
+                (list[i].licenseHeader ? licenseHeader(f) : '') + compress(f)
+        );
     }
 
-    // write the full file
-    fs.writeFileSync('lunr.' + list[i].locale + '.js', beautify(f, { indent_size: 2 }));
-    // and the minified version
-    fs.writeFileSync('min/lunr.' + list[i].locale + '.min.js',
-        fromTemplate ? cm.replace(/\{\{languageName\}\}/g, list[i].file.replace(/Stemmer\.js/g, '')) + compress(f) :
-            (list[i].licenseHeader ? licenseHeader(f) : '') + compress(f)
-    );
+    console.log('Building Stemmer Support');
+    // build stemmer support
+    var support = fs.readFileSync('lunr.stemmer.support.js', 'utf8');
+    fs.writeFileSync('min/lunr.stemmer.support.min.js', compress(support));
+    console.log('Building Multi-Language Extension');
+    // build multi
+    var multi = fs.readFileSync('lunr.multi.js', 'utf8');
+    fs.writeFileSync('min/lunr.multi.min.js', compress(multi));
+
+    console.log('Done!');
 }
 
-console.log('Building Stemmer Support');
-// build stemmer support
-var support = fs.readFileSync('lunr.stemmer.support.js', 'utf8');
-fs.writeFileSync('min/lunr.stemmer.support.min.js', compress(support));
-console.log('Building Multi-Language Extension');
-// build multi
-var multi = fs.readFileSync('lunr.multi.js', 'utf8');
-fs.writeFileSync('min/lunr.multi.min.js', compress(multi));
+module.exports = {
+    languages: list,
+    /* the Snowball languages of the list, i.e. those with `snowball` */
+    snowballLanguages: function() {
+        return list.filter(function(language) {
+            return language.snowball;
+        });
+    }
+};
 
-console.log('Done!');
+if (require.main === module) {
+    build();
+}
