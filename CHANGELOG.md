@@ -169,6 +169,7 @@
 - Segmented with `Intl.Segmenter` (ICU's Thai dictionary) by default. `lunr.th.js` no longer fails to load with a TypeError when `wordcut.js` was not attached first (#101).
 - wordcut is an optional plugin, `lunr.th.wordcut.js` (was `wordcut.js`), loaded before or after `lunr.th.js`. The two agree on 28 of 30 words of the Thai test documents (`Intl.Segmenter` splits `แผ่นดิน` into `แผ่น ดิน`).
 - Segments that are not words (spaces, punctuation) are dropped, and tokens carry position metadata like lunr's tokenizer, for highlighting.
+- `lunr.th.wordcut.js` bundles wordcut 0.9.1 (was 0.8.1 from 2016) built from npm, without the unused glob, minimatch and assert code: 512 KB instead of 677 KB. It segments the test texts like 0.8.1 and creates no globals. Its LGPL-3.0 license ships in `licenses/`.
 
 ### Turkish (tr)
 

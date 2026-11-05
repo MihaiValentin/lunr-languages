@@ -642,6 +642,14 @@ lunrVersions.forEach(function (lunrVersion) {
                 });
             });
 
+            it("should load wordcut's dictionary and create no globals", function () {
+                var lunr = load(['support', 'th', 'wordcut']);
+                // without its dictionary, wordcut splits สวัสดี (hello) into สวัส|ดี
+                assert.deepEqual(words(lunr, 'สวัสดีชาวบ้าน'), ['สวัสดี', 'ชาว', 'บ้าน']);
+                assert.equal('words' in globalThis, false);
+                assert.equal('defaultDict' in globalThis, false);
+            });
+
             it("should load lunr.th.wordcut.js twice without harm", function () {
                 var lunr = load(['support', 'wordcut', 'th', 'wordcut']);
                 assert.deepEqual(words(lunr, 'ฉันกินข้าว'), ['ฉัน', 'กิน', 'ข้าว']);

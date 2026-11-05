@@ -52,3 +52,7 @@ A language's stop words are named in its entry of the list in `build/build.js`: 
 ## CLDR
 
 The accent folding maps are derived from CLDR's Latin-ASCII transform, pinned in `build/fetch-cldr.js` (commit and SHA-256) and recorded in `build/cldr/VERSION`. `npm run fetch-data` fetches the Snowball data and CLDR into `build/cache/` (not committed) and derives `build/fold-maps.json`, the wildcard and accent fold maps the build reads; `npm run fetch-data -- --accept` lets a wildcard coverage drop pass after review. To update CLDR, change the pinned commit and checksum, run it, and review the diff of `build/fold-maps.json`.
+
+## wordcut
+
+`lunr.th.wordcut.js` is built from the npm package wordcut, pinned with its integrity in `build/build-wordcut.js`: `npm run build-wordcut` downloads it, wraps its `lib/*.js` modules unchanged with shims for `fs`, `path` and `glob` that serve the built-in dictionary, and writes its license to `licenses/`. To update wordcut, change the pinned version and integrity, run it, and run the Thai tests.

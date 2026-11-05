@@ -8,6 +8,7 @@
     "lunr.*.js",
     "min/lunr.*.min.js",
     "tinyseg.js",
+    "licenses",
     "types"
   ],
   "type": "commonjs",
@@ -82,6 +83,7 @@
   },
   "scripts": {
     "build": "node build/build.js",
+    "build-wordcut": "node build/build-wordcut.js",
     "derive-maps": "node build/derive-fold-maps.js",
     "fetch-cldr": "node build/fetch-cldr.js",
     "fetch-data": "node build/fetch-snowball.js && node build/fetch-cldr.js && node build/derive-fold-maps.js",
