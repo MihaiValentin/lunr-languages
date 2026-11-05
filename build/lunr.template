@@ -35,7 +35,7 @@
         }
 
         /* register specific locale function */
-        lunr.{{locale}} = function () {
+        lunr.{{locale}} = function () {{{useTokenizer}}
             this.pipeline.reset();
             this.pipeline.add(
                 lunr.{{locale}}.trimmer,
@@ -82,7 +82,7 @@
         })();
 
         lunr.Pipeline.registerFunction(lunr.{{locale}}.stemmer, 'stemmer-{{locale}}');
-{{accentFold}}{{wildcardNormalizer}}
+{{accentFold}}{{wildcardNormalizer}}{{specialCasing}}
 
         lunr.{{locale}}.stopWordFilter = lunr.generateStopWordFilter('{{stopWords}}'.split(' '));
 

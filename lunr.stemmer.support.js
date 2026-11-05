@@ -582,19 +582,59 @@
                 normalizer.fold = fold;
                 return normalizer;
             },
+            /*
+             * Letters a language lowercases unlike toLowerCase() (Turkish I -> ı, İ -> i), mapped before lunr
+             * lowercases them. Every key and value is one UTF-16 unit, so token positions stay valid.
+             */
+            generateSpecialCasing: function(map) {
+                var fold = this.generateFold(map);
+                var specialCasing = function(str) {
+                    return fold(str);
+                };
+                specialCasing.map = map;
+                return specialCasing;
+            },
+            /* lunr's tokenizer, after mapping the special casing in the text (strings, arrays of strings) */
+            generateSpecialCasingTokenizer: function(specialCasing) {
+                var defaultTokenizer = lunr.tokenizer;
+                var map = function(obj) {
+                    if (obj == null) {
+                        return obj;
+                    }
+                    if (Array.isArray(obj)) {
+                        return obj.map(function(t) {
+                            return t == null ? t : specialCasing(t.toString());
+                        });
+                    }
+                    return specialCasing(obj.toString());
+                };
+                return function(obj, metadata) {
+                    return defaultTokenizer(map(obj), metadata);
+                };
+            },
+            /* maps every query term (e.g. the special casing) before lunr lowercases it */
+            addQueryParserTermMapper: function(lunr, mapper) {
+                this.addQueryParserFunction('queryParserTermMappers', mapper);
+                this.applyQueryParserHook(lunr);
+            },
             addQueryParserWildcardNormalizer: function(lunr, normalizer) {
-                if (!this.queryParserWildcardNormalizers) {
-                    this.queryParserWildcardNormalizers = [];
+                this.addQueryParserFunction('queryParserWildcardNormalizers', normalizer);
+                this.applyQueryParserHook(lunr);
+            },
+            addQueryParserFunction: function(list, fn) {
+                if (!this[list]) {
+                    this[list] = [];
                 }
 
-                for (var i = 0; i < this.queryParserWildcardNormalizers.length; i++) {
-                    if (this.queryParserWildcardNormalizers[i].label === normalizer.label) {
+                for (var i = 0; i < this[list].length; i++) {
+                    if (this[list][i].label === fn.label) {
                         return;
                     }
                 }
 
-                this.queryParserWildcardNormalizers.push(normalizer);
-
+                this[list].push(fn);
+            },
+            applyQueryParserHook: function(lunr) {
                 if (this.queryParserWildcardNormalizerApplied) {
                     return;
                 }
@@ -619,16 +659,25 @@
                     parser.consumeLexeme = function() {
                         var lexeme = originalConsumeLexeme.call(parser);
 
-                        if (lexeme && lexeme.type === lunr.QueryLexer.TERM && lexeme.str.indexOf("*") !== -1) {
-                            return {
-                                type: lexeme.type,
-                                str: stemmerSupport.applyQueryParserWildcardNormalizers(lexeme.str, parser.query),
-                                start: lexeme.start,
-                                end: lexeme.end
-                            };
+                        if (!lexeme || lexeme.type !== lunr.QueryLexer.TERM) {
+                            return lexeme;
                         }
 
-                        return lexeme;
+                        var str = stemmerSupport.applyQueryParserTermMappers(lexeme.str, parser.query);
+                        if (str.indexOf("*") !== -1) {
+                            str = stemmerSupport.applyQueryParserWildcardNormalizers(str, parser.query);
+                        }
+
+                        if (str === lexeme.str) {
+                            return lexeme;
+                        }
+
+                        return {
+                            type: lexeme.type,
+                            str: str,
+                            start: lexeme.start,
+                            end: lexeme.end
+                        };
                     };
 
                     try {
@@ -640,16 +689,23 @@
 
                 this.queryParserWildcardNormalizerApplied = true;
             },
+            applyQueryParserTermMappers: function(term, query) {
+                return this.applyQueryParserFunctions(this.queryParserTermMappers, term, query);
+            },
             applyQueryParserWildcardNormalizers: function(term, query) {
-                var normalizers = this.queryParserWildcardNormalizers || [],
-                    pipeline = query && query._lunrLanguagesSearchPipeline;
+                return this.applyQueryParserFunctions(this.queryParserWildcardNormalizers, term, query);
+            },
+            /* applies the functions whose pipelineFunctionLabel is in the index's search pipeline */
+            applyQueryParserFunctions: function(fns, term, query) {
+                var pipeline = query && query._lunrLanguagesSearchPipeline;
 
-                for (var i = 0; i < normalizers.length; i++) {
-                    if (pipeline && !this.pipelineContainsFunction(pipeline, normalizers[i].pipelineFunctionLabel)) {
+                fns = fns || [];
+                for (var i = 0; i < fns.length; i++) {
+                    if (pipeline && !this.pipelineContainsFunction(pipeline, fns[i].pipelineFunctionLabel)) {
                         continue;
                     }
 
-                    term = normalizers[i](term, pipeline);
+                    term = fns[i](term, pipeline);
                 }
 
                 return term;

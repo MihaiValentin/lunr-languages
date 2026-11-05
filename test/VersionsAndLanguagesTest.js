@@ -518,6 +518,18 @@ lunrVersions.forEach(function (lunrVersion) {
             })
         })
 
+        describe("should map special casing before lunr lowercases", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            var casing = lunr.stemmerSupport.generateSpecialCasing({ 'I': '\u0131', '\u0130': 'i' });
+            var tokenizer = lunr.stemmerSupport.generateSpecialCasingTokenizer(casing);
+
+            it("should map the letters and keep the rest for lunr's lowercasing", function () {
+                assert.equal(casing('KIZ \u0130STANBUL'), 'K\u0131Z iSTANBUL');
+                assert.deepEqual(tokenizer('KIZ \u0130STANBUL').map(String), ['k\u0131z', 'istanbul']);
+            });
+        });
         describe("should fold Spanish accents by default", function () {
             delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
 

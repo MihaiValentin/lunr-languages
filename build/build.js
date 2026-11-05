@@ -171,6 +171,24 @@ function accentFoldFunction(language, wildcardMaps) {
     ].join('\n');
 }
 
+/*
+ * lunr.<locale>.specialCasing and lunr.<locale>.tokenizer: map letters that the language lowercases unlike
+ * toLowerCase() (Turkish I -> ı) before lunr lowercases them, in the indexed text and in query terms.
+ */
+function specialCasingFunction(language) {
+    var locale = language.locale;
+    return [
+        '',
+        '        /* special casing: letters this language lowercases unlike toLowerCase(), mapped before lunr lowercases */',
+        '        lunr.' + locale + '.specialCasing = lunr.stemmerSupport.generateSpecialCasing(' + jsMap(language.specialCasing, 8) + ');',
+        '        lunr.' + locale + '.specialCasing.label = "specialCasing-' + locale + '";',
+        '        lunr.' + locale + '.specialCasing.pipelineFunctionLabel = "stemmer-' + locale + '";',
+        '        lunr.' + locale + '.tokenizer = lunr.stemmerSupport.generateSpecialCasingTokenizer(lunr.' + locale + '.specialCasing);',
+        '        lunr.stemmerSupport.addQueryParserTermMapper(lunr, lunr.' + locale + '.specialCasing);',
+        ''
+    ].join('\n');
+}
+
 function indent(code, spaces) {
     var pad = new Array(spaces + 1).join(' ');
     return code.split('\n').map(function(line) {
@@ -210,6 +228,10 @@ function updateStemmerSupport(support, version) {
  *                  language's word list, without the letters in `keep`. With `default: true`,
  *                  lunr.<locale> puts it into the pipelines (users can remove it); with false, it is
  *                  opt-in. Only for languages whose users often type without diacritics.
+ *   specialCasing  { 'I': 'ı', … }: letters the language lowercases unlike toLowerCase(), mapped before
+ *                  lunr lowercases, in the indexed text (lunr.<locale>.tokenizer) and in query terms.
+ *                  Only for rules that matter for search (Turkish, Azerbaijani); not for Lithuanian,
+ *                  whose rules add a combining dot for display.
  *
  * Languages without `snowball` are hand-written; the build only beautifies and minifies them.
  */
@@ -374,7 +396,10 @@ function build() {
                 // with accentFold on by default, it runs right before the stemmer in both pipelines
                 pipelineBeforeStemmer: accentFold && accentFold.default ? '\n                lunr.' + list[i].locale + '.accentFold,' : '',
                 accentFold: accentFold ? accentFoldFunction(list[i], wildcardMaps) : '',
-                wildcardNormalizer: wildcardNormalizerFunction(list[i], wildcardMaps)
+                wildcardNormalizer: wildcardNormalizerFunction(list[i], wildcardMaps),
+                // with special casing, lunr.<locale> uses the tokenizer that maps it before lunr lowercases
+                useTokenizer: list[i].specialCasing ? '\n            this.tokenizer = lunr.' + list[i].locale + '.tokenizer;' : '',
+                specialCasing: list[i].specialCasing ? specialCasingFunction(list[i]) : ''
             };
             f = header + tpl.replace(/\{\{(\w+)\}\}/g, function(all, key) {
                 if (!Object.prototype.hasOwnProperty.call(values, key)) {
