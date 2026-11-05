@@ -13,7 +13,20 @@ var files = {
   lunr: source('test/lunr/lunr-2.3.5.js'),
   support: source('lunr.stemmer.support.js'),
   zh: source('lunr.zh.js'),
-  jieba: source('lunr.zh.jieba.js')
+  jieba: source('lunr.zh.jieba.js'),
+  wasm: source('lunr.zh.jieba-wasm.js')
+};
+
+// a stub of the jieba-wasm module; `calls` counts with_dict()
+var jiebaWasm = function (calls, notInitialized) {
+  return {
+    with_dict: function (dict) { calls.withDict = (calls.withDict || 0) + 1; calls.dict = dict; },
+    cut: function (str, hmm) {
+      if (notInitialized) throw new Error('wasm is undefined');
+      assert.equal(hmm, true);
+      return str === '中华人民' ? ['中华', '人民'] : (str ? [str] : []);
+    }
+  };
 };
 
 function createIntl(segments) {
@@ -48,10 +61,13 @@ function load(options, steps) {
   sandbox.lunr = lunr;
   steps.forEach(function (step) {
     if (options.browser) {
-      // a <script> tag: the file applies itself to window.lunr
+      // a <script> tag: the file applies itself to window.lunr (jieba-wasm: called with the module)
       delete sandbox.module;
       delete sandbox.exports;
       vm.runInContext(files[step[0]], context);
+      if (step[0] === 'wasm') {
+        sandbox.lunrZhJiebaWasm.apply(null, [lunr].concat(step.slice(1)));
+      }
     } else {
       run(files[step[0]]).apply(null, [lunr].concat(step.slice(1)));
     }
@@ -157,6 +173,59 @@ describe('Chinese tokenizer selection', function () {
     assert.throws(function () {
       load({ intl: bigramIntl, require: jiebaV1({}) }, [['support'], ['zh', 'custom-dict']]);
     }, /lunr-languages\/lunr\.zh\.jieba/);
+  });
+
+  it('loads a custom dictionary once, not on every tokenization (PR #82)', function () {
+    var native = 0, wasmCalls = {};
+    var require = function (name) {
+      if (name === 'jieba-wasm') return jiebaWasm(wasmCalls);
+      return {
+        loadDict: function () { native++; },
+        cut: function (str) { return [str]; }
+      };
+    };
+    var nativeLunr = load({ intl: bigramIntl, require: require }, [['support'], ['zh'], ['jieba', 'custom-dict']]);
+    var wasmLunr = load({ intl: bigramIntl, require: require }, [['support'], ['zh'], ['wasm', 'custom-dict']]);
+    for (var i = 0; i < 5; i++) {
+      words(nativeLunr, '中华人民');
+      words(wasmLunr, '中华人民');
+    }
+    assert.equal(native, 1);
+    assert.equal(wasmCalls.withDict, 1);
+    assert.equal(wasmCalls.dict, 'custom-dict');
+  });
+
+  it('uses jieba-wasm in Node when lunr.zh.jieba-wasm.js is loaded, before or after lunr.zh.js', function () {
+    [[['wasm'], ['support'], ['zh']], [['support'], ['zh'], ['wasm']]].forEach(function (steps) {
+      var lunr = load({ intl: bigramIntl, require: function (name) {
+        assert.equal(name, 'jieba-wasm');
+        return jiebaWasm({});
+      } }, steps);
+      assert.equal(lunr.zh.tokenizer.segmenter(), 'jieba-wasm');
+      assert.deepEqual(words(lunr, '中华人民'), ['中华', '人民']);
+      assert.deepEqual(lunr.zh.tokenizer('中华人民').map(function (t) { return t.metadata.position; }), [[0, 2], [2, 2]]);
+    });
+  });
+
+  it('uses jieba-wasm in browsers with the initialized module passed in', function () {
+    var lunr = load({ intl: bigramIntl, browser: true }, [['support'], ['zh'], ['wasm', undefined, jiebaWasm({})]]);
+    assert.equal(lunr.zh.tokenizer.segmenter(), 'jieba-wasm');
+    assert.deepEqual(words(lunr, '中华人民'), ['中华', '人民']);
+  });
+
+  it('fails clearly with jieba-wasm in a browser without the module, or not initialized', function () {
+    assert.throws(function () {
+      load({ intl: bigramIntl, browser: true }, [['support'], ['zh'], ['wasm']]);
+    }, /pass the initialized jieba-wasm module/);
+    assert.throws(function () {
+      load({ intl: bigramIntl, browser: true }, [['support'], ['zh'], ['wasm', undefined, jiebaWasm({}, true)]]);
+    }, /jieba-wasm is not initialized/);
+  });
+
+  it('fails clearly when lunr.zh.jieba-wasm.js is loaded in Node without jieba-wasm', function () {
+    assert.throws(function () {
+      load({ intl: bigramIntl, require: function () { throw new Error('Cannot find module'); } }, [['support'], ['zh'], ['wasm']]);
+    }, /needs jieba-wasm: npm install jieba-wasm/);
   });
 
   it('throws when tokenizing without Intl.Segmenter and jieba', function () {

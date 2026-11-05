@@ -33,10 +33,14 @@
   },
   "peerDependencies": {
     "@node-rs/jieba": "^1.0.0 || ^2.0.0",
+    "jieba-wasm": "^2.0.0",
     "lunr": "^2.0.0"
   },
   "peerDependenciesMeta": {
     "@node-rs/jieba": {
+      "optional": true
+    },
+    "jieba-wasm": {
       "optional": true
     }
   },

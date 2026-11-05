@@ -53,7 +53,7 @@ Originally built for classic search, it is now widely used as a **lightweight re
 
 ---
 
-<sup>1</sup> Chinese tokenization uses `Intl.Segmenter` with CJK bigrams by default, which works in modern browsers and Node.js without native dependencies. In Node.js, `lunr.zh.jieba.js` switches to jieba; see [Chinese Tokenization](#chinese-tokenization).
+<sup>1</sup> Chinese tokenization uses `Intl.Segmenter` with CJK bigrams by default, which works in modern browsers and Node.js without native dependencies. jieba is optional; see [Chinese Tokenization](#chinese-tokenization).
 
 <sup>2</sup> Matches queries typed without accents by default, such as `respiracion` matching `Respiración`; see [Accent folding](#accent-folding).
 
@@ -306,17 +306,34 @@ Search strings are segmented like the indexed text for Japanese, Chinese and Tha
 
 Chinese is written without spaces between words, so `lunr.zh` segments it into words with `Intl.Segmenter`, plus a bigram for each pair of Chinese characters. It works in modern browsers and Node.js without native dependencies. Bigrams improve recall for common two-character search terms such as `车主` and `学姐`.
 
-To use jieba instead, which generally gives better precision and ranking, install `@node-rs/jieba` (a native package, Node.js only) and load `lunr.zh.jieba.js`, before or after `lunr.zh.js`. It takes an optional custom dictionary:
+To use jieba instead, which generally gives better precision and ranking, load one of its two builds, before or after `lunr.zh.js`. Both take an optional custom dictionary, which is loaded once:
 
-```bash
-npm install @node-rs/jieba
-```
+* `lunr.zh.jieba.js` with `@node-rs/jieba`, a native add-on: fast, Node.js only.
 
-```javascript
-require('lunr-languages/lunr.zh.jieba')(lunr);              // or (lunr, customDictionary)
-```
+  ```bash
+  npm install @node-rs/jieba
+  ```
 
-Installing `@node-rs/jieba` alone changes nothing; loading `lunr.zh.jieba.js` without it, or in a browser, throws an error. Without `Intl.Segmenter` and jieba, tokenizing Chinese throws an error. An index built with jieba must also be searched with jieba, so search it in Node.js, not in a browser.
+  ```javascript
+  require('lunr-languages/lunr.zh.jieba')(lunr);              // or (lunr, customDictionary)
+  ```
+
+* `lunr.zh.jieba-wasm.js` with `jieba-wasm`, the same jieba compiled to WebAssembly: Node.js and browsers, about ten times slower, a 2.7 MB (gzipped) download in browsers.
+
+  ```bash
+  npm install jieba-wasm
+  ```
+
+  ```javascript
+  require('lunr-languages/lunr.zh.jieba-wasm')(lunr);         // Node.js: loads jieba-wasm itself
+
+  // browsers: initialize jieba-wasm first, then pass it in
+  import init, * as jieba from 'jieba-wasm';
+  await init();
+  lunrZhJiebaWasm(lunr, undefined, jieba);                    // or (lunr, customDictionary, jieba)
+  ```
+
+Both segment the same way, so an index built with `lunr.zh.jieba.js` in Node.js can be searched with `lunr.zh.jieba-wasm.js` in a browser. Installing a jieba package alone changes nothing; loading a jieba file without its package throws an error. Without `Intl.Segmenter` and jieba, tokenizing Chinese throws an error. Build and search an index with the same segmenter: jieba (either build) or `Intl.Segmenter`.
 
 ---
 

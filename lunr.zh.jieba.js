@@ -2,8 +2,10 @@
  * Lunr languages, Chinese word segmentation with jieba
  * https://github.com/MihaiValentin/lunr-languages
  *
- * Uses @node-rs/jieba (v1 or v2), a native Node.js package that has to be installed separately. Optional:
- * lunr.zh segments with Intl.Segmenter plus CJK bigrams unless this file is loaded.
+ * Uses @node-rs/jieba (v1 or v2, https://github.com/napi-rs/node-rs, MIT), jieba-rs as a native Node.js add-on,
+ * which has to be installed separately. lunr.zh.jieba-wasm.js uses the same jieba-rs compiled to WebAssembly,
+ * which also runs in browsers. Optional: lunr.zh segments with Intl.Segmenter plus CJK bigrams unless a jieba
+ * file is loaded.
  */
 
 /**
@@ -70,8 +72,9 @@
 
   /*
    * Registers jieba as the segmenter of lunr.zh, in any order with lunr.zh.js (lunr.zh uses it from its next
-   * tokenization on). `customDict` is a jieba dictionary added to the default one. Loading it again replaces
-   * the registration, with the dictionary given then.
+   * tokenization on). `customDict` is a jieba dictionary added to the default one, once, here (not on every
+   * tokenization, which made indexing slow in 1.x). Loading it again replaces the registration, with the
+   * dictionary given then.
    */
   return function(lunr, customDict) {
     var jieba = createJieba(load('@node-rs/jieba'), customDict)

@@ -29,6 +29,8 @@
 - A search string written without spaces is segmented like the index, so a phrase finds the documents that contain its words (see Japanese).
 - Segmented with `Intl.Segmenter` plus a bigram for each pair of Chinese characters by default, in Node.js too. 1.x used `@node-rs/jieba` whenever it could be required, so segmentation changed with whatever was in `node_modules`, possibly as a transitive dependency.
 - jieba is an optional plugin, `lunr.zh.jieba.js`, loaded before or after `lunr.zh.js`, with an optional custom dictionary. Without `@node-rs/jieba`, or in a browser, it throws instead of falling back. `@node-rs/jieba` is an optional peer dependency.
+- `lunr.zh.jieba-wasm.js` registers jieba-wasm (jieba-rs compiled to WebAssembly) as a second jieba segmenter, also in browsers, where the initialized module is passed in: `lunrZhJiebaWasm(lunr, customDict, jieba)`. It segments like `@node-rs/jieba` (6 of 6 test queries gave the same results), so an index built with jieba in Node.js can be searched in a browser. jieba-wasm is an optional peer dependency.
+- A custom jieba dictionary is loaded once, when the plugin is called, not on every tokenization, which made indexing with a custom dictionary use 100% CPU (#82).
 
 ### Danish (da)
 
