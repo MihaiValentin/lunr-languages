@@ -1,3 +1,11 @@
+/*!
+ * Lunr languages, Japanese word segmentation with TinySegmenter
+ * https://github.com/MihaiValentin/lunr-languages
+ *
+ * TinySegmenter 0.1, (c) 2008 Taku Kudo, new BSD licence (see below). Optional: lunr.ja segments with
+ * Intl.Segmenter unless this file is loaded.
+ */
+
 /**
  * export the module via AMD, CommonJS or as a browser global
  * Export code from https://github.com/umdjs/umd/blob/master/returnExports.js
@@ -200,7 +208,31 @@
           return result;
         }
 
-        lunr.TinySegmenter = TinySegmenter;
+        /*
+         * Registers TinySegmenter as the segmenter of lunr.ja, in any order with lunr.ja.js (lunr.ja uses it
+         * from its next tokenization on). Loading it twice registers it once.
+         */
+        var tinySegmenter = new TinySegmenter();
+        lunr.segmenters = lunr.segmenters || {};
+        lunr.segmenters.ja = {
+            name: 'TinySegmenter',
+            // the words of a string with their offsets: each run without whitespace, segmented
+            segment: function(str) {
+                var words = [];
+                var run = /\S+/g;
+                var match;
+                while ((match = run.exec(str))) {
+                    var offset = match.index;
+                    tinySegmenter.segment(match[0]).forEach(function(word) {
+                        if (word) {
+                            words.push({ word: word, index: offset });
+                            offset += word.length;
+                        }
+                    });
+                }
+                return words;
+            }
+        };
     };
 
 }));

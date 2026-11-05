@@ -73,89 +73,16 @@
       // change the tokenizer for japanese one
       this.tokenizer = lunr.ja.tokenizer;
     };
-    var segmenter = new lunr.TinySegmenter(); // インスタンス生成
-
-    // the caller's metadata (lunr 2.3 passes the field) plus the token's own
-    var withMetadata = function(metadata, extra) {
-      var copy = {};
-      for (var key in metadata) {
-        copy[key] = metadata[key];
-      }
-      for (var key2 in extra) {
-        copy[key2] = extra[key2];
-      }
-      return copy;
-    };
-
-    lunr.ja.tokenizer = function(obj, metadata) {
-      var i;
-      var str;
-      var len;
-      var segs;
-      var tokens;
-      var char;
-      var sliceLength;
-      var sliceStart;
-      var sliceEnd;
-      var segStart;
-      var lead;
-
-      if (!arguments.length || obj == null || obj == undefined)
-        return [];
-
-      if (Array.isArray(obj)) {
-        return obj.map(
-          function(t) {
-            return new lunr.Token(t.toLowerCase(), withMetadata(metadata, {}));
-          }
-        );
-      }
-
-      str = obj.toString().toLowerCase();
-      // positions count from the start of the text, so the whitespace cut off here is added back
-      lead = str.length - str.replace(/^\s+/, '').length;
-      str = str.slice(lead);
-      for (i = str.length - 1; i >= 0; i--) {
-        if (/\S/.test(str.charAt(i))) {
-          str = str.substring(0, i + 1);
-          break;
-        }
-      }
-
-      tokens = [];
-      len = str.length;
-      for (sliceEnd = 0, sliceStart = 0; sliceEnd <= len; sliceEnd++) {
-        char = str.charAt(sliceEnd);
-        sliceLength = sliceEnd - sliceStart;
-
-        if ((char.match(/\s/) || sliceEnd == len)) {
-          if (sliceLength > 0) {
-            segs = segmenter.segment(str.slice(sliceStart, sliceEnd)).filter(
-              function(token) {
-                return !!token;
-              }
-            );
-
-            segStart = sliceStart;
-            for (i = 0; i < segs.length; i++) {
-              tokens.push(
-                new lunr.Token(
-                  segs[i], withMetadata(metadata, {
-                    position: [lead + segStart, segs[i].length],
-                    index: tokens.length
-                  })
-                )
-              );
-              segStart += segs[i].length;
-            }
-          }
-
-          sliceStart = sliceEnd + 1;
-        }
-      }
-
-      return tokens;
-    }
+    /*
+     * Japanese is written without spaces between words: segmented with Intl.Segmenter (ICU's dictionary),
+     * or with TinySegmenter when lunr.ja.tinyseg.js is loaded (before or after this file). Without both,
+     * tokenizing throws.
+     */
+    lunr.ja.tokenizer = lunr.stemmerSupport.generateSegmentingTokenizer('ja', {
+      intlLocale: 'ja',
+      missing: 'Japanese tokenization needs Intl.Segmenter or lunr.ja.tinyseg.js. In runtimes without ' +
+        'Intl.Segmenter, load lunr.ja.tinyseg.js.'
+    });
 
     /* lunr stemmer function */
     lunr.ja.stemmer = (function() {

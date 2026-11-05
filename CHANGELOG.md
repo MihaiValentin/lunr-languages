@@ -94,6 +94,8 @@
 - Searches no longer go through lunr's English stemmer: a Latin word in a Japanese index (`running`) is found by itself again.
 - A search string written without spaces is segmented like the index, so a phrase finds the documents that contain its words: `日本語の本` was one term in 1.x and found nothing. Modifiers apply to each word (`+title:日本語の本`); wildcard terms stay whole.
 - Token positions are right with leading whitespace (they were too small, so highlighting marked the wrong characters), and the tokenizer keeps the metadata lunr passes (the field).
+- Segmented with `Intl.Segmenter` (ICU's dictionary) by default. `lunr.ja.js` no longer fails to load with a TypeError when `tinyseg.js` was not loaded first.
+- TinySegmenter is an optional plugin, `lunr.ja.tinyseg.js` (was `tinyseg.js`), loaded before or after `lunr.ja.js`. The two segment differently in places: TinySegmenter keeps verb forms together (`食べたい` → `食べ|たい`, `Intl.Segmenter`: `食|べた|い`), `Intl.Segmenter` knows dictionary words (`すもも`).
 
 ### Kannada (kn)
 

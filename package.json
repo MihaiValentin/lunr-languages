@@ -7,7 +7,6 @@
   "files": [
     "lunr.*.js",
     "min/lunr.*.min.js",
-    "tinyseg.js",
     "licenses",
     "types"
   ],
@@ -25,12 +24,6 @@
         "types/plugin.d.ts"
       ],
       "min/lunr.*.min": [
-        "types/plugin.d.ts"
-      ],
-      "tinyseg.js": [
-        "types/plugin.d.ts"
-      ],
-      "tinyseg": [
         "types/plugin.d.ts"
       ]
     }
@@ -66,18 +59,6 @@
       "import": "./min/lunr.*.min.js",
       "require": "./min/lunr.*.min.js",
       "default": "./min/lunr.*.min.js"
-    },
-    "./tinyseg.js": {
-      "types": "./types/plugin.d.ts",
-      "import": "./tinyseg.js",
-      "require": "./tinyseg.js",
-      "default": "./tinyseg.js"
-    },
-    "./tinyseg": {
-      "types": "./types/plugin.d.ts",
-      "import": "./tinyseg.js",
-      "require": "./tinyseg.js",
-      "default": "./tinyseg.js"
     },
     "./*": "./*"
   },

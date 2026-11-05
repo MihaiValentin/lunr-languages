@@ -221,6 +221,7 @@ An index built with lunr's built-in English must be rebuilt for `lunr.en`. In `l
 * `lunr.stemmerSupport.Among` and `SnowballProgram` are removed. A third-party stemmer built on them has to extend `lunr.stemmerSupport.BaseStemmer` (Snowball 3.x) instead.
 * Greek: `lunr.el.normilizer` is replaced by `lunr.el.normalizer`, which is in the pipeline now.
 * Thai: `wordcut.js` is now the optional plugin `lunr.th.wordcut.js`; without it, Thai is segmented with `Intl.Segmenter`. Before: `lunr.wordcut = require('lunr-languages/wordcut')`, now: `require('lunr-languages/lunr.th.wordcut')(lunr)`. Rebuild Thai indexes with the segmenter you search with.
+* Japanese: `tinyseg.js` is now the optional plugin `lunr.ja.tinyseg.js` and registers TinySegmenter as `lunr.segmenters.ja` instead of setting `lunr.TinySegmenter`; without it, Japanese is segmented with `Intl.Segmenter`. Before: `require('lunr-languages/tinyseg')(lunr)`, now: `require('lunr-languages/lunr.ja.tinyseg')(lunr)`. Rebuild Japanese indexes with the segmenter you search with.
 * `du` is removed: use `nl` (`lunr-languages/lunr.nl`) for Dutch.
 * `jp` is removed: use `ja` (`lunr-languages/lunr.ja`) for Japanese. Its pipeline labels were `stemmer-jp`, `trimmer-jp` and `stopWordFilter-jp`; indexes saved with them must be rebuilt with `ja`.
 
@@ -259,6 +260,24 @@ var term = lunr.stemmerSupport.normalizeQueryTerm('Käs*', idx); // 'kas*'
 ```
 
 `addQueryTerms` takes plain text, without query syntax (`+`, `-`, `field:`, `~`, `^`). Words with `*` are wildcard terms and skip the search pipeline; stop words the index dropped are left out, so required words still match.
+
+---
+
+## Japanese Tokenization
+
+Japanese is written without spaces between words, so `lunr.ja` segments it into words with `Intl.Segmenter` (Node.js 16+, Chrome/Edge 87+, Safari 14.1+, Firefox 125+), using ICU's dictionary.
+
+To use TinySegmenter instead, a small trained segmenter that keeps verb forms together better (`食べたい` → `食べ|たい`, where `Intl.Segmenter` gives `食|べた|い`), or in runtimes without `Intl.Segmenter`, load `lunr.ja.tinyseg.js`, before or after `lunr.ja.js`:
+
+```javascript
+require('lunr-languages/lunr.ja.tinyseg')(lunr);
+```
+
+```html
+<script src="lunr.ja.tinyseg.js"></script>
+```
+
+Without either, tokenizing Japanese throws an error. Build and search an index with the same segmenter.
 
 ---
 

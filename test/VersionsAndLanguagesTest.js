@@ -491,9 +491,6 @@ lunrVersions.forEach(function (lunrVersion) {
 
                 var lunr = require('./lunr/' + lunrVersion.lunr);
                 require('../lunr.stemmer.support.js')(lunr);
-                if (language === 'ja') {    // for japanese, we must also load the tinyseg tokenizer
-                    require('../tinyseg')(lunr);
-                }
                 require('../lunr.' + language + '.js')(lunr);
 
                 var idx = lunr(function () {
@@ -523,9 +520,6 @@ lunrVersions.forEach(function (lunrVersion) {
 
                 var lunr = require('./lunr/' + lunrVersion.lunr);
                 require('../lunr.stemmer.support.js')(lunr);
-                if (language === 'ja') {
-                    require('../tinyseg')(lunr);
-                }
                 require('../lunr.' + language + '.js')(lunr);
 
                 var idx = lunr(function () {
@@ -546,7 +540,6 @@ lunrVersions.forEach(function (lunrVersion) {
 
             var lunr = require('./lunr/' + lunrVersion.lunr);
             require('../lunr.stemmer.support.js')(lunr);
-            require('../tinyseg')(lunr);
             require('../lunr.ja.js')(lunr);
             require('../lunr.zh.js')(lunr);
             require('../lunr.th.js')(lunr);
@@ -600,6 +593,56 @@ lunrVersions.forEach(function (lunrVersion) {
             it("should segment in multi-language indexes", function () {
                 var idxMulti = build(lunr.multiLanguage('en', 'ja'), [{ id: 1, title: 'book 日本語の本', body: '' }]);
                 assert.equal(idxMulti.search('日本語の本').length, 1);
+            });
+        });
+
+        describe("should segment Japanese with Intl.Segmenter, or TinySegmenter when it is loaded", function () {
+            var load = function (order) {
+                delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+                var lunr = require('./lunr/' + lunrVersion.lunr);
+                order.forEach(function (name) {
+                    var file = { support: '../lunr.stemmer.support.js', ja: '../lunr.ja.js', tinyseg: '../lunr.ja.tinyseg.js' }[name];
+                    delete require.cache[require.resolve(file)];
+                    require(file)(lunr);
+                });
+                return lunr;
+            };
+            var words = function (lunr, text) {
+                return lunr.ja.tokenizer(text).map(function (t) { return t.toString(); });
+            };
+
+            it("should use Intl.Segmenter by default", function () {
+                var lunr = load(['support', 'ja']);
+                assert.equal(lunr.ja.tokenizer.segmenter(), 'Intl.Segmenter');
+                assert.deepEqual(words(lunr, '日本語の本'), ['日本語', 'の', '本']);
+            });
+
+            it("should use TinySegmenter when lunr.ja.tinyseg.js is loaded, before or after lunr.ja.js", function () {
+                [['tinyseg', 'support', 'ja'], ['support', 'ja', 'tinyseg'], ['support', 'tinyseg', 'ja', 'tinyseg']].forEach(function (order) {
+                    var lunr = load(order);
+                    assert.equal(lunr.ja.tokenizer.segmenter(), 'TinySegmenter');
+                    // TinySegmenter keeps the verb 食べ together, Intl.Segmenter splits it (食|べた|い)
+                    assert.deepEqual(words(lunr, 'ラーメンが食べたい'), ['ラーメン', 'が', '食べ', 'たい']);
+                });
+            });
+
+            it("should fail with a clear error when tokenizing without both", function () {
+                var lunr = load(['support', 'ja']);
+                var original = Intl.Segmenter;
+                Intl.Segmenter = undefined;
+                try {
+                    assert.throws(function () { words(lunr, '日本語'); }, /Intl\.Segmenter or lunr\.ja\.tinyseg\.js/);
+                } finally {
+                    Intl.Segmenter = original;
+                }
+            });
+
+            it("should count token positions from the start of the text with both segmenters", function () {
+                [load(['support', 'ja']), load(['support', 'ja', 'tinyseg'])].forEach(function (lunr) {
+                    var tokens = lunr.ja.tokenizer('  日本語の本', { fields: ['title'] });
+                    assert.deepEqual(tokens.map(function (t) { return t.metadata.position; }), [[2, 3], [5, 1], [6, 1]]);
+                    assert.deepEqual(tokens[0].metadata.fields, ['title']);
+                });
             });
         });
 
@@ -715,7 +758,6 @@ lunrVersions.forEach(function (lunrVersion) {
 
             var lunr = require('./lunr/' + lunrVersion.lunr);
             require('../lunr.stemmer.support.js')(lunr);
-            require('../tinyseg')(lunr);
             require('../lunr.ja.js')(lunr);
             require('../lunr.tr.js')(lunr);
             require('../lunr.de.js')(lunr);
@@ -811,7 +853,6 @@ lunrVersions.forEach(function (lunrVersion) {
 
             var lunr = require('./lunr/' + lunrVersion.lunr);
             require('../lunr.stemmer.support.js')(lunr);
-            require('../tinyseg')(lunr);
             require('../lunr.ja.js')(lunr);
             require('../lunr.tr.js')(lunr);
             require('../lunr.de.js')(lunr);
@@ -1020,9 +1061,6 @@ describe("should write the stop words of every language in Unicode NFC", functio
 
             var lunr = require('./lunr/lunr-2.3.5');
             require('../lunr.stemmer.support.js')(lunr);
-            if (language === 'ja' || language === 'jp') {
-                require('../tinyseg')(lunr);
-            }
 
             // collect every stop word list the language hands to Lunr
             var stopWords = [];
@@ -1031,9 +1069,6 @@ describe("should write the stop words of every language in Unicode NFC", functio
                 stopWords = stopWords.concat(words);
                 return generateStopWordFilter.apply(this, arguments);
             };
-            if (language === 'jp') {
-                require('../lunr.ja.js')(lunr);
-            }
             require('../lunr.' + language + '.js')(lunr);
             lunr.generateStopWordFilter = generateStopWordFilter;
 
