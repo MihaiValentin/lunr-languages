@@ -411,7 +411,9 @@ lunrVersions.forEach(function (lunrVersion) {
 
             it("should not accent fold wildcard terms", function () {
                 assert.equal(idx.search('rivi*').length, 1)
-                assert.equal(idx.search('rivière*').length, 0)
+                // the full word with a wildcard is stemmed to rivi*, the accent-free one is not folded
+                assert.equal(idx.search('rivière*').length, 1)
+                assert.equal(idx.search('riviere*').length, 0)
             });
 
             it("should still accent fold wildcard terms in an index that has accent folding", function () {

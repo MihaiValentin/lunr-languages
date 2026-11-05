@@ -184,6 +184,10 @@ var idx = lunr(function () {
 idx.search(query.normalize('NFC'));
 ```
 
+### Wildcards
+
+Wildcard terms are folded and stemmed like the indexed words, so `häuser*` finds `Häuser`. Leading wildcards (`*ung`) don't find inflected words, because the index holds stems.
+
 ### English
 
 Lunr has English built in (Porter stemmer from 1980). `lunr.en` is an opt-in alternative:

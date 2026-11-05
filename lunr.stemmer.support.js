@@ -598,6 +598,12 @@
              * the map derived for accent-free words; that index contains the stems of both forms.
              * With `normalize` (a language's normalizer, see generateNormalizer), the term is normalized
              * first, as the index was before stemming.
+             *
+             * The index holds stems, so a prefix longer than its stem finds nothing (ελλάδα* misses Ελλάδα,
+             * stem ελλαδ). For a term `prefix*`, the prefix is therefore also run through the index's search
+             * pipeline, and a folded stem is used instead if it is a prefix of the folded term: the term only
+             * gets shorter, so it finds everything it found before, plus the words whose stem is shorter
+             * than what was typed (häuser* -> haus*).
              * `.fold` is the raw fold of `map`, which the derivation uses too.
              */
             generateWildcardNormalizer: function(map, accent, normalize) {
@@ -606,13 +612,28 @@
                 var accentFold = accent && this.generateFold(accent.accentFold);
                 var foldedFold = accent && this.generateFold(accent.map);
 
-                var normalizer = function(term, pipeline) {
-                    var lower = term.toLowerCase();
+                var foldTerm = function(lower, pipeline) {
                     if (normalize) {
                         lower = normalize.normalize(lower);
                     }
-                    var folded = accent && pipeline && stemmerSupport.pipelineContainsFunction(pipeline, accent.label) ?
+                    return accent && pipeline && stemmerSupport.pipelineContainsFunction(pipeline, accent.label) ?
                         foldedFold(accentFold(lower)) : fold(lower);
+                };
+
+                var normalizer = function(term, pipeline) {
+                    var lower = term.toLowerCase();
+                    var folded = foldTerm(lower, pipeline);
+                    var prefix = /^([^*]+)\*$/.exec(lower);
+                    if (prefix && pipeline && pipeline.run && /^[^*]+\*$/.test(folded)) {
+                        var best = folded.slice(0, -1);
+                        pipeline.run([new lunr.Token(prefix[1])]).forEach(function(token) {
+                            var stem = foldTerm(token.toString(), pipeline);
+                            if (stem && stem.length < best.length && best.indexOf(stem) === 0) {
+                                best = stem;
+                            }
+                        });
+                        folded = best + '*';
+                    }
                     return folded.replace(/\*/g, '') === '' ? term : folded;
                 };
                 normalizer.fold = fold;

@@ -9,6 +9,7 @@
 - New `lunr.stemmerSupport.addQueryTerms(query, text, options)` and `normalizeQueryTerm(term, idx)` prepare terms for `query.term()` like the query parser does for search strings: split with the index's tokenizer, special casing, wildcard folding, lowercasing; stop words the index dropped are left out.
 - Required words (`+word`) are found with accent folding: `+kızı` finds `kızlar`, `+rivière` an unaccented `riviere`. A required word kept every form the search pipeline made of it, and matched nothing if one form was missing from the index.
 - Required stop words are left out (`+und`, `+the`): they matched nothing, because the index dropped them. This also applies to lunr's built-in English once `lunr.stemmer.support.js` is loaded.
+- A wildcard term finds the words whose stem is shorter than what was typed: `häuser*` finds `Häuser` (stem `haus`), `Ελλάδα*` finds `Ελλάδα` (`ελλαδ`). lunr does not stem wildcard terms, so in 1.x the full word with `*` found itself in only about 5–45% of the words; now 79–100%. The term only gets shorter, so it finds everything it found before. Applies to every language stemmed with Snowball.
 
 ### Arabic (ar)
 

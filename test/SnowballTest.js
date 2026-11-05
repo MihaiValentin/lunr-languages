@@ -99,7 +99,18 @@ describe("Wildcard searches", function () {
         ['fa', 'كتاب‌ها', ['کتا*', 'كتا*']]
     ];
 
-    cases.forEach(function (c) {
+    // the full word with a wildcard, longer than its stem (the prefix is stemmed too)
+    var fullWords = [
+        ['de', 'Häuser', ['häuser*', 'Häuser*']],
+        ['fr', 'élèves', ['élèves*', 'eleves*']],
+        ['ru', 'кошками', ['кошками*', 'кошка*']],
+        ['el', 'Ελλάδας', ['Ελλάδας*']], // Ελλάδας
+        ['en', 'generously', ['generously*', 'generous*']],
+        ['tr', 'KIZLARIN', ['KIZLARIN*', 'kızların*']],
+        ['hu', 'házakban', ['házakban*', 'hazakban*']]
+    ];
+
+    cases.concat(fullWords).forEach(function (c) {
         var locale = c[0], word = c[1];
         c[2].forEach(function (query) {
             it("should find " + locale + " '" + word + "' with '" + query + "'", function () {
