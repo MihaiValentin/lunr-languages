@@ -37,7 +37,7 @@ Originally built for classic search, it is now widely used as a **lightweight re
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/TH.png) Thai
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IQ.png) Arabic
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/CN.png) Chinese<sup>1</sup>
-* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/VN.png) Vietnamese
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/VN.png) Vietnamese<sup>2</sup>
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IN.png) Sanskrit
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IN.png) Kannada
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IN.png) Telugu
@@ -151,9 +151,9 @@ Type declarations are included for the registration modules and the Lunr propert
 
 ### Accent folding
 
-For French, Spanish, Portuguese, Italian, Dutch, Romanian, Polish, Turkish and Hungarian, users often type without diacritics. These languages index every token and its accent-free form, so `respiracion` finds `Respiración` and `zolw` finds `żółw`, including wildcard searches. The original form still goes through the stemmer unchanged. Letters that are letters of their own stay (Spanish `ñ`), and languages like Swedish, Finnish or German don't fold at all.
+For French, Spanish, Portuguese, Italian, Dutch, Romanian, Polish, Turkish, Hungarian and Vietnamese, users often type without diacritics. These languages index every token and its accent-free form, so `respiracion` finds `Respiración` and `zolw` finds `żółw`, including wildcard searches. The original form still goes through the stemmer unchanged. Letters that are letters of their own stay (Spanish `ñ`), and languages like Swedish, Finnish or German don't fold at all. In Vietnamese, the tone marks tell words apart, so `ha noi` finds `Hà Nội`, but `ma` also finds `mà`, `má` and `mã`; a word typed with its marks still ranks its exact form first.
 
-The second form makes the index larger, the more so the more words carry diacritics: up to about three quarters for Hungarian, almost half for Turkish and about a third for Polish and Romanian.
+The second form makes the index larger, the more so the more words carry diacritics: up to about three quarters for Hungarian, almost half for Turkish and about a third for Polish and Romanian, and more than half for Vietnamese, whose syllables almost all carry a mark.
 
 To switch it off, remove `lunr.xx.accentFold` from both pipelines:
 
@@ -217,7 +217,7 @@ An index built with lunr's built-in English must be rebuilt for `lunr.en`. In `l
 * Rebuild every index built with 1.x. The stems changed, but the pipeline labels (`stemmer-de`, …) did not, so an old index still loads and then misses words.
 * With `lunr.stemmer.support.js` loaded, a required stop word (`+the`) is left out of a search instead of making it find nothing, also for lunr's built-in English.
 * Hindi, Kannada, Sanskrit, Tamil and Telugu no longer need `wordcut.js`; `lunr.hi.tokenizer` and its siblings are removed.
-* Accent folding is on by default for French, Spanish, Portuguese, Italian, Dutch, Romanian, Polish, Turkish and Hungarian (see [Accent folding](#accent-folding)). French used to fold accents before the stemmer, and Spanish had it opt-in; to keep an index without the accent-free forms, remove `lunr.xx.accentFold` from both pipelines.
+* Accent folding is on by default for French, Spanish, Portuguese, Italian, Dutch, Romanian, Polish, Turkish, Hungarian and Vietnamese (see [Accent folding](#accent-folding)). French used to fold accents before the stemmer, and Spanish had it opt-in; to keep an index without the accent-free forms, remove `lunr.xx.accentFold` from both pipelines.
 * `lunr.stemmerSupport.Among` and `SnowballProgram` are removed. A third-party stemmer built on them has to extend `lunr.stemmerSupport.BaseStemmer` (Snowball 3.x) instead.
 * Greek: `lunr.el.normilizer` is replaced by `lunr.el.normalizer`, which is in the pipeline now.
 * Thai: `wordcut.js` is now the optional plugin `lunr.th.wordcut.js`; without it, Thai is segmented with `Intl.Segmenter`. Before: `lunr.wordcut = require('lunr-languages/wordcut')`, now: `require('lunr-languages/lunr.th.wordcut')(lunr)`. Rebuild Thai indexes with the segmenter you search with.

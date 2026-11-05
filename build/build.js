@@ -461,6 +461,8 @@ var list = [
         locale: 'th',
     }, {
         locale: 'vi',
+        // Vietnamese is often typed without tone marks (ha noi for Hà Nội)
+        accentFold: { default: true }
     }, {
         locale: 'zh',
     }, {

@@ -5,6 +5,10 @@
  * Copyright 2019, Bill Moyers
  * http://www.mozilla.org/MPL/
  */
+/*!
+ * The accent folding map is derived from CLDR's Latin-ASCII transform (release-49, https://cldr.unicode.org/),
+ * Copyright © 2001-2026 Unicode, Inc., under the Unicode License V3 (licenses/Unicode-3.0.txt).
+ */
 
 /**
  * export the module via AMD, CommonJS or as a browser global
@@ -48,12 +52,13 @@
       this.pipeline.reset();
       this.pipeline.add(
         lunr.vi.trimmer,
-        lunr.vi.stopWordFilter
+        lunr.vi.stopWordFilter,
+        lunr.vi.accentFold
       );
 
-      // searched words are trimmed like indexed ones (not stemmed with lunr's English stemmer)
+      // searched words are trimmed and accent folded like indexed ones (not stemmed with lunr's English stemmer)
       this.searchPipeline.reset();
-      this.searchPipeline.add(lunr.vi.trimmer);
+      this.searchPipeline.add(lunr.vi.trimmer, lunr.vi.accentFold);
     };
 
     /* lunr trimmer function */
@@ -83,5 +88,91 @@
     lunr.vi.stopWordFilter = lunr.generateStopWordFilter(('các những cái và hoặc nhưng mà nếu vì rằng tuy là thì được bị ' +
       'đã đang sẽ của với để này đó ấy cũng vẫn rất đều').split(' '));
     lunr.Pipeline.registerFunction(lunr.vi.stopWordFilter, 'stopWordFilter-vi');
+
+    // build: accentFold
+
+    /* accent folding: indexes the token and its folded form (map from CLDR Latin-ASCII, build/accent-fold.js) */
+    lunr.vi.accentFold = lunr.stemmerSupport.generateAccentFold({
+      "\u00E0": "a",
+      "\u00E1": "a",
+      "\u00E2": "a",
+      "\u00E3": "a",
+      "\u00E8": "e",
+      "\u00E9": "e",
+      "\u00EA": "e",
+      "\u00EC": "i",
+      "\u00ED": "i",
+      "\u00F2": "o",
+      "\u00F3": "o",
+      "\u00F4": "o",
+      "\u00F5": "o",
+      "\u00F9": "u",
+      "\u00FA": "u",
+      "\u00FD": "y",
+      "\u0103": "a",
+      "\u0111": "d",
+      "\u0129": "i",
+      "\u0169": "u",
+      "\u01A1": "o",
+      "\u01B0": "u",
+      "\u1EA1": "a",
+      "\u1EA3": "a",
+      "\u1EA5": "a",
+      "\u1EA7": "a",
+      "\u1EA9": "a",
+      "\u1EAB": "a",
+      "\u1EAD": "a",
+      "\u1EAF": "a",
+      "\u1EB1": "a",
+      "\u1EB3": "a",
+      "\u1EB5": "a",
+      "\u1EB7": "a",
+      "\u1EB9": "e",
+      "\u1EBB": "e",
+      "\u1EBD": "e",
+      "\u1EBF": "e",
+      "\u1EC1": "e",
+      "\u1EC3": "e",
+      "\u1EC5": "e",
+      "\u1EC7": "e",
+      "\u1EC9": "i",
+      "\u1ECB": "i",
+      "\u1ECD": "o",
+      "\u1ECF": "o",
+      "\u1ED1": "o",
+      "\u1ED3": "o",
+      "\u1ED5": "o",
+      "\u1ED7": "o",
+      "\u1ED9": "o",
+      "\u1EDB": "o",
+      "\u1EDD": "o",
+      "\u1EDF": "o",
+      "\u1EE1": "o",
+      "\u1EE3": "o",
+      "\u1EE5": "u",
+      "\u1EE7": "u",
+      "\u1EE9": "u",
+      "\u1EEB": "u",
+      "\u1EED": "u",
+      "\u1EEF": "u",
+      "\u1EF1": "u",
+      "\u1EF3": "y",
+      "\u1EF5": "y",
+      "\u1EF7": "y",
+      "\u1EF9": "y"
+    });
+    lunr.vi.accentFold.isDefault = true;
+    lunr.Pipeline.registerFunction(lunr.vi.accentFold, "accentFold-vi");
+
+    /* fold wildcard terms like the index in an index with lunr.vi.accentFold (no stemmer) */
+    lunr.vi.wildcardNormalizer = lunr.stemmerSupport.generateWildcardNormalizer({}, {
+      label: "accentFold-vi",
+      accentFold: lunr.vi.accentFold.map,
+      map: {}
+    });
+    lunr.vi.wildcardNormalizer.label = "wildcardNormalizer-vi";
+    lunr.vi.wildcardNormalizer.pipelineFunctionLabel = "trimmer-vi";
+    lunr.stemmerSupport.addQueryParserWildcardNormalizer(lunr, lunr.vi.wildcardNormalizer);
+    // build: end accentFold
   };
 }))

@@ -28,9 +28,19 @@ module.exports = {
             search: "năm trước",
             found: 1
         }, {
+            // with accent folding, a word is also found by its form without tone marks: bảy (seven) and bay are
+            // both missing (sáu, six, would find sau, after)
             what: "never find a word that does not exist, like %w",
-            search: "sáu",
+            search: "bảy",
             found: 0
+        }, {
+            what: "find a word typed without tone marks, like %w for đình",
+            search: "dinh",
+            found: 2
+        }, {
+            what: "find words typed without tone marks, like %w for Tiếng Việt",
+            search: "+tieng +viet",
+            found: 1
         }, {
             what: "find the word %w",
             search: "đình",
