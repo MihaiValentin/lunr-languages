@@ -89,6 +89,9 @@ describe("Wildcard searches", function () {
         // id: membaca and perpustakaan found by their stems without the prefixes me- and per-
         ['id', 'membaca', ['baca*', 'memba*', 'membaca*']],
         ['id', 'perpustakaan', ['pustaka*', 'perpus*']],
+        // ca: cançons found without the ç, col·lecció also typed with a period or without the punt volat
+        ['ca', 'cançons', ['canço*', 'canco*', 'cancons*']],
+        ['ca', 'col·lecció', ['col·lecc*', 'col.lecc*', 'collecc*']],
         // el: σπίτια found with and without the accent; αθεΐα, whose ΐ Snowball folds to η
         ['el', 'σπίτια', ['σπίτ*', 'σπιτ*']],
         ['el', 'αθεΐα', ['αθεΐ*']],

@@ -25,6 +25,7 @@ declare namespace lunr {
   function multiLanguage(...languages: string[]): LunrLanguagesPlugin;
 
   var ar: LunrLanguagesLanguage;
+  var ca: LunrLanguagesLanguage;
   var da: LunrLanguagesLanguage;
   var de: LunrLanguagesLanguage;
   var el: LunrLanguagesLanguage;

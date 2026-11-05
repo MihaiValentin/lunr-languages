@@ -49,6 +49,7 @@ Originally built for classic search, it is now widely used as a **lightweight re
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/GR.png) Greek
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/IR.png) Farsi (Persian)
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/ID.png) Indonesian
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/AD.png) Catalan<sup>2</sup>
 
 → [Contribute a new language](CONTRIBUTING.md)
 
@@ -152,7 +153,7 @@ Type declarations are included for the registration modules and the Lunr propert
 
 ### Accent folding
 
-For French, Spanish, Portuguese, Italian, Dutch, Romanian, Polish, Turkish, Hungarian and Vietnamese, users often type without diacritics. These languages index every token and its accent-free form, so `respiracion` finds `Respiración` and `zolw` finds `żółw`, including wildcard searches. The original form still goes through the stemmer unchanged. Letters that are letters of their own stay (Spanish `ñ`), and languages like Swedish, Finnish or German don't fold at all. In Vietnamese, the tone marks tell words apart, so `ha noi` finds `Hà Nội`, but `ma` also finds `mà`, `má` and `mã`; a word typed with its marks still ranks its exact form first.
+For French, Spanish, Catalan, Portuguese, Italian, Dutch, Romanian, Polish, Turkish, Hungarian and Vietnamese, users often type without diacritics. These languages index every token and its accent-free form, so `respiracion` finds `Respiración` and `zolw` finds `żółw`, including wildcard searches. The original form still goes through the stemmer unchanged. Letters that are letters of their own stay (Spanish `ñ`), and languages like Swedish, Finnish or German don't fold at all. In Vietnamese, the tone marks tell words apart, so `ha noi` finds `Hà Nội`, but `ma` also finds `mà`, `má` and `mã`; a word typed with its marks still ranks its exact form first.
 
 The second form makes the index larger, the more so the more words carry diacritics: up to about three quarters for Hungarian, almost half for Turkish and about a third for Polish and Romanian, and more than half for Vietnamese, whose syllables almost all carry a mark.
 

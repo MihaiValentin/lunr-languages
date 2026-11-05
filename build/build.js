@@ -458,6 +458,23 @@ var list = [
         accentFold: { default: true },
         specialCasing: { 'I': 'ı', 'İ': 'i' }
     }, {
+        locale: 'ca',
+        snowball: 'catalan',
+        // Lucene's Catalan stop words (Apache-2.0, from vcl/cue.language), as Elasticsearch's catalan analyzer uses them
+        stopWords: { custom: 'ca.csv' },
+        script: 'Latin',
+        accentFold: { default: true },
+        // Snowball's stemmer keeps elided articles and pronouns (l'home stems to l'hom) and turns the punt volat
+        // into a period (col·lecció: col.lec); both are folded before the stop words and the stemmer, so home
+        // finds l'home, and col·lecció, col.lecció and collecció are the same word. The typographic apostrophe too.
+        normalize: {
+            map: {
+                '’': "'",
+                "^l'": '', "^d'": '', "^s'": '', "^n'": '', "^m'": '', "^t'": '',
+                'l·l': 'll', 'l.l': 'll'
+            }
+        }
+    }, {
         locale: 'id',
         snowball: 'indonesian',
         stopWords: { snowball: 'indonesian' },

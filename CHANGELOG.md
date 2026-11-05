@@ -25,6 +25,13 @@
 - Stemmed for the first time: 1.x returned words unchanged. Generated from Snowball 3.2.0's Armenian stemmer; the stop words are unchanged.
 - A wildcard term finds words whose stem is shorter than what was typed (see All languages).
 
+### Catalan (ca)
+
+- New: `lunr.ca`, Snowball 3.2.0's Catalan stemmer, Lucene's 218 Catalan stop words (Apache-2.0, from vcl/cue.language, as Elasticsearch's catalan analyzer uses them) and a trimmer for Latin letters (#108).
+- Accent folding on by default: `historia` finds `història`, `canco*` finds `cançons`. Opt-out: remove `lunr.ca.accentFold` from both pipelines.
+- Elided articles and pronouns are dropped before the stop words and the stemmer (`l'`, `d'`, `s'`, `n'`, `m'`, `t'`, also with `’`): `home` finds `l’home`. Snowball's stemmer keeps them.
+- The punt volat is folded: `col·lecció`, `col.lecció` and `collecció` are the same word, also in wildcard terms.
+
 ### Chinese (zh)
 
 - Searches no longer go through lunr's English stemmer: a Latin word in a Chinese index (`running`) is found by itself again.
