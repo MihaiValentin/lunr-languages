@@ -27,6 +27,8 @@
 
 - Searches no longer go through lunr's English stemmer: a Latin word in a Chinese index (`running`) is found by itself again.
 - A search string written without spaces is segmented like the index, so a phrase finds the documents that contain its words (see Japanese).
+- Segmented with `Intl.Segmenter` plus a bigram for each pair of Chinese characters by default, in Node.js too. 1.x used `@node-rs/jieba` whenever it could be required, so segmentation changed with whatever was in `node_modules`, possibly as a transitive dependency.
+- jieba is an optional plugin, `lunr.zh.jieba.js`, loaded before or after `lunr.zh.js`, with an optional custom dictionary. Without `@node-rs/jieba`, or in a browser, it throws instead of falling back. `@node-rs/jieba` is an optional peer dependency.
 
 ### Danish (da)
 
