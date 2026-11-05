@@ -8,6 +8,7 @@
     "lunr.*.js",
     "min/lunr.*.min.js",
     "licenses",
+    "THIRD-PARTY-NOTICES.md",
     "types"
   ],
   "type": "commonjs",

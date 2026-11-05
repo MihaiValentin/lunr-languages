@@ -107,6 +107,18 @@ function snowballLicense(firstLine) {
     })).concat([' */']).join('\n');
 }
 
+// the notice for the accent folding maps, derived from CLDR's data (Unicode License V3), from VERSION's cldr line
+function cldrNotice() {
+    var line = (fs.existsSync('build/cldr/VERSION') ? fs.readFileSync('build/cldr/VERSION', 'utf8') : '').match(/^cldr (\S+) /m);
+    return '\n' + [
+        '/*!',
+        ' * The accent folding map is derived from CLDR\'s Latin-ASCII transform (' + (line ? line[1] + ', ' : '') +
+            'https://cldr.unicode.org/),',
+        ' * Copyright © 2001-2026 Unicode, Inc., under the Unicode License V3 (licenses/Unicode-3.0.txt).',
+        ' */'
+    ].join('\n');
+}
+
 // a JS string literal with everything outside printable ASCII escaped, like the rest of the generated code
 function jsString(s) {
     return JSON.stringify(s).replace(/[^\x20-\x7e]/g, function(c) {
@@ -453,6 +465,8 @@ var list = [
         locale: 'fa',
         snowball: 'persian',
         copyright: '2023, Seyed Masih Sajadi',
+        // 24 function words of Jacques Savoy's Persian stop word list (BSD, as shipped in Lucene), in Persian
+        // spelling; more of it cost recall on 60,000 Persian pages. See THIRD-PARTY-NOTICES.md
         stopWords: { custom: 'fa.csv' },
         // Latin too: Persian pages mix in English names and models («گوشی Samsung Galaxy»)
         script: ['Arabic', 'Latin'],
@@ -500,7 +514,8 @@ function build() {
                 .replace(/\{\{languageName\}\}/g, languageName)
                 .replace(/\{\{copyright\}\}/g, list[i].copyright || '2014, Mihai Valentin')
                 .replace(/\{\{snowballLicense\}\}/g, snowballLicense('The stemmer is generated from ' + name +
-                    '.sbl by Snowball ' + version + ' (https://snowballstem.org/).'));
+                    '.sbl by Snowball ' + version + ' (https://snowballstem.org/).'))
+                .replace(/\{\{dataNotices\}\}/g, accentFold ? cldrNotice() : '');
 
             // start replacing the placeholders; functions as replacements, so `$` in the code stays as it is
             var values = {

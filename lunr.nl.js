@@ -38,6 +38,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/*!
+ * The accent folding map is derived from CLDR's Latin-ASCII transform (release-49, https://cldr.unicode.org/),
+ * Copyright © 2001-2026 Unicode, Inc., under the Unicode License V3 (licenses/Unicode-3.0.txt).
+ */
 /**
  * export the module via AMD, CommonJS or as a browser global
  * Export code from https://github.com/umdjs/umd/blob/master/returnExports.js

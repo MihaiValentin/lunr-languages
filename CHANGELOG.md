@@ -10,6 +10,7 @@
 - Required words (`+word`) are found with accent folding: `+kızı` finds `kızlar`, `+rivière` an unaccented `riviere`. A required word kept every form the search pipeline made of it, and matched nothing if one form was missing from the index.
 - Required stop words are left out (`+und`, `+the`): they matched nothing, because the index dropped them. This also applies to lunr's built-in English once `lunr.stemmer.support.js` is loaded.
 - A wildcard term finds the words whose stem is shorter than what was typed: `häuser*` finds `Häuser` (stem `haus`), `Ελλάδα*` finds `Ελλάδα` (`ελλαδ`). lunr does not stem wildcard terms, so in 1.x the full word with `*` found itself in only about 5–45% of the words; now 79–100%. The term only gets shorter, so it finds everything it found before. Applies to every language stemmed with Snowball.
+- `THIRD-PARTY-NOTICES.md` lists the third-party code and data the files include or are generated from, with version and license; `licenses/` ships the full texts. Files with accent folding carry a notice for the CLDR data.
 
 ### Arabic (ar)
 
@@ -100,6 +101,7 @@
 - Token positions are right with leading whitespace (they were too small, so highlighting marked the wrong characters), and the tokenizer keeps the metadata lunr passes (the field).
 - Segmented with `Intl.Segmenter` (ICU's dictionary) by default. `lunr.ja.js` no longer fails to load with a TypeError when `tinyseg.js` was not loaded first.
 - TinySegmenter is an optional plugin, `lunr.ja.tinyseg.js` (was `tinyseg.js`), loaded before or after `lunr.ja.js`. The two segment differently in places: TinySegmenter keeps verb forms together (`食べたい` → `食べ|たい`, `Intl.Segmenter`: `食|べた|い`), `Intl.Segmenter` knows dictionary words (`すもも`).
+- `lunr.ja.tinyseg.js` carries TinySegmenter's full license text, as its license requires, instead of a link.
 
 ### Kannada (kn)
 
@@ -115,6 +117,7 @@
 - Generated from Snowball 3.2.0's Persian stemmer instead of a hand port of 3.1.1; the stems are identical on all 104,268 words of Snowball's word list, and indexing is the same as before except for one word in Arabic presentation forms, which the trimmer now keeps.
 - Wildcard terms are folded like the stemmer folds the index: the prefix `می‌` (`می‌خوا*` finds `می‌خوانند`), Arabic keyboard spellings, `آ` as `ا`.
 - `lunr.multiLanguage('fa', …)` now normalizes Persian like `lunr.fa` does (Arabic yeh and kaf, harakat, tatweel).
+- The stop words are sourced from Jacques Savoy's list (BSD), as shipped in Lucene; the words are unchanged.
 
 ### Polish (pl)
 

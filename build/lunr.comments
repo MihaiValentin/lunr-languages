@@ -5,4 +5,4 @@
  * Copyright {{copyright}}
  * http://www.mozilla.org/MPL/
  */
-{{snowballLicense}}
+{{snowballLicense}}{{dataNotices}}
