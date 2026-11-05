@@ -713,7 +713,9 @@
                     return originalQuery.call(this, function(query) {
                         query._lunrLanguagesSearchPipeline = index.pipeline;
 
-                        return fn.call(this, query);
+                        var result = fn.call(this, query);
+                        stemmerSupport.prepareRequiredTerms(index, query);
+                        return result;
                     });
                 };
 
@@ -872,6 +874,49 @@
                     }
                 }
                 return filters;
+            },
+            /*
+             * A pipeline function may turn a term into several (accent folding: kızı -> kızı, kizi). lunr
+             * treats them as alternatives, but if one is not in the index, a required term matches nothing.
+             * So for a required term with a form missing from the index, the first form that is in the index
+             * becomes the term (without the pipeline). With two forms (one accent fold) that is exact; with
+             * three or more (several accent folds in lunr.multi), documents with only another form are not
+             * found. If all forms are in the index, or none is, the term stays as it is.
+             *
+             * A required stop word (+und) would match nothing either, because the index dropped it; such
+             * terms are removed from the query, as addQueryTerms() leaves them out.
+             */
+            prepareRequiredTerms: function(index, query) {
+                if (!lunr.Query.presence || !lunr.TokenSet.fromClause) {
+                    return;
+                }
+                var stopWordFilters = this.stopWordFiltersFor(index.pipeline);
+                query.clauses = query.clauses.filter(function(clause) {
+                    return clause.presence !== lunr.Query.presence.REQUIRED || !clause.usePipeline ||
+                        !stopWordFilters.some(function(filter) { return !filter(new lunr.Token(clause.term)); });
+                });
+                for (var i = 0; i < query.clauses.length; i++) {
+                    var clause = query.clauses[i];
+                    if (clause.presence !== lunr.Query.presence.REQUIRED || !clause.usePipeline) {
+                        continue;
+                    }
+                    var terms = index.pipeline.runString(clause.term, { fields: clause.fields });
+                    if (terms.length < 2) {
+                        continue;
+                    }
+                    var inIndex = terms.filter(function(term) {
+                        var probe = {};
+                        for (var key in clause) {
+                            probe[key] = clause[key];
+                        }
+                        probe.term = term;
+                        return index.tokenSet.intersect(lunr.TokenSet.fromClause(probe)).toArray().length > 0;
+                    });
+                    if (inIndex.length > 0 && inIndex.length < terms.length) {
+                        clause.term = inIndex[0];
+                        clause.usePipeline = false;
+                    }
+                }
             },
             /* the search pipeline of an index, of the query inside idx.query(), or the pipeline itself */
             searchPipelineOf: function(source) {

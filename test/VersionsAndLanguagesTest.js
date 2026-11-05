@@ -586,6 +586,63 @@ lunrVersions.forEach(function (lunrVersion) {
             });
         });
 
+        describe("should find required words with accent folding", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            require('../lunr.tr.js')(lunr);
+            require('../lunr.fr.js')(lunr);
+
+            var build = function (plugin, body) {
+                return lunr(function () {
+                    this.use(plugin);
+                    this.ref('id');
+                    this.field('body');
+                    this.add({ "body": body, "id": 1 });
+                });
+            };
+            var idxTr = build(lunr.tr, "kızlar");
+            var idxFr = build(lunr.fr, "riviere");
+            var idxFrAccented = build(lunr.fr, "rivière");
+
+            if (!lunr.Query.presence) {
+                return;
+            }
+
+            it("should find a required word whose folded form stems differently (Turkish kızı)", function () {
+                assert.equal(idxTr.search('+kızı').length, 1);
+            });
+
+            it("should find a required accented word in an unaccented document", function () {
+                assert.equal(idxFr.search('+rivière').length, 1);
+            });
+
+            it("should keep finding required words in both forms", function () {
+                assert.equal(idxFrAccented.search('+rivière').length, 1);
+                assert.equal(idxFrAccented.search('+riviere').length, 1);
+            });
+
+            it("should still find nothing for a required word that is not in the index", function () {
+                assert.equal(idxFr.search('+riviere +montagne').length, 0);
+            });
+
+            it("should ignore required stop words, which the index dropped", function () {
+                var idx = build(lunr.fr, "la riviere");
+                assert.equal(idx.search('+la +riviere').length, 1);
+                assert.equal(idx.search('+la +montagne').length, 0);
+            });
+
+            it("should ignore required stop words of lunr's built-in English", function () {
+                var idx = lunr(function () {
+                    this.ref('id');
+                    this.field('body');
+                    this.add({ "body": "the river", "id": 1 });
+                });
+                assert.equal(idx.search('+the +river').length, 1);
+            });
+        });
+
         describe("should prepare query.term() terms like the query parser", function () {
             delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
 
@@ -649,8 +706,7 @@ lunrVersions.forEach(function (lunrVersion) {
             });
 
             it("should work in multi-language indexes", function () {
-                assert.equal(count(idxMulti, 'run KIZLAR', required), 1);
-                assert.equal(count(idxMulti, 'KIZI'), 1);
+                assert.equal(count(idxMulti, 'run KIZI', required), 1);
             });
         });
 

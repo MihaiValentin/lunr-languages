@@ -211,6 +211,7 @@ An index built with lunr's built-in English must be rebuilt for `lunr.en`. In `l
 * Lunr 2 is required (`lunr@^2.0.0`). For Lunr 0.x or 1.x, stay on Lunr Languages 1.x.
 * An ES2022 runtime is required: Chrome/Edge 84+, Firefox 90+, Safari 15+, Node.js 14.6+. For Internet Explorer 11, stay on Lunr Languages 1.x.
 * Rebuild every index built with 1.x. The stems changed, but the pipeline labels (`stemmer-de`, …) did not, so an old index still loads and then misses words.
+* With `lunr.stemmer.support.js` loaded, a required stop word (`+the`) is left out of a search instead of making it find nothing, also for lunr's built-in English.
 * Accent folding is on by default for French, Spanish, Portuguese, Italian, Dutch, Romanian, Polish, Turkish and Hungarian (see [Accent folding](#accent-folding)). French used to fold accents before the stemmer, and Spanish had it opt-in; to keep an index without the accent-free forms, remove `lunr.xx.accentFold` from both pipelines.
 * `lunr.stemmerSupport.Among` and `SnowballProgram` are removed. A third-party stemmer built on them has to extend `lunr.stemmerSupport.BaseStemmer` (Snowball 3.x) instead.
 * `du` is removed: use `nl` (`lunr-languages/lunr.nl`) for Dutch.
