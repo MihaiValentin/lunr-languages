@@ -230,7 +230,7 @@ var list = [
     }, {
         locale: 'en',
         snowball: 'english',
-        stopWords: { snowball: 'english' },
+        stopWords: { snowball: 'english', add: 'en.txt' },
         script: 'Latin'
     }, {
         locale: 'fi',

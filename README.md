@@ -190,7 +190,7 @@ Lunr has English built in (Porter stemmer from 1980). `lunr.en` is an opt-in alt
 
 * Snowball's English stemmer (Porter2), which conflates fewer unrelated words (`generously` and `general` no longer share a stem)
 * a trimmer that keeps letters like `é`, where lunr's trimmer turns `café` into `caf`
-* Snowball's English stop words
+* Snowball's English stop words plus every word of lunr's built-in list
 
 ```javascript
 require('lunr-languages/lunr.stemmer.support')(lunr);

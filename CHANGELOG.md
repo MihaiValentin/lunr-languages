@@ -22,6 +22,7 @@
 
 - New, opt-in `lunr.en`: Snowball 3.2.0's English stemmer (Porter2), a trimmer for Latin letters (keeps `é`, where lunr's trimmer turns `café` into `caf`), Snowball's English stop words, pipeline labels `stemmer-en`, `trimmer-en`, `stopWordFilter-en`. lunr's built-in English (Porter, 1980) stays the default.
 - `lunr.multiLanguage('en', …)` uses `lunr.en` when it is loaded and lunr's built-in English otherwise; the multi trimmer and tokenizer labels name lunr's built-in English `builtin` (`lunr-multi-trimmer-builtin-ru`), so they differ from those with `lunr.en`.
+- Stop words: Snowball's 174 plus the 35 of lunr's built-in list that Snowball's lacks (209), so `lunr.en` drops at least what lunr's English drops.
 
 ### Finnish (fi)
 

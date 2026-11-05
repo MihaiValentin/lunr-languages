@@ -51,6 +51,10 @@ module.exports = {
             what: "not find a stop word from Snowball's list, like %w",
             search: "doesn't",
             found: 0
+        }, {
+            what: "not find a stop word from lunr's list, like %w",
+            search: "however",
+            found: 0
         }
     ]
 }
