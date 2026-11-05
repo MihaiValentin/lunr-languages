@@ -612,6 +612,70 @@
                     return defaultTokenizer(map(obj), metadata);
                 };
             },
+            /*
+             * Registers the tokenizer a language indexes with (lunr's interface: (obj, metadata) ->
+             * lunr.Token[]), so the tokenizer of an index can be found from its search pipeline: it applies
+             * to indexes whose search pipeline has a function labelled `…-<locale>`.
+             */
+            addTokenizer: function(locale, tokenizer) {
+                if (!this.tokenizers) {
+                    this.tokenizers = [];
+                }
+                for (var i = 0; i < this.tokenizers.length; i++) {
+                    if (this.tokenizers[i].locale === locale) {
+                        this.tokenizers[i].tokenizer = tokenizer;
+                        return;
+                    }
+                }
+                this.tokenizers.push({ locale: locale, tokenizer: tokenizer });
+            },
+            /* lunr's tokens plus the tokens of each tokenizer, without duplicates (as lunr.multi indexes) */
+            combineTokenizers: function(tokenizers) {
+                var defaultTokenizer = lunr.tokenizer;
+                return function(obj, metadata) {
+                    var tokens = defaultTokenizer(obj, metadata);
+                    var seen = {};
+
+                    for (var i = 0; i < tokens.length; i++) {
+                        seen[tokens[i].toString()] = true;
+                    }
+
+                    for (var i = 0; i < tokenizers.length; i++) {
+                        var languageTokens = tokenizers[i](obj, metadata);
+
+                        for (var j = 0; j < languageTokens.length; j++) {
+                            var tokenString = languageTokens[j].toString();
+
+                            if (!seen[tokenString]) {
+                                seen[tokenString] = true;
+                                tokens.push(languageTokens[j]);
+                            }
+                        }
+                    }
+
+                    return tokens;
+                };
+            },
+            /*
+             * The tokenizer for query text of an index with this search pipeline: the registered tokenizer of
+             * the first language in it that has one, lunr's tokenizer otherwise. An index of several
+             * languages (lunr.multi) contains the tokens of lunr's and of every language tokenizer, so one
+             * of them is enough; it must be one, because lunr can't require "one of two readings".
+             */
+            tokenizerFor: function(pipeline) {
+                var stack = pipeline && pipeline._stack || [];
+                var tokenizers = this.tokenizers || [];
+                for (var i = 0; i < stack.length; i++) {
+                    var label = stack[i].label || '';
+                    for (var j = 0; j < tokenizers.length; j++) {
+                        var suffix = '-' + tokenizers[j].locale;
+                        if (label.length > suffix.length && label.slice(-suffix.length) === suffix) {
+                            return tokenizers[j].tokenizer;
+                        }
+                    }
+                }
+                return lunr.tokenizer;
+            },
             /* maps every query term (e.g. the special casing) before lunr lowercases it */
             addQueryParserTermMapper: function(lunr, mapper) {
                 this.addQueryParserFunction('queryParserTermMappers', mapper);
@@ -690,15 +754,16 @@
                 this.queryParserWildcardNormalizerApplied = true;
             },
             applyQueryParserTermMappers: function(term, query) {
-                return this.applyQueryParserFunctions(this.queryParserTermMappers, term, query);
+                return this.applyQueryParserFunctions(this.queryParserTermMappers, term, query && query._lunrLanguagesSearchPipeline);
             },
             applyQueryParserWildcardNormalizers: function(term, query) {
-                return this.applyQueryParserFunctions(this.queryParserWildcardNormalizers, term, query);
+                return this.applyQueryParserFunctions(this.queryParserWildcardNormalizers, term, query && query._lunrLanguagesSearchPipeline);
             },
-            /* applies the functions whose pipelineFunctionLabel is in the index's search pipeline */
-            applyQueryParserFunctions: function(fns, term, query) {
-                var pipeline = query && query._lunrLanguagesSearchPipeline;
-
+            /*
+             * Applies the functions whose pipelineFunctionLabel is in the index's search pipeline (all of
+             * them if the pipeline is unknown).
+             */
+            applyQueryParserFunctions: function(fns, term, pipeline) {
                 fns = fns || [];
                 for (var i = 0; i < fns.length; i++) {
                     if (pipeline && !this.pipelineContainsFunction(pipeline, fns[i].pipelineFunctionLabel)) {
@@ -709,6 +774,117 @@
                 }
 
                 return term;
+            },
+            /*
+             * A query term prepared like the query parser prepares terms of a search string, for
+             * query.term(): special casing (Turkish KIZ -> kız), wildcard folding for terms with `*`
+             * (Käs* -> kas*), lowercasing. `source` is the index, the query inside idx.query(), or the
+             * index's search pipeline; it decides which languages' functions apply. Takes and returns a
+             * term or an array of terms.
+             */
+            normalizeQueryTerm: function(term, source) {
+                var stemmerSupport = this;
+                if (Array.isArray(term)) {
+                    return term.map(function(t) {
+                        return stemmerSupport.normalizeQueryTerm(t, source);
+                    });
+                }
+                var pipeline = this.searchPipelineOf(source);
+                var str = this.applyQueryParserFunctions(this.queryParserTermMappers, term.toString(), pipeline);
+                if (str.indexOf('*') !== -1) {
+                    str = this.applyQueryParserFunctions(this.queryParserWildcardNormalizers, str, pipeline);
+                }
+                return str.toLowerCase();
+            },
+            /*
+             * Adds the words of `text` to the query, split by the tokenizer the index was built with and
+             * prepared by normalizeQueryTerm(): idx.query(function(q) { addQueryTerms(q, 'KIZ* İstanbul') }).
+             * Words with `*` are wildcard terms and skip the search pipeline; `options` (fields, boost,
+             * presence, wildcard, …) apply to every term. Plain text, no query syntax (+, -, field:, ~, ^).
+             */
+            addQueryTerms: function(query, text, options) {
+                var pipeline = this.searchPipelineOf(query);
+                var tokenizer = this.tokenizerFor(pipeline);
+                var stopWordFilters = this.stopWordFiltersFor(pipeline);
+                var separator = lunr.tokenizer.separator || /[\s\-]+/;
+                var wildcard = lunr.Query.wildcard || {};
+                var stemmerSupport = this;
+                var terms = [];
+                var add = function(term) {
+                    if (term && terms.indexOf(term) === -1) {
+                        terms.push(term);
+                    }
+                };
+
+                text.toString().split(/\s+/).forEach(function(piece) {
+                    if (piece.indexOf('*') !== -1) {
+                        // a segmenting tokenizer could split off or drop the `*`
+                        piece.split(separator).forEach(add);
+                    } else {
+                        tokenizer(piece).forEach(function(token) {
+                            add(token.toString());
+                        });
+                    }
+                });
+
+                terms.forEach(function(term) {
+                    var clause = {};
+                    for (var key in options) {
+                        clause[key] = options[key];
+                    }
+                    // lunr adds the `*` of the wildcard option itself; fold the term as the wildcard it becomes
+                    var asWildcard = term;
+                    if (clause.wildcard & wildcard.LEADING && asWildcard.charAt(0) !== '*') {
+                        asWildcard = '*' + asWildcard;
+                    }
+                    if (clause.wildcard & wildcard.TRAILING && asWildcard.slice(-1) !== '*') {
+                        asWildcard = asWildcard + '*';
+                    }
+                    var normalized = stemmerSupport.normalizeQueryTerm(asWildcard, pipeline);
+                    if (normalized.replace(/\*/g, '') === '') {
+                        return;
+                    }
+                    if (normalized.indexOf('*') !== -1) {
+                        clause.usePipeline = false;
+                    } else if (stopWordFilters.some(function(filter) { return !filter(new lunr.Token(normalized)); })) {
+                        // the index dropped this word; as a required term it would match nothing
+                        return;
+                    }
+                    query.term(normalized, clause);
+                });
+
+                return query;
+            },
+            /*
+             * The stop word filters of the languages in a search pipeline, found from the labels (`…-<locale>`
+             * is lunr.<locale>.stopWordFilter, lunr's `stemmer` is lunr.stopWordFilter).
+             */
+            stopWordFiltersFor: function(pipeline) {
+                var stack = pipeline && pipeline._stack || [];
+                var filters = [];
+                for (var i = 0; i < stack.length; i++) {
+                    var label = stack[i].label || '';
+                    var match = label.match(/-([a-z]{2,3})$/);
+                    var filter = label === 'stemmer' ? lunr.stopWordFilter :
+                        match && lunr[match[1]] && lunr[match[1]].stopWordFilter;
+                    if (filter && filters.indexOf(filter) === -1) {
+                        filters.push(filter);
+                    }
+                }
+                return filters;
+            },
+            /* the search pipeline of an index, of the query inside idx.query(), or the pipeline itself */
+            searchPipelineOf: function(source) {
+                if (!source) {
+                    return undefined;
+                }
+                if (source._lunrLanguagesSearchPipeline) {
+                    return source._lunrLanguagesSearchPipeline;
+                }
+                if (source instanceof lunr.Index) {
+                    return source.pipeline;
+                }
+                return source._stack ? source : undefined;
             },
             pipelineContainsFunction: function(pipeline, label) {
                 if (!label) {
@@ -728,6 +904,9 @@
                 return false;
             }
         };
+
+        // queries know the search pipeline of their index, for the query parser hook and addQueryTerms()
+        lunr.stemmerSupport.applyQueryParserHook(lunr);
 
         lunr.trimmerSupport = {
             generateTrimmer: function(wordCharacters) {

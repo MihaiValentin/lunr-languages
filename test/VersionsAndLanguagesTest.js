@@ -547,6 +547,113 @@ lunrVersions.forEach(function (lunrVersion) {
             });
         });
 
+        describe("should find the tokenizer an index was built with", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            require('../tinyseg')(lunr);
+            require('../lunr.ja.js')(lunr);
+            require('../lunr.tr.js')(lunr);
+            require('../lunr.de.js')(lunr);
+            require('../lunr.multi.js')(lunr);
+
+            var build = function (plugin) {
+                return lunr(function () {
+                    this.use(plugin);
+                    this.field('body');
+                });
+            };
+            var support = lunr.stemmerSupport;
+
+            it("should use the language's tokenizer for its index", function () {
+                assert.strictEqual(support.tokenizerFor(build(lunr.ja).pipeline), lunr.ja.tokenizer);
+                assert.strictEqual(support.tokenizerFor(build(lunr.tr).pipeline), lunr.tr.tokenizer);
+            });
+
+            it("should use lunr's tokenizer for languages without one", function () {
+                assert.strictEqual(support.tokenizerFor(build(lunr.de).pipeline), lunr.tokenizer);
+            });
+
+            it("should use the language tokenizer in multi-language indexes", function () {
+                assert.strictEqual(support.tokenizerFor(build(lunr.multiLanguage('en', 'tr')).pipeline), lunr.tr.tokenizer);
+                assert.strictEqual(support.tokenizerFor(build(lunr.multiLanguage('de', 'ja')).pipeline), lunr.ja.tokenizer);
+            });
+
+            it("should combine lunr's tokens with the language tokenizers' for lunr.multi", function () {
+                var tokens = support.combineTokenizers([lunr.tr.tokenizer])('INFO').map(function (t) { return t.toString(); });
+                assert.deepEqual(tokens, ['info', 'ınfo']);
+            });
+        });
+
+        describe("should prepare query.term() terms like the query parser", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            require('../tinyseg')(lunr);
+            require('../lunr.ja.js')(lunr);
+            require('../lunr.tr.js')(lunr);
+            require('../lunr.de.js')(lunr);
+            require('../lunr.multi.js')(lunr);
+
+            var support = lunr.stemmerSupport;
+            var build = function (plugin, body) {
+                return lunr(function () {
+                    this.use(plugin);
+                    this.ref('id');
+                    this.field('body');
+                    this.add({ "body": body, "id": 1 });
+                });
+            };
+            var count = function (idx, text, options) {
+                return idx.query(function (q) {
+                    support.addQueryTerms(q, text, options);
+                }).length;
+            };
+            var required = lunr.Query.presence ? { presence: lunr.Query.presence.REQUIRED } : {};
+
+            var idxTr = build(lunr.tr, "İSTANBUL KIZLAR");
+            var idxDe = build(lunr.de, "Käse Häuser");
+            var idxJa = build(lunr.ja, "日本語の本を読む");
+            var idxMulti = build(lunr.multiLanguage('en', 'tr'), "running KIZLAR");
+
+            it("should normalize terms for the index's languages", function () {
+                assert.equal(support.normalizeQueryTerm('KIZ*', idxTr), 'kiz*');
+                assert.equal(support.normalizeQueryTerm('Käs*', idxDe), 'kas*');
+                assert.deepEqual(support.normalizeQueryTerm(['İSTANBUL', 'Käse'], idxTr), ['istanbul', 'käse']);
+            });
+
+            it("should apply special casing to plain and wildcard terms", function () {
+                assert.equal(count(idxTr, 'İstanbul'), 1);
+                assert.equal(count(idxTr, 'KIZI'), 1);
+                assert.equal(count(idxTr, 'KIZ*'), 1);
+            });
+
+            it("should fold wildcard terms, also with the wildcard option", function () {
+                assert.equal(count(idxDe, 'Käs*'), 1);
+                if (lunr.Query.wildcard) {
+                    assert.equal(count(idxDe, 'Kä', { wildcard: lunr.Query.wildcard.TRAILING }), 1);
+                }
+            });
+
+            it("should split text with the tokenizer the index was built with", function () {
+                assert.equal(count(idxJa, '日本語の本', required), 1);
+                if (lunr.Query.presence) {
+                    assert.equal(count(idxJa, '日本語の雑誌', required), 0);
+                }
+            });
+
+            it("should drop stop words the index dropped, so required terms still match", function () {
+                assert.equal(count(build(lunr.de, "Käse und Brot"), 'Käse und Brot', required), 1);
+            });
+
+            it("should work in multi-language indexes", function () {
+                assert.equal(count(idxMulti, 'run KIZLAR', required), 1);
+                assert.equal(count(idxMulti, 'KIZI'), 1);
+            });
+        });
+
         describe("should lowercase Turkish I and İ the Turkish way", function () {
             delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
 

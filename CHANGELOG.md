@@ -6,6 +6,7 @@
 
 - Requires lunr 2 (`lunr@^2.0.0`); lunr 0.x and 1.x stay on lunr-languages 1.x.
 - `lunr.stemmerSupport.Among` and `lunr.stemmerSupport.SnowballProgram`, the Snowball 0.3 runtime of 1.x, are removed. Stemmers extend `lunr.stemmerSupport.BaseStemmer` (Snowball 3.x) now.
+- New `lunr.stemmerSupport.addQueryTerms(query, text, options)` and `normalizeQueryTerm(term, idx)` prepare terms for `query.term()` like the query parser does for search strings: split with the index's tokenizer, special casing, wildcard folding, lowercasing; stop words the index dropped are left out.
 
 ### Armenian (hy)
 

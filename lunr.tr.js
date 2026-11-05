@@ -1679,6 +1679,7 @@
     lunr.tr.specialCasing.label = "specialCasing-tr";
     lunr.tr.specialCasing.pipelineFunctionLabel = "stemmer-tr";
     lunr.tr.tokenizer = lunr.stemmerSupport.generateSpecialCasingTokenizer(lunr.tr.specialCasing);
+    lunr.stemmerSupport.addTokenizer("tr", lunr.tr.tokenizer);
     lunr.stemmerSupport.addQueryParserTermMapper(lunr, lunr.tr.specialCasing);
 
 

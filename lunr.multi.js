@@ -46,7 +46,6 @@
             var accentFolds = [];
             var stemmers = [];
             var tokenizers = [];
-            var defaultTokenizer = lunr.tokenizer;
             for (var i = 0; i < languages.length; ++i) {
                 if (languages[i] == 'en' && !lunr.en) {
                     wordCharacters += '\\w';
@@ -76,30 +75,8 @@
             pipeline.unshift(multiTrimmer);
 
             if (tokenizers.length > 0) {
-                var multiTokenizer = function(obj, metadata) {
-                    var tokens = defaultTokenizer(obj, metadata);
-                    var seen = {};
-
-                    for (var i = 0; i < tokens.length; i++) {
-                        seen[tokens[i].toString()] = true;
-                    }
-
-                    for (var i = 0; i < tokenizers.length; i++) {
-                        var languageTokens = tokenizers[i](obj, metadata);
-
-                        for (var j = 0; j < languageTokens.length; j++) {
-                            var token = languageTokens[j];
-                            var tokenString = token.toString();
-
-                            if (!seen[tokenString]) {
-                                seen[tokenString] = true;
-                                tokens.push(token);
-                            }
-                        }
-                    }
-
-                    return tokens;
-                };
+                // lunr's tokens plus those of each language tokenizer, without duplicates
+                var multiTokenizer = lunr.stemmerSupport.combineTokenizers(tokenizers);
 
                 if (lunr.tokenizer.registerFunction) {
                     lunr.tokenizer.registerFunction(multiTokenizer, 'lunr-multi-tokenizer-' + nameSuffix);

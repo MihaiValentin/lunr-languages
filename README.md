@@ -235,6 +235,25 @@ const idx = lunr(function () {
 
 ---
 
+## Building queries with `query.term`
+
+`idx.search('…')` prepares each word for the index's languages: Turkish `KIZ` becomes `kız`, a German wildcard `Käs*` becomes `kas*`. `query.term()` uses a term exactly as given, so lunr-languages offers the same preparation for it:
+
+```javascript
+idx.query(function (q) {
+  // split with the tokenizer the index was built with (Japanese, Chinese, Thai, Turkish, …),
+  // prepare each word, and add it with the given options
+  lunr.stemmerSupport.addQueryTerms(q, 'Käs* Brot', { presence: lunr.Query.presence.REQUIRED });
+});
+
+// a single term, e.g. for your own clauses
+var term = lunr.stemmerSupport.normalizeQueryTerm('Käs*', idx); // 'kas*'
+```
+
+`addQueryTerms` takes plain text, without query syntax (`+`, `-`, `field:`, `~`, `^`). Words with `*` are wildcard terms and skip the search pipeline; stop words the index dropped are left out, so required words still match.
+
+---
+
 ## Chinese Tokenization
 
 Chinese support is designed to work without mandatory native binaries:

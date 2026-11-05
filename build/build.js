@@ -184,6 +184,7 @@ function specialCasingFunction(language) {
         '        lunr.' + locale + '.specialCasing.label = "specialCasing-' + locale + '";',
         '        lunr.' + locale + '.specialCasing.pipelineFunctionLabel = "stemmer-' + locale + '";',
         '        lunr.' + locale + '.tokenizer = lunr.stemmerSupport.generateSpecialCasingTokenizer(lunr.' + locale + '.specialCasing);',
+        '        lunr.stemmerSupport.addTokenizer("' + locale + '", lunr.' + locale + '.tokenizer);',
         '        lunr.stemmerSupport.addQueryParserTermMapper(lunr, lunr.' + locale + '.specialCasing);',
         ''
     ].join('\n');

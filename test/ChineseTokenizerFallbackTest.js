@@ -19,7 +19,9 @@ function createLunr() {
 
   return {
     version: '2.3.5',
-    stemmerSupport: {},
+    stemmerSupport: {
+      addTokenizer: function() {}
+    },
     Token: Token,
     trimmerSupport: {
       generateTrimmer: function() {

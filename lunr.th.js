@@ -90,5 +90,6 @@
         return new lunr.Token(t)
       });
     }
+    lunr.stemmerSupport.addTokenizer('th', lunr.th.tokenizer);
   };
 }))
