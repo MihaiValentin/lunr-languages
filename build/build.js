@@ -240,6 +240,11 @@ var list = [
         stopWords: { snowball: 'dutch' },
         script: 'Latin'
     }, {
+        locale: 'en',
+        snowball: 'english',
+        stopWords: { snowball: 'english' },
+        script: 'Latin'
+    }, {
         locale: 'fi',
         snowball: 'finnish',
         stopWords: { snowball: 'finnish' },
@@ -376,7 +381,8 @@ function build() {
                 snowballName: name,
                 snowballVersion: version,
                 stemmerBody: indent(snowball.stemmerBody(name).trim(), 16),
-                stopWords: stopWords.sort().join(' '),
+                // inside '…' in the template; English has apostrophes (aren't)
+                stopWords: stopWords.sort().join(' ').replace(/[\\']/g, '\\$&'),
                 wordCharacters: wordCharacters(list[i].script),
                 pipelineBeforeStemmer: list[i].defaultAccentFolding ? '\n                lunr.' + list[i].locale + '.accentFold,' : '',
                 // the derived map doesn't fit an index folded before the stemmer

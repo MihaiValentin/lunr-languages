@@ -23,6 +23,17 @@
     },
     "probed": []
   },
+  "english": {
+    "words": 42649,
+    "coverage": {
+      "none": 0.9524,
+      "map": 0.953
+    },
+    "map": {
+      "fy": "f"
+    },
+    "probed": []
+  },
   "finnish": {
     "words": 84399,
     "coverage": {

@@ -26,7 +26,8 @@
     return function(lunr) {
         /* Set up the pipeline for indexing content in multiple languages. The
            corresponding lunr.{lang} files must be loaded before calling this
-           function; English ('en') is built in.
+           function. For English ('en'), lunr.en.js is used when it is loaded,
+           and lunr's built-in English otherwise.
 
            Returns: a lunr plugin for use in your indexer.
 
@@ -36,14 +37,17 @@
            */
         lunr.multiLanguage = function(/* lang1, lang2, ... */) {
             var languages = Array.prototype.slice.call(arguments);
-            var nameSuffix = languages.join('-');
+            // lunr's built-in English is 'builtin' in the labels, so they differ from those with lunr.en
+            var nameSuffix = languages.map(function(language) {
+                return language == 'en' && !lunr.en ? 'builtin' : language;
+            }).join('-');
             var wordCharacters = "";
             var pipeline = [];
             var searchPipeline = [];
             var tokenizers = [];
             var defaultTokenizer = lunr.tokenizer;
             for (var i = 0; i < languages.length; ++i) {
-                if (languages[i] == 'en') {
+                if (languages[i] == 'en' && !lunr.en) {
                     wordCharacters += '\\w';
                     pipeline.unshift(lunr.stopWordFilter);
                     pipeline.push(lunr.stemmer);

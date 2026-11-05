@@ -24,6 +24,7 @@ var testDocuments = {
     ar: require('./testdata/ar'),
     de: require('./testdata/de'),
     da: require('./testdata/da'),
+    en: require('./testdata/en'),
     es: require('./testdata/es'),
     fi: require('./testdata/fi'),
     fr: require('./testdata/fr'),
@@ -103,6 +104,44 @@ lunrVersions.forEach(function (lunrVersion) {
 
             it("should stem and find 'languages' in russian+english documents", function () {
                 assert.equal(idxMulti.search('languages').length, 1)
+            });
+
+            it("should name lunr's built-in English 'builtin' in the multi-trimmer label", function () {
+                assert.ok(lunr.Pipeline.registeredFunctions['lunr-multi-trimmer-builtin-ru']);
+                assert.ok(!lunr.Pipeline.registeredFunctions['lunr-multi-trimmer-en-ru']);
+            });
+        });
+        describe("should use lunr.en in multi-language indexes when it is loaded", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            require('../lunr.en.js')(lunr);
+            require('../lunr.ru.js')(lunr);
+            require('../lunr.multi.js')(lunr);
+
+            var idxMulti = lunr(function () {
+                this.use(lunr.multiLanguage('en', 'ru'));
+                this.field('body');
+                this.add({ "body": "Этот текст написан на русском.", "id": 1 });
+                this.add({ "body": "The café was generously decorated.", "id": 2 });
+            });
+
+            it("should stem with lunr.en (Porter2: generously -> generous)", function () {
+                assert.equal(idxMulti.search('generous').length, 1)
+                assert.equal(idxMulti.search('general').length, 0)
+            });
+
+            it("should trim with lunr.en's word characters", function () {
+                assert.equal(idxMulti.search('café').length, 1)
+            });
+
+            it("should still stem Russian", function () {
+                assert.equal(idxMulti.search('Русских').length, 1)
+            });
+
+            it("should name lunr.en 'en' in the multi-trimmer label", function () {
+                assert.ok(lunr.Pipeline.registeredFunctions['lunr-multi-trimmer-en-ru']);
+                assert.ok(!lunr.Pipeline.registeredFunctions['lunr-multi-trimmer-builtin-ru']);
             });
         });
         describe("should be able to use language tokenizers in multi-language indexes", function () {

@@ -75,6 +75,7 @@ describe("Wildcard searches", function () {
         ['fr', 'élève', ['élèv*', 'elev*']],
         ['es', 'acción', ['acció*', 'accio*']],
         ['it', "d'Orléans", ['orlé*', 'orlè*', "d'orlé*"]],
+        ['en', 'classify', ['classify*', 'classif*']],
         ['ro', 'ţară', ['ţar*', 'țar*']],
         ['pl', 'żółw', ['żółw*']],
         ['tr', 'kızlar', ['kız*']]

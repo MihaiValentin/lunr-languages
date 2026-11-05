@@ -17,6 +17,11 @@
 - Stemmer: Snowball 3.2.0's `dutch`, Kraaij-Pohlmann (Snowball's default since 3.0.0), instead of the Porter-based stemmer; stems change.
 - Wildcard terms are folded like the stemmer folds the index (`ideeë*` finds `ideeën`).
 
+### English (en)
+
+- New, opt-in `lunr.en`: Snowball 3.2.0's English stemmer (Porter2), a trimmer for Latin letters (keeps `é`, where lunr's trimmer turns `café` into `caf`), Snowball's English stop words, pipeline labels `stemmer-en`, `trimmer-en`, `stopWordFilter-en`. lunr's built-in English (Porter, 1980) stays the default.
+- `lunr.multiLanguage('en', …)` uses `lunr.en` when it is loaded and lunr's built-in English otherwise; the multi trimmer and tokenizer labels name lunr's built-in English `builtin` (`lunr-multi-trimmer-builtin-ru`), so they differ from those with `lunr.en`.
+
 ### Finnish (fi)
 
 - Stop words: Snowball's current list; adds `joten`.

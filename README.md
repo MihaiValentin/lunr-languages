@@ -17,6 +17,7 @@ Originally built for classic search, it is now widely used as a **lightweight re
 
 ## Supported Languages
 
+* ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/GB.png) English (opt-in, see [English](#english))
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/DE.png) German
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/FR.png) French
 * ![](https://raw.githubusercontent.com/madebybowtie/FlagKit/master/Assets/PNG/ES.png) Spanish<sup>2</sup>
@@ -179,6 +180,26 @@ var idx = lunr(function () {
 
 idx.search(query.normalize('NFC'));
 ```
+
+### English
+
+Lunr has English built in (Porter stemmer from 1980). `lunr.en` is an opt-in alternative:
+
+* Snowball's English stemmer (Porter2), which conflates fewer unrelated words (`generously` and `general` no longer share a stem)
+* a trimmer that keeps letters like `é`, where lunr's trimmer turns `café` into `caf`
+* Snowball's English stop words
+
+```javascript
+require('lunr-languages/lunr.stemmer.support')(lunr);
+require('lunr-languages/lunr.en')(lunr);
+
+const idx = lunr(function () {
+  this.use(lunr.en);
+  this.field('body');
+});
+```
+
+An index built with lunr's built-in English must be rebuilt for `lunr.en`. In `lunr.multiLanguage`, `'en'` uses `lunr.en` when it is loaded, and lunr's built-in English otherwise.
 
 ---
 
