@@ -86,6 +86,9 @@ describe("Wildcard searches", function () {
         // fa: می‌خوانند (ZWNJ after the prefix می), found with and without the prefix, and typed with Arabic yeh
         ['fa', 'می‌خوانند',
             ['می‌خوا*', 'خوا*', 'مي‌خوا*']],
+        // id: membaca and perpustakaan found by their stems without the prefixes me- and per-
+        ['id', 'membaca', ['baca*', 'memba*', 'membaca*']],
+        ['id', 'perpustakaan', ['pustaka*', 'perpus*']],
         // el: σπίτια found with and without the accent; αθεΐα, whose ΐ Snowball folds to η
         ['el', 'σπίτια', ['σπίτ*', 'σπιτ*']],
         ['el', 'αθεΐα', ['αθεΐ*']],

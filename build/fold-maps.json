@@ -250,6 +250,27 @@
       "map": {}
     }
   },
+  "indonesian": {
+    "words": 64586,
+    "coverage": {
+      "none": 0.709,
+      "map": 0.9202
+    },
+    "map": {
+      "^ber": "",
+      "^di": "",
+      "^ke": "",
+      "^me": "",
+      "^mem": "",
+      "^men": "",
+      "^pe": "",
+      "^pem": "",
+      "^pen": "",
+      "^per": "",
+      "^ter": ""
+    },
+    "probed": []
+  },
   "italian": {
     "words": 37426,
     "coverage": {

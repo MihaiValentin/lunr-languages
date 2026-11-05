@@ -458,6 +458,11 @@ var list = [
         accentFold: { default: true },
         specialCasing: { 'I': 'ı', 'İ': 'i' }
     }, {
+        locale: 'id',
+        snowball: 'indonesian',
+        stopWords: { snowball: 'indonesian' },
+        script: 'Latin'
+    }, {
         locale: 'th',
     }, {
         locale: 'vi',

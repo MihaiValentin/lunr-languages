@@ -9,7 +9,7 @@ package.
 | Component | Version | License | Where | Notice |
 |---|---|---|---|---|
 | [Snowball](https://snowballstem.org/) stemmers and `base-stemmer.js` | 3.2.0 | BSD-3-Clause | every generated `lunr.<locale>.js`, `lunr.stemmer.support.js` | full text in each file's header; [`licenses/Snowball-BSD-3-Clause.txt`](licenses/Snowball-BSD-3-Clause.txt) |
-| Snowball's stop word lists ([snowball-website](https://github.com/snowballstem/snowball-website)) | commit `dc14fb4` | BSD-3-Clause | stop words of da, nl, en, fi, fr, de, hu, it, no, pt, ru, es, sv | [`licenses/Snowball-BSD-3-Clause.txt`](licenses/Snowball-BSD-3-Clause.txt) |
+| Snowball's stop word lists ([snowball-website](https://github.com/snowballstem/snowball-website)) | commit `dc14fb4` | BSD-3-Clause | stop words of da, nl, en, fi, fr, de, hu, it, no, pt, ru, es, sv, id | [`licenses/Snowball-BSD-3-Clause.txt`](licenses/Snowball-BSD-3-Clause.txt) |
 | [TinySegmenter](http://chasen.org/~taku/software/TinySegmenter/) | 0.1 | BSD-3-Clause | `lunr.ja.tinyseg.js` | full text in the file's header; [`licenses/TinySegmenter-BSD-3-Clause.txt`](licenses/TinySegmenter-BSD-3-Clause.txt) |
 | [wordcut](https://github.com/veer66/wordcut), with its Thai dictionary | 0.9.1 | LGPL-3.0 | `lunr.th.wordcut.js` | notice in the file's header; [`licenses/wordcut-LGPL-3.0.txt`](licenses/wordcut-LGPL-3.0.txt), [`licenses/GPL-3.0.txt`](licenses/GPL-3.0.txt) |
 | [CLDR](https://cldr.unicode.org/) `Latin-ASCII` transform (data the accent folding maps are derived from) | release-49 | Unicode License V3 | `lunr.<locale>.js` with accent folding: es, fr, hu, it, nl, pl, pt, ro, tr, vi | notice in each file's header; [`licenses/Unicode-3.0.txt`](licenses/Unicode-3.0.txt) |

@@ -51,6 +51,7 @@ var testDocuments = {
     zh: require('./testdata/zh'),
     el: require('./testdata/el'),
     fa: require('./testdata/fa'),
+    id: require('./testdata/id'),
 };
 
 lunrVersions.forEach(function (lunrVersion) {

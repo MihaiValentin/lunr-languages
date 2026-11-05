@@ -88,6 +88,11 @@
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change.
 - Accent folding on by default: `haz` finds `ház`, wildcards too. Opt-out: remove `lunr.hu.accentFold` from both pipelines.
 
+### Indonesian (id)
+
+- New: `lunr.id`, Snowball 3.2.0's Indonesian stemmer (it removes prefixes like `me-`, `ber-`, `di-`, `pe-` and suffixes like `-kan`, `-an`: `membaca`, `pembacaan` and `bacaan` share the stem `baca`), Snowball's 93 stop words, a trimmer for Latin letters (#54).
+- Wildcard terms drop the prefixes the stemmer drops: `baca*` and `memba*` find `membaca`, `pustaka*` finds `perpustakaan`.
+
 ### Italian (it)
 
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change.
