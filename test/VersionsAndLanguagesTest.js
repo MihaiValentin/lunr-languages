@@ -471,3 +471,32 @@ describe("Lunr versions before 2", function () {
         });
     });
 });
+
+describe("Stemmer support for Snowball 3", function () {
+    var lunr = require('./lunr/lunr-2.3.5');
+    require('../lunr.stemmer.support.js')(lunr);
+
+    it("should provide Snowball's BaseStemmer", function () {
+        var stemmer = new lunr.stemmerSupport.BaseStemmer();
+        stemmer.setCurrent('wort');
+        assert.equal(stemmer.getCurrent(), 'wort');
+    });
+
+    it("should fold wildcard terms with a derived map, longest key first", function () {
+        var normalizer = lunr.stemmerSupport.generateWildcardNormalizer({ 'ä': 'a', 'ae': 'a', 'ß': 'ss' });
+        assert.equal(normalizer('Käse*'), 'kase*');
+        assert.equal(normalizer('kaese*'), 'kase*');
+        assert.equal(normalizer('straße*'), 'strasse*');
+    });
+
+    it("should apply ^ keys only at the start of a term", function () {
+        var normalizer = lunr.stemmerSupport.generateWildcardNormalizer({ '^ge': '' });
+        assert.equal(normalizer('gefiets*'), 'fiets*');
+        assert.equal(normalizer('berge*'), 'berge*');
+    });
+
+    it("should keep a term that folding would reduce to wildcards only", function () {
+        var normalizer = lunr.stemmerSupport.generateWildcardNormalizer({ '^ge': '' });
+        assert.equal(normalizer('ge*'), 'ge*');
+    });
+});

@@ -6,6 +6,7 @@
 var fs = require('fs');
 var beautify = require('js-beautify').js_beautify;
 var UglifyJS = require("uglify-js");
+var snowball = require('./snowball-loader');
 
 // shortcut for minifying a piece of code; comments are dropped, license headers are prepended by the caller
 function compress(orig_code) {
@@ -42,6 +43,42 @@ function wordCharacters(script) {
         throw Error;
     }
     return regexString.slice(2, -2);
+}
+
+// the Snowball version from build/snowball/VERSION (written by fetch-snowball.js)
+function snowballVersion() {
+    return fs.readFileSync('build/snowball/VERSION', 'utf8').match(/^snowball (\S+)$/m)[1];
+}
+
+// Snowball's BSD-3-Clause notice as a /*! */ block, which the minified files keep too
+function snowballLicense(firstLine) {
+    var copying = fs.readFileSync('build/snowball/COPYING', 'utf8').trim().split(/\r?\n/);
+    return ['/*!', ' * ' + firstLine, ' *'].concat(copying.map(function(line) {
+        return line ? ' * ' + line : ' *';
+    })).concat([' */']).join('\n');
+}
+
+function indent(code, spaces) {
+    var pad = new Array(spaces + 1).join(' ');
+    return code.split('\n').map(function(line) {
+        return line ? pad + line : line;
+    }).join('\n');
+}
+
+// lunr.stemmer.support.js: Snowball's notice and base-stemmer.js between the BEGIN/END markers
+function updateStemmerSupport(support, version) {
+    var header = /\/\*!\n \* (?:SNOWBALL-LICENSE|BaseStemmer is Snowball's)[\s\S]*?\*\/\n/;
+    var region = /(\/\/ BEGIN base-stemmer\.js[^\n]*)[\s\S]*?(\n[ \t]*\/\/ END base-stemmer\.js)/;
+    if (!header.test(support) || !region.test(support)) {
+        throw new Error('lunr.stemmer.support.js: Snowball license block or base-stemmer.js markers not found');
+    }
+    var license = snowballLicense("BaseStemmer is Snowball's base-stemmer.js, from Snowball " + version +
+        ' (https://snowballstem.org/).');
+    return support
+        .replace(header, function() { return license + '\n'; })
+        .replace(region, function(all, begin, end) {
+            return begin + '\n' + indent(snowball.baseStemmerSource().trim(), 8) + end;
+        });
 }
 
 function accentFoldFunction(locale) {
@@ -339,9 +376,10 @@ function build() {
     }
 
     console.log('Building Stemmer Support');
-    // build stemmer support
-    var support = fs.readFileSync('lunr.stemmer.support.js', 'utf8');
-    fs.writeFileSync('min/lunr.stemmer.support.min.js', compress(support));
+    // build stemmer support: insert Snowball's base-stemmer.js, keep the license headers in the minified file
+    var support = updateStemmerSupport(fs.readFileSync('lunr.stemmer.support.js', 'utf8'), snowballVersion());
+    fs.writeFileSync('lunr.stemmer.support.js', support);
+    fs.writeFileSync('min/lunr.stemmer.support.min.js', licenseHeader(support) + compress(support));
     console.log('Building Multi-Language Extension');
     // build multi
     var multi = fs.readFileSync('lunr.multi.js', 'utf8');
