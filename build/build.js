@@ -421,7 +421,29 @@ var list = [
     },
     {
         locale: 'fa',
-        licenseHeader: true // bundles Snowball's Persian stemmer (BSD-3-Clause)
+        snowball: 'persian',
+        copyright: '2023, Seyed Masih Sajadi',
+        stopWords: { custom: 'fa.csv' },
+        // Latin too: Persian pages mix in English names and models («گوشی Samsung Galaxy»)
+        script: ['Arabic', 'Latin'],
+        // Persian is typed with Arabic keyboards and fonts too; Snowball's stemmer folds some spellings
+        // itself (أ ؤ إ ئ ة ك ي ہ, ZWJ), this folds the rest for stop words and words it leaves alone
+        normalize: {
+            // Arabic yeh and kaf to Persian; teh marbuta and heh forms to heh; hamza on alef and waw and
+            // alef wasla to the base letter; zero-width space to ZWNJ (the half-space), runs of ZWNJ to one
+            map: {
+                'ي': 'ی', 'ى': 'ی', 'ك': 'ک', 'ڪ': 'ک',
+                'ة': 'ه', 'ۀ': 'ه', 'ہ': 'ه', 'ۂ': 'ه',
+                'أ': 'ا', 'إ': 'ا', 'ٱ': 'ا', 'ؤ': 'و',
+                '​': '‌', '‌‌': '‌'
+            },
+            // harakat, superscript alef, tatweel, ZWJ, LRM, RLM, bidi embeddings and isolates,
+            // Arabic letter mark, BOM
+            remove: 'ً-ٰٟـ‍-‏‪-‮⁦-⁩؜﻿'
+        },
+        // users often type آ without the madda; folded after the stemmer, which protects words by their
+        // آ (آسمان "sky" would otherwise get the stem of اسم "name")
+        afterStemmer: { 'آ': 'ا' }
     }
 ];
 

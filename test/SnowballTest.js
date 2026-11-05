@@ -82,7 +82,12 @@ describe("Wildcard searches", function () {
         ['pt', 'coração', ['coraç*', 'corac*']],
         ['ro', 'ţară', ['ţar*', 'țar*', 'tar*']],
         ['pl', 'żółw', ['żółw*', 'zolw*']],
-        ['tr', 'KIZLAR', ['kız*', 'kiz*', 'KIZ*']]
+        ['tr', 'KIZLAR', ['kız*', 'kiz*', 'KIZ*']],
+        // fa: می‌خوانند (ZWNJ after the prefix می), found with and without the prefix, and typed with Arabic yeh
+        ['fa', 'می‌خوانند',
+            ['می‌خوا*', 'خوا*', 'مي‌خوا*']],
+        // fa: كتاب‌ها typed with Arabic kaf, found with Persian kaf
+        ['fa', 'كتاب‌ها', ['کتا*', 'كتا*']]
     ];
 
     cases.forEach(function (c) {

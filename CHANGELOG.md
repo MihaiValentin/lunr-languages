@@ -80,6 +80,12 @@
 
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change.
 
+### Persian (fa)
+
+- Generated from Snowball 3.2.0's Persian stemmer instead of a hand port of 3.1.1; the stems are identical on all 104,268 words of Snowball's word list, and indexing is the same as before except for one word in Arabic presentation forms, which the trimmer now keeps.
+- Wildcard terms are folded like the stemmer folds the index: the prefix `می‌` (`می‌خوا*` finds `می‌خوانند`), Arabic keyboard spellings, `آ` as `ا`.
+- `lunr.multiLanguage('fa', …)` now normalizes Persian like `lunr.fa` does (Arabic yeh and kaf, harakat, tatweel).
+
 ### Polish (pl)
 
 - Stemmer: Snowball 3.2.0's Polish stemmer instead of a hand-written one; stems change.
