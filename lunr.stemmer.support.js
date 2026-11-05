@@ -810,7 +810,64 @@
                     }
                 };
 
+                // the query lexer splits only at spaces; segment its terms like the index was tokenized
+                var originalParse = lunr.QueryParser.prototype.parse;
+                lunr.QueryParser.prototype.parse = function() {
+                    var parser = this, lexer = this.lexer, originalRun = lexer.run;
+                    lexer.run = function() {
+                        var result = originalRun.apply(lexer, arguments);
+                        lexer.lexemes = stemmerSupport.segmentLexemes(lexer.lexemes, parser.query);
+                        return result;
+                    };
+                    return originalParse.apply(this, arguments);
+                };
+
                 this.queryParserWildcardNormalizerApplied = true;
+            },
+            /*
+             * The lexemes of a search string with each term split by the tokenizer the index was built with
+             * (Japanese, Chinese, Thai write words without spaces). The modifiers before a term (+, -,
+             * field:) and after it (~1, ^2) are repeated for each part, so +title:日本語の本 requires each
+             * word in the title. Wildcard terms stay whole; with lunr's tokenizer, nothing changes.
+             */
+            segmentLexemes: function(lexemes, query) {
+                var tokenizer = this.tokenizerFor(query && query._lunrLanguagesSearchPipeline);
+                if (tokenizer === lunr.tokenizer) {
+                    return lexemes;
+                }
+                var L = lunr.QueryLexer;
+                var before = [L.PRESENCE, L.FIELD], after = [L.EDIT_DISTANCE, L.BOOST];
+                var isType = function(lexeme, types) {
+                    return types.some(function(type) { return type !== undefined && lexeme.type === type; });
+                };
+                var out = [], pending = [];
+                for (var i = 0; i < lexemes.length; i++) {
+                    var lexeme = lexemes[i];
+                    if (isType(lexeme, before)) {
+                        pending.push(lexeme);
+                        continue;
+                    }
+                    if (lexeme.type !== L.TERM || lexeme.str.indexOf('*') !== -1) {
+                        out = out.concat(pending, [lexeme]);
+                        pending = [];
+                        continue;
+                    }
+                    var parts = tokenizer(lexeme.str).map(String).filter(Boolean);
+                    if (parts.length < 2) {
+                        out = out.concat(pending, [lexeme]);
+                        pending = [];
+                        continue;
+                    }
+                    var modifiers = [];
+                    while (i + 1 < lexemes.length && isType(lexemes[i + 1], after)) {
+                        modifiers.push(lexemes[++i]);
+                    }
+                    parts.forEach(function(part) {
+                        out = out.concat(pending, [{ type: L.TERM, str: part, start: lexeme.start, end: lexeme.end }], modifiers);
+                    });
+                    pending = [];
+                }
+                return out.concat(pending);
             },
             applyQueryParserTermMappers: function(term, query) {
                 return this.applyQueryParserFunctions(this.queryParserTermMappers, term, query && query._lunrLanguagesSearchPipeline);

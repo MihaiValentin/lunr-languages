@@ -549,6 +549,63 @@ lunrVersions.forEach(function (lunrVersion) {
             });
         });
 
+        describe("should segment search strings like the index (ja, zh, th)", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            require('../tinyseg')(lunr);
+            lunr.wordcut = require('../wordcut');
+            require('../lunr.ja.js')(lunr);
+            require('../lunr.zh.js')(lunr);
+            require('../lunr.th.js')(lunr);
+            require('../lunr.multi.js')(lunr);
+
+            var build = function (plugin, docs) {
+                return lunr(function () {
+                    this.use(plugin);
+                    this.ref('id');
+                    this.field('title');
+                    this.field('body');
+                    docs.forEach(function (doc) { this.add(doc); }, this);
+                });
+            };
+            var idxJa = build(lunr.ja, [{ id: 1, title: '日本語の本', body: '' }, { id: 2, title: '英語の雑誌', body: '' }]);
+            var idxTh = build(lunr.th, [{ id: 1, title: 'ฉันกินข้าว', body: '' }, { id: 2, title: 'ฉันดื่มน้ำ', body: '' }]);
+            var idxZh = build(lunr.zh, [{ id: 1, title: '我喜欢学习中文', body: '' }]);
+
+            it("should find a Japanese phrase written without spaces", function () {
+                assert.equal(idxJa.search('日本語の本').length, 1);
+            });
+
+            it("should find a Thai phrase written without spaces", function () {
+                assert.equal(idxTh.search('ฉันกินข้าว')[0].ref, '1');
+            });
+
+            it("should find a Chinese phrase written without spaces", function () {
+                assert.equal(idxZh.search('学习中文').length, 1);
+            });
+
+            it("should repeat presence and field for each word of a phrase", function () {
+                if (!lunr.Query.presence) {
+                    return;
+                }
+                assert.deepEqual(idxJa.search('+title:日本語の本').map(function (r) { return r.ref; }), ['1']);
+                assert.deepEqual(idxJa.search('+title:英語の本').map(function (r) { return r.ref; }), []);
+                // prohibited words: every document without them (の is a stop word, dropped from the index)
+                assert.deepEqual(idxJa.search('-title:日本語の本').map(function (r) { return r.ref; }), ['2']);
+            });
+
+            it("should keep wildcard terms whole", function () {
+                assert.equal(idxJa.search('日本*').length, 1);
+            });
+
+            it("should segment in multi-language indexes", function () {
+                var idxMulti = build(lunr.multiLanguage('en', 'ja'), [{ id: 1, title: 'book 日本語の本', body: '' }]);
+                assert.equal(idxMulti.search('日本語の本').length, 1);
+            });
+        });
+
         describe("should lowercase Thai text like lunr", function () {
             delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
 

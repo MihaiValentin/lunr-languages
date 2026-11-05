@@ -26,6 +26,7 @@
 ### Chinese (zh)
 
 - Searches no longer go through lunr's English stemmer: a Latin word in a Chinese index (`running`) is found by itself again.
+- A search string written without spaces is segmented like the index, so a phrase finds the documents that contain its words (see Japanese).
 
 ### Danish (da)
 
@@ -91,6 +92,7 @@
 
 - The deprecated `jp` locale and its `stemmer-jp`, `trimmer-jp` and `stopWordFilter-jp` labels are removed; use `ja`.
 - Searches no longer go through lunr's English stemmer: a Latin word in a Japanese index (`running`) is found by itself again.
+- A search string written without spaces is segmented like the index, so a phrase finds the documents that contain its words: `日本語の本` was one term in 1.x and found nothing. Modifiers apply to each word (`+title:日本語の本`); wildcard terms stay whole.
 
 ### Kannada (kn)
 
@@ -162,6 +164,7 @@
 
 - Searches no longer go through lunr's English stemmer: a Latin word in a Thai index (`running`) is found by itself again.
 - Latin words in Thai text are lowercased like lunr's tokenizer does, so `Running` is found by `running`.
+- A search string written without spaces is segmented like the index, so a phrase finds the documents that contain its words (see Japanese).
 
 ### Turkish (tr)
 
