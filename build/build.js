@@ -181,8 +181,6 @@ var list = [
     }, {
         locale: 'ja'
     }, {
-        locale: 'jp'
-    }, {
         locale: 'kn'
     }, {
         locale: 'no',

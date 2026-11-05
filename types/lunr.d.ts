@@ -34,7 +34,6 @@ declare namespace lunr {
   var hy: LunrLanguagesLanguage;
   var it: LunrLanguagesLanguage;
   var ja: LunrLanguagesLanguage;
-  var jp: LunrLanguagesLanguage;
   var kn: LunrLanguagesLanguage;
   var ko: LunrLanguagesLanguage;
   var nl: LunrLanguagesLanguage;

@@ -184,6 +184,7 @@ idx.search(query.normalize('NFC'));
 
 * Lunr 2 is required (`lunr@^2.0.0`). For Lunr 0.x or 1.x, stay on Lunr Languages 1.x.
 * `du` is removed: use `nl` (`lunr-languages/lunr.nl`) for Dutch.
+* `jp` is removed: use `ja` (`lunr-languages/lunr.ja`) for Japanese. Its pipeline labels were `stemmer-jp`, `trimmer-jp` and `stopWordFilter-jp`; indexes saved with them must be rebuilt with `ja`.
 
 See [CHANGELOG.md](CHANGELOG.md) for the changes per language.
 
