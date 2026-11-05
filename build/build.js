@@ -114,7 +114,7 @@ function jsString(s) {
     });
 }
 
-// the wildcard normalizer from build/fold-maps.json; none if the stemmer folds nothing
+// the wildcard normalizer from build/fold-maps.json
 function wildcardNormalizerFunction(language, wildcardMaps) {
     var locale = language.locale;
     var snowballName = language.snowball;
@@ -122,10 +122,8 @@ function wildcardNormalizerFunction(language, wildcardMaps) {
     if (!entry) {
         throw new Error('No wildcard map for ' + snowballName + ', run npm run fetch-data');
     }
+    // every Snowball language gets one, also with an empty map: it stems the prefix of wildcard terms
     var accent = language.accentFold && entry.accentFold && entry.folded;
-    if (Object.keys(entry.map).length === 0 && !accent && !language.normalize) {
-        return '';
-    }
     // with accentFold in the index, wildcard terms are accent folded too and use the map of folded words;
     // with a normalizer, they are normalized first, like the index before stemming
     var options = accent ? ', {\n' +

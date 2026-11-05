@@ -105,6 +105,8 @@ describe("Wildcard searches", function () {
         ['fr', 'élèves', ['élèves*', 'eleves*']],
         ['ru', 'кошками', ['кошками*', 'кошка*']],
         ['el', 'Ελλάδας', ['Ελλάδας*']], // Ελλάδας
+        ['da', 'husene', ['husene*']],
+        ['sv', 'flickorna', ['flickorna*']],
         ['en', 'generously', ['generously*', 'generous*']],
         ['tr', 'KIZLARIN', ['KIZLARIN*', 'kızların*']],
         ['hu', 'házakban', ['házakban*', 'hazakban*']]

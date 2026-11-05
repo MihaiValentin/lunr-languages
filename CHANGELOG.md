@@ -21,6 +21,7 @@
 
 - Searches no longer go through lunr's English stemmer: a Latin word in an Armenian index (`running`) is found by itself again.
 - Stemmed for the first time: 1.x returned words unchanged. Generated from Snowball 3.2.0's Armenian stemmer; the stop words are unchanged.
+- A wildcard term finds words whose stem is shorter than what was typed (see All languages).
 
 ### Chinese (zh)
 
@@ -29,6 +30,7 @@
 ### Danish (da)
 
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change.
+- A wildcard term finds words whose stem is shorter than what was typed: `husene*` finds `husene` (stem `hus`).
 
 ### Dutch (nl)
 
@@ -47,6 +49,7 @@
 
 - Stop words: Snowball's current list; adds `joten`.
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change.
+- A wildcard term finds words whose stem is shorter than what was typed (see All languages).
 
 ### French (fr)
 
@@ -70,6 +73,7 @@
 
 - Loads without `wordcut.js`; loading failed with a TypeError unless it was attached first. `lunr.hi.tokenizer` (a Thai segmenter that was never used for indexing) is removed.
 - Stemmed for the first time: 1.x returned words unchanged. Generated from Snowball 3.2.0's Hindi stemmer; the stop words are unchanged.
+- A wildcard term finds words whose stem is shorter than what was typed (see All languages).
 
 ### Hungarian (hu)
 
@@ -95,6 +99,7 @@
 ### Norwegian (no)
 
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change.
+- A wildcard term finds words whose stem is shorter than what was typed (see All languages).
 
 ### Persian (fa)
 
@@ -141,6 +146,7 @@
 
 - Stop words: Snowball's current list; `sitt` instead of `sitta`.
 - Stemmer: Snowball 3.2.0 instead of a port of the 2010 stemmer; stems change.
+- A wildcard term finds words whose stem is shorter than what was typed: `flickorna*` finds `flickorna`.
 
 ### Tamil (ta)
 
