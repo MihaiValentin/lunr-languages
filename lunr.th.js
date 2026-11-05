@@ -81,11 +81,12 @@
     lunr.th.tokenizer = function(obj) {
       //console.log(obj);
       if (!arguments.length || obj == null || obj == undefined) return []
+      // lowercase like lunr's tokenizer, so Latin words in Thai text match lowercased queries
       if (Array.isArray(obj)) return obj.map(function(t) {
-        return new lunr.Token(t)
+        return new lunr.Token(t.toString().toLowerCase())
       })
 
-      var str = obj.toString().replace(/^\s+/, '');
+      var str = obj.toString().toLowerCase().replace(/^\s+/, '');
       return segmenter.cut(str).split('|').map(function(t) {
         return new lunr.Token(t)
       });

@@ -111,6 +111,7 @@
 ### Thai (th)
 
 - Searches no longer go through lunr's English stemmer: a Latin word in a Thai index (`running`) is found by itself again.
+- Latin words in Thai text are lowercased like lunr's tokenizer does, so `Running` is found by `running`.
 
 ### Turkish (tr)
 

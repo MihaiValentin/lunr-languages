@@ -547,6 +547,24 @@ lunrVersions.forEach(function (lunrVersion) {
             });
         });
 
+        describe("should lowercase Thai text like lunr", function () {
+            delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+            var lunr = require('./lunr/' + lunrVersion.lunr);
+            require('../lunr.stemmer.support.js')(lunr);
+            lunr.wordcut = require('../wordcut');
+            require('../lunr.th.js')(lunr);
+
+            it("should lowercase Latin words in Thai text", function () {
+                var idx = lunr(function () {
+                    this.use(lunr.th);
+                    this.field('body');
+                    this.add({ "body": "Running ภาษาไทย", "id": 1 });
+                });
+                assert.equal(idx.search('running').length, 1);
+            });
+        });
+
         describe("should find the tokenizer an index was built with", function () {
             delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
 
