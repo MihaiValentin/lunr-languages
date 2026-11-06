@@ -16,3 +16,7 @@
 ### Japanese (ja)
 
 - The deprecated `jp` locale and its `stemmer-jp`, `trimmer-jp` and `stopWordFilter-jp` labels are removed; use `ja`.
+
+### Thai (th)
+
+- `wordcut.js` bundles wordcut 0.9.1 (was 0.8.1 from 2016) built from npm, without the unused glob, minimatch and assert code: 511 KB instead of 677 KB. It segments the test texts like 0.8.1 and creates no globals. Its LGPL-3.0 license ships in `licenses/`.

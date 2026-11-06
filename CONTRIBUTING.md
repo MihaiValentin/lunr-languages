@@ -44,3 +44,7 @@ Should you decide to make mass-modifications (add stopwords, change stemming rul
 * `npm ci` to install the dependencies needed for building, exactly as `package-lock.json` pins them, so the build reproduces the committed files (add a new dependency with `npm install <package>`)
 * change the `build/*.template` files
 * run `node build/build.js` to generate the `lunr.<locale>.js` files (and the minified versions as well) and the `lunr.stemmer.support.js` file
+
+## wordcut
+
+`wordcut.js` is built from the npm package wordcut, a devDependency pinned exactly in `package.json` (its integrity is in `package-lock.json`): `npm run build-wordcut` reads it from `node_modules`, wraps its `lib/*.js` modules unchanged with shims for `fs`, `path` and `glob` that serve the built-in dictionary, and writes its license to `licenses/`. wordcut's own dependencies are installed with it, but not bundled. To update wordcut, change its version in `package.json`, run `npm install`, `npm run build-wordcut` and the Thai tests.

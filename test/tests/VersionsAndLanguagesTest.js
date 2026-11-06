@@ -231,6 +231,13 @@ lunrVersions.packages.forEach(function (name) {
                 });
                 assert.deepEqual(Object.keys(idx.invertedIndex).sort(), ['123', 'iPhone', 'ง่าย', 'ภาษา', 'ไทย'].sort());
             });
+
+            it("should load wordcut's dictionary and create no globals", function () {
+                // without its dictionary, wordcut splits สวัสดี (hello) into สวัส|ดี
+                assert.deepEqual(lunr.th.tokenizer('สวัสดีชาวบ้าน').map(String), ['สวัสดี', 'ชาว', 'บ้าน']);
+                assert.equal('words' in globalThis, false);
+                assert.equal('defaultDict' in globalThis, false);
+            });
         });
         describe("should use the Hindi tokenizer in multi-language indexes", function () {
             var lunr = freshLunr();

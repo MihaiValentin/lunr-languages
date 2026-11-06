@@ -9,6 +9,7 @@
     "min/lunr.*.min.js",
     "tinyseg.js",
     "wordcut.js",
+    "licenses",
     "types"
   ],
   "type": "commonjs",
@@ -106,6 +107,7 @@
   },
   "scripts": {
     "build": "node build/build.js",
+    "build-wordcut": "node build/build-wordcut.js",
     "test": "node --test test/tests/*Test.js",
     "test:current": "node --test test/tests/*Test.js"
   },
@@ -120,6 +122,7 @@
     "lunr": "2.3.9",
     "lunr-2.3.5": "npm:lunr@2.3.5",
     "typescript": "^7.0.2",
-    "uglify-js": "^3.19.3"
+    "uglify-js": "^3.19.3",
+    "wordcut": "0.9.1"
   }
 }
