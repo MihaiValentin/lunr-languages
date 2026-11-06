@@ -21,7 +21,7 @@ Wonderful! Here are the changes you need to do, then Open a *Pull request*. Make
 - [ ] you must also test your new language
     - [ ] go to `test/testdata` and create a new file, then link it to `VersionsAndLanguagesTest.js`
     - [ ] make sure you cover many testcases (wildcard, stemming)
-    - [ ] your tests will automatically be run on all the Lunr versions
+    - [ ] your tests will automatically be run with Lunr 2.3.9
 - [ ] add the new language to `README.md`
 - [ ] re-build the files (check section below)
 - [ ] open a *Pull request*. Make sure you include everything needed in the pull request (check below)

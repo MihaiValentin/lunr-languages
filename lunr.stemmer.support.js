@@ -278,10 +278,6 @@
                 };
             },
             addQueryParserWildcardNormalizer: function(lunr, normalizer) {
-                if (!lunr.Index || !lunr.Index.prototype || !lunr.Index.prototype.query || !lunr.QueryParser || !lunr.QueryParser.parseTerm || !lunr.QueryLexer) {
-                    return;
-                }
-
                 if (!this.queryParserWildcardNormalizers) {
                     this.queryParserWildcardNormalizers = [];
                 }
@@ -381,21 +377,14 @@
                 var endRegex = new RegExp("[^" + allowedCharacters + "]+$")
 
                 return function(token) {
-                    // for lunr version 2
-                    if (typeof token.update === "function") {
-                        token.update(function (s) {
-                            return s
-                                .replace(startRegex, '')
-                                .replace(endRegex, '');
-                        })
-                        // a word of only punctuation is left empty; lunr skips an empty string, but indexes
-                        // an empty token as the term "", so it is left out (undefined) like a stop word
-                        return token.toString() === '' ? undefined : token
-                    } else { // for lunr version 1
-                        return token
+                    token.update(function (s) {
+                        return s
                             .replace(startRegex, '')
                             .replace(endRegex, '');
-                    }
+                    })
+                    // a word of only punctuation is left empty; lunr skips an empty string, but indexes
+                    // an empty token as the term "", so it is left out (undefined) like a stop word
+                    return token.toString() === '' ? undefined : token
                 };
             }
         }

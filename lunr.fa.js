@@ -92,17 +92,13 @@
         lunr.fa.stemmer
       );
 
-      // for lunr version 2
-      // this is necessary so that every searched word is also trimmed, normalized
-      // and stemmed before; in lunr <= 1 this is done by the normal pipeline
-      if (this.searchPipeline) {
-        this.searchPipeline.reset();
-        this.searchPipeline.add(
-          lunr.fa.trimmer,
-          lunr.fa.normalizer,
-          lunr.fa.stemmer
-        );
-      }
+      // every searched word is also trimmed, normalized and stemmed
+      this.searchPipeline.reset();
+      this.searchPipeline.add(
+        lunr.fa.trimmer,
+        lunr.fa.normalizer,
+        lunr.fa.stemmer
+      );
     };
 
     /* lunr trimmer function */
@@ -157,17 +153,11 @@
 
     lunr.fa.normalize = normalize;
     lunr.fa.normalizer = function(token) {
-      // for lunr version 2
-      if (typeof token.update === 'function') {
-        var normalized = normalize(token.toString());
-        if (normalized === '') return undefined;
-        return token.update(function() {
-          return normalized;
-        });
-      } else {
-        // for lunr version <= 1
-        return normalize(token);
-      }
+      var normalized = normalize(token.toString());
+      if (normalized === '') return undefined;
+      return token.update(function() {
+        return normalized;
+      });
     };
 
     lunr.Pipeline.registerFunction(lunr.fa.normalizer, 'normalizer-fa');
@@ -184,13 +174,7 @@
 
       /* and return a function that stems a word for the current locale */
       return function(token) {
-        // for lunr version 2
-        if (typeof token.update === 'function') {
-          return token.update(stem);
-        } else {
-          // for lunr version <= 1
-          return stem(token);
-        }
+        return token.update(stem);
       };
     })();
 

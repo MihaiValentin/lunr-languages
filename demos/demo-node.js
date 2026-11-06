@@ -1,4 +1,4 @@
-var lunr = require('../test/lunr/lunr-2.0.0-alpha.5.js');
+var lunr = require('lunr');
 require('../lunr.stemmer.support.js')(lunr);
 require('../lunr.de.js')(lunr);
 
