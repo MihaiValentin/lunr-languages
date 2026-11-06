@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "nodenext",
+    "types": []
+  },
+  "files": [
+    "../../types/index.d.ts",
+    "../../types/plugin.d.ts",
+    "../../types/wordcut.d.ts",
+    "usage.ts"
+  ]
+}
