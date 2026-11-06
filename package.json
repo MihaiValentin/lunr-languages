@@ -41,7 +41,9 @@
       ]
     }
   },
-  "engine": "node 0.10.1",
+  "engines": {
+    "node": ">=22.12"
+  },
   "exports": {
     "./package.json": "./package.json",
     "./lunr.*.js": {

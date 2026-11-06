@@ -110,6 +110,13 @@ Lunr Languages improves **recall and precision**, especially for:
 npm install lunr-languages
 ```
 
+Requirements:
+
+* **Node.js 22.12+**, the oldest Node.js version still supported. For older versions of Node.js, use Lunr Languages 1.x.
+* **Text in Unicode NFC**, see [Text in Unicode NFC](#text-in-unicode-nfc).
+
+Coming from 1.x? See [Migrating from 1.x](#migrating-from-1x).
+
 ---
 
 ## Usage
@@ -175,6 +182,14 @@ var idx = lunr(function () {
 
 idx.search(query.normalize('NFC'));
 ```
+
+---
+
+## Migrating from 1.x
+
+* Node.js 22.12 or later is required. For older versions of Node.js, stay on Lunr Languages 1.x.
+
+See [CHANGELOG.md](CHANGELOG.md) for the changes per language.
 
 ---
 
