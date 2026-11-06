@@ -22,6 +22,7 @@ Wonderful! Here are the changes you need to do, then Open a *Pull request*. Make
     - [ ] go to `test/testdata` and create a new file, then link it to `test/tests/VersionsAndLanguagesTest.js`
     - [ ] make sure you cover many testcases (wildcard, stemming)
     - [ ] `npm test` runs the tests with every Lunr version listed in the `devDependencies` of `package.json` (`"lunr"` and aliases like `"lunr-2.3.5": "npm:lunr@2.3.5"`), as CI does; `npm run test:current` only with the current one. A test that depends on the Lunr version loops over `require('../lunr-versions').packages` and takes its Lunr from `fresh(name)` (see `test/tests/VersionsAndLanguagesTest.js`); any other test uses `fresh()`, the current version, and runs once. For a part of the tests, call `node --test` with its options before the files, e.g. `node --test --test-name-pattern=Thai test/tests/*Test.js` or `node --test test/tests/BuildTest.js` (`npm test -- <options>` doesn't work: npm puts them after the files, where `node --test` ignores them)
+    - [ ] `test/tests/BuildTest.js` parses every shipped file as an ES2022 script without ES modules (no `import`, `export`, `import.meta` or `import()`), so the files keep loading with `<script>` and `require()`
 - [ ] add the new language to `README.md`
 - [ ] re-build the files (check section below)
 - [ ] open a *Pull request*. Make sure you include everything needed in the pull request (check below)

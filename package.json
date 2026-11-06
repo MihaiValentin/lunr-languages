@@ -115,6 +115,7 @@
   },
   "devDependencies": {
     "@unicode/unicode-18.0.0": "^2.1.0",
+    "acorn": "^8.19.0",
     "js-beautify": "^2.0.3",
     "lunr": "2.3.9",
     "lunr-2.3.5": "npm:lunr@2.3.5",
