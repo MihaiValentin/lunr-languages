@@ -35,15 +35,16 @@ var stemmersCustomFolder = './custom-stemmers/';
 // 'script' (such as Latin), then extract the character ranges from that
 // regex for use in our trimmer
 function wordCharacters(script) {
-    var charRegex = require('unicode-8.0.0/scripts/' + script + '/regex');
-    // Now from /[a-z]/ get "a-z"
-    var regexString = charRegex.toString()
-    // Format sanity check
-    if (regexString.slice(0, 2) !== '/[' || regexString.slice(-2) != ']/') {
-        console.error('Unexpected regex structure, aborting: ' + regexString);
-        throw Error;
+    // an ES module, loaded with require(esm) (Node.js 22.12 and later)
+    var charRegex = require('@unicode/unicode-18.0.0/Script/' + script + '/regex.mjs').default;
+    // Now from /[a-z]/ get "a-z". Scripts with letters outside the BMP (Arabic, Latin) add them as
+    // alternatives, /[…]|\uD803[…]/; the trimmer's character class works on UTF-16 units, so only the
+    // BMP class is kept. Inside the class, the alternatives would break the trimmer's regex.
+    var match = charRegex.toString().match(/^\/\[((?:\\.|[^\\\]])*)\](\|.*)?\/$/);
+    if (!match) {
+        throw new Error('Unexpected regex structure for ' + script + ': ' + charRegex);
     }
-    return regexString.slice(2, -2);
+    return match[1];
 }
 
 function accentFoldFunction(locale) {
