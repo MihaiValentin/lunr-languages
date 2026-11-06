@@ -26,7 +26,6 @@ var testDocuments = {
     hy: require('../testdata/hy'),
     it: require('../testdata/it'),
     ja: require('../testdata/ja'),
-    jp: require('../testdata/ja'),
     kn: require('../testdata/kn'),
     ko: require('../testdata/ko'),
     nl: require('../testdata/nl'),
@@ -375,10 +374,10 @@ lunrVersions.packages.forEach(function (name) {
             describe("should be able to correctly find terms in " + language.toUpperCase() + " correctly", function () {
                 // because these tests are asynchronous, we must ensure every load of lunr is fresh
                 // so we do not get the previous used languages on it.
-                // if we don't do this, when we'll run the test for jp, we'll also have da, de, fr, it languages used
+                // if we don't do this, when we'll run the test for ja, we'll also have da, de, fr, it languages used
                 var lunr = freshLunr();
                 require('../../lunr.stemmer.support.js')(lunr);
-                if (language === 'ja' || language === 'jp') {    // for japanese, we must also load the tinyseg tokenizer
+                if (language === 'ja') {    // for japanese, we must also load the tinyseg tokenizer
                     require('../../tinyseg')(lunr);
                 }
                 if (language === 'th' || language === 'hi' || language === 'ta' || language === 'sa' || language === 'kn' || language === 'te') {    // for thai, we must also load the wordcut tokenizer
@@ -459,7 +458,7 @@ describe("should write the stop words of every language in Unicode NFC", functio
 
             var lunr = freshLunr();
             require('../../lunr.stemmer.support.js')(lunr);
-            if (language === 'ja' || language === 'jp') {
+            if (language === 'ja') {
                 require('../../tinyseg')(lunr);
             }
             if (language === 'th' || language === 'hi' || language === 'ta' || language === 'sa' || language === 'kn' || language === 'te') {
@@ -473,9 +472,6 @@ describe("should write the stop words of every language in Unicode NFC", functio
                 stopWords = stopWords.concat(words);
                 return generateStopWordFilter.apply(this, arguments);
             };
-            if (language === 'jp') {
-                require('../../lunr.ja.js')(lunr);
-            }
             require('../../lunr.' + language + '.js')(lunr);
             lunr.generateStopWordFilter = generateStopWordFilter;
 

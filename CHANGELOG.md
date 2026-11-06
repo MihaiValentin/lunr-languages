@@ -11,3 +11,7 @@
 ### Dutch (nl)
 
 - The deprecated `du` locale and its `stemmer-du`, `trimmer-du` and `stopWordFilter-du` labels are removed; use `nl`.
+
+### Japanese (ja)
+
+- The deprecated `jp` locale and its `stemmer-jp`, `trimmer-jp` and `stopWordFilter-jp` labels are removed; use `ja`.
