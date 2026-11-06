@@ -6,7 +6,7 @@ var childProcess = require('child_process');
 
 function runNode(args) {
   var result = childProcess.spawnSync(process.execPath, args, {
-    cwd: __dirname + '/..',
+    cwd: __dirname + '/../..',
     encoding: 'utf8'
   });
 

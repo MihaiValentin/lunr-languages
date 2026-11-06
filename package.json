@@ -106,7 +106,8 @@
   },
   "scripts": {
     "build": "node build/build.js",
-    "test": "node --test test/*Test.js"
+    "test": "node --test test/tests/*Test.js",
+    "test:current": "node --test test/tests/*Test.js"
   },
   "repository": {
     "type": "git",
@@ -115,6 +116,7 @@
   "devDependencies": {
     "js-beautify": "^1.5.1",
     "lunr": "2.3.9",
+    "lunr-2.3.5": "npm:lunr@2.3.5",
     "uglify-js": "^2.4.15",
     "unicode-8.0.0": "^0.1.5"
   }
