@@ -7,9 +7,15 @@ var fs = require('fs');
 var beautify = require('js-beautify').js_beautify;
 var UglifyJS = require("uglify-js");
 
-// shortcut for minifying a piece of code
+// shortcut for minifying a piece of code; comments are dropped, license headers are prepended by the caller
 function compress(orig_code) {
-    return UglifyJS.minify(orig_code, { fromString: true, comments: true }).code;
+    // module: false, as the files are scripts (UMD), not ES modules: uglify-js 3 minifies as an ES module by
+    // default, which assumes strict mode and writes ES2015 (arrow functions) for ES5 sources
+    var result = UglifyJS.minify(orig_code, { module: false, output: { comments: false } });
+    if (result.error) {
+        throw result.error;
+    }
+    return result.code;
 }
 
 // the leading /*! ... */ blocks of a hand-written file, kept in its minified
