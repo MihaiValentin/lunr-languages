@@ -139,6 +139,30 @@ lunrVersions.forEach(function (lunrVersion) {
                 assert.equal(idx.search('goddess').length, 1)
             });
         });
+        if (lunrVersion.version[0] === "2") {
+            describe("should leave out words the language trimmers empty", function () {
+                delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
+
+                var lunr = require('./lunr/' + lunrVersion.lunr);
+                require('../lunr.stemmer.support.js')(lunr);
+                require('../lunr.de.js')(lunr);
+
+                var idx = lunr(function () {
+                    this.use(lunr.de);
+                    this.ref('id');
+                    this.field('text');
+                    this.add({ id: 1, text: "Haus — Garten (Test) …" });
+                });
+
+                it("should not index a word of only punctuation as an empty term", function () {
+                    assert.deepEqual(Object.keys(idx.invertedIndex).sort(), ['gart', 'haus', 'test'])
+                });
+
+                it("should still find the words around it", function () {
+                    assert.equal(idx.search('Garten').length, 1)
+                });
+            });
+        }
         describe("should keep numeric tokens when language trimmers are active", function () {
             delete require.cache[require.resolve('./lunr/' + lunrVersion.lunr)]
 

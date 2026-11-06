@@ -383,11 +383,14 @@
                 return function(token) {
                     // for lunr version 2
                     if (typeof token.update === "function") {
-                        return token.update(function (s) {
+                        token.update(function (s) {
                             return s
                                 .replace(startRegex, '')
                                 .replace(endRegex, '');
                         })
+                        // a word of only punctuation is left empty; lunr skips an empty string, but indexes
+                        // an empty token as the term "", so it is left out (undefined) like a stop word
+                        return token.toString() === '' ? undefined : token
                     } else { // for lunr version 1
                         return token
                             .replace(startRegex, '')
