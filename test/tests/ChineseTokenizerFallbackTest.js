@@ -5,7 +5,7 @@ var assert = require('assert');
 var fs = require('fs');
 var vm = require('vm');
 
-var zhSource = fs.readFileSync(__dirname + '/../lunr.zh.js', 'utf8');
+var zhSource = fs.readFileSync(__dirname + '/../../lunr.zh.js', 'utf8');
 
 function createLunr() {
   function Token(token, metadata) {
@@ -18,7 +18,7 @@ function createLunr() {
   };
 
   return {
-    version: '2.3.5',
+    version: require('../lunr-versions').version(),
     stemmerSupport: {},
     Token: Token,
     trimmerSupport: {

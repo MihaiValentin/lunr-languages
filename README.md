@@ -107,8 +107,16 @@ Lunr Languages improves **recall and precision**, especially for:
 ## Installation
 
 ```bash
-npm install lunr-languages
+npm install lunr lunr-languages
 ```
+
+Requirements:
+
+* **Lunr 2.3.5+** (`lunr@^2.3.5`). For older versions of Lunr, use Lunr Languages 1.x.
+* **Node.js 22.12+**, the oldest Node.js version still supported. For older versions of Node.js, use Lunr Languages 1.x.
+* **Text in Unicode NFC**, see [Text in Unicode NFC](#text-in-unicode-nfc).
+
+Coming from 1.x? See [Migrating from 1.x](#migrating-from-1x).
 
 ---
 
@@ -175,6 +183,17 @@ var idx = lunr(function () {
 
 idx.search(query.normalize('NFC'));
 ```
+
+---
+
+## Migrating from 1.x
+
+* Lunr 2.3.5 or later is required (`lunr@^2.3.5`). For older versions of Lunr, stay on Lunr Languages 1.x.
+* Node.js 22.12 or later is required. For older versions of Node.js, stay on Lunr Languages 1.x.
+* `du` is removed: use `nl` (`lunr-languages/lunr.nl`) for Dutch. Its pipeline labels were `stemmer-du`, `trimmer-du` and `stopWordFilter-du`; indexes saved with them must be rebuilt with `nl`.
+* `jp` is removed: use `ja` (`lunr-languages/lunr.ja`) for Japanese. Its pipeline labels were `stemmer-jp`, `trimmer-jp` and `stopWordFilter-jp`; indexes saved with them must be rebuilt with `ja`.
+
+See [CHANGELOG.md](CHANGELOG.md) for the changes per language.
 
 ---
 

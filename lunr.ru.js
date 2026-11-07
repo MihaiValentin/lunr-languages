@@ -61,20 +61,16 @@
         lunr.ru.stemmer
       );
 
-      // for lunr version 2
-      // this is necessary so that every searched word is also trimmed and stemmed before
-      // in lunr <= 1 this is not needed, as it is done using the normal pipeline
-      if (this.searchPipeline) {
-        this.searchPipeline.reset();
-        this.searchPipeline.add(
-          lunr.ru.trimmer,
-          lunr.ru.stemmer
-        )
-      }
+      // every searched word is also trimmed and stemmed
+      this.searchPipeline.reset();
+      this.searchPipeline.add(
+        lunr.ru.trimmer,
+        lunr.ru.stemmer
+      )
     };
 
     /* lunr trimmer function */
-    lunr.ru.wordCharacters = "\u0400-\u0484\u0487-\u052F\u1D2B\u1D78\u2DE0-\u2DFF\uA640-\uA69F\uFE2E\uFE2F";
+    lunr.ru.wordCharacters = "\u0400-\u0484\u0487-\u052F\u1C80-\u1C8A\u1D2B\u1D78\u2DE0-\u2DFF\uA640-\uA69F\uFE2E\uFE2F";
     lunr.ru.trimmer = lunr.trimmerSupport.generateTrimmer(lunr.ru.wordCharacters);
 
     lunr.Pipeline.registerFunction(lunr.ru.trimmer, 'trimmer-ru');
@@ -252,9 +248,9 @@
                     if (!sbp.eq_s_b(1, "\u044F"))
                       return false;
                   }
-                  case 2:
-                    sbp.slice_del();
-                    break;
+                case 2:
+                  sbp.slice_del();
+                  break;
               }
               return true;
             }
@@ -370,18 +366,11 @@
 
       /* and return a function that stems a word for the current locale */
       return function(token) {
-        // for lunr version 2
-        if (typeof token.update === "function") {
-          return token.update(function(word) {
-            st.setCurrent(word);
-            st.stem();
-            return st.getCurrent();
-          })
-        } else { // for lunr version <= 1
-          st.setCurrent(token);
+        return token.update(function(word) {
+          st.setCurrent(word);
           st.stem();
           return st.getCurrent();
-        }
+        })
       }
     })();
 

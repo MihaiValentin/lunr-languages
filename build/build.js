@@ -7,9 +7,15 @@ var fs = require('fs');
 var beautify = require('js-beautify').js_beautify;
 var UglifyJS = require("uglify-js");
 
-// shortcut for minifying a piece of code
+// shortcut for minifying a piece of code; comments are dropped, license headers are prepended by the caller
 function compress(orig_code) {
-    return UglifyJS.minify(orig_code, { fromString: true, comments: true }).code;
+    // module: false, as the files are scripts (UMD), not ES modules: uglify-js 3 minifies as an ES module by
+    // default, which assumes strict mode and writes ES2015 (arrow functions) for ES5 sources
+    var result = UglifyJS.minify(orig_code, { module: false, output: { comments: false } });
+    if (result.error) {
+        throw result.error;
+    }
+    return result.code;
 }
 
 // the leading /*! ... */ blocks of a hand-written file, kept in its minified
@@ -29,22 +35,23 @@ var stemmersCustomFolder = './custom-stemmers/';
 // 'script' (such as Latin), then extract the character ranges from that
 // regex for use in our trimmer
 function wordCharacters(script) {
-    var charRegex = require('unicode-8.0.0/scripts/' + script + '/regex');
-    // Now from /[a-z]/ get "a-z"
-    var regexString = charRegex.toString()
-    // Format sanity check
-    if (regexString.slice(0, 2) !== '/[' || regexString.slice(-2) != ']/') {
-        console.error('Unexpected regex structure, aborting: ' + regexString);
-        throw Error;
+    // an ES module, loaded with require(esm) (Node.js 22.12 and later)
+    var charRegex = require('@unicode/unicode-18.0.0/Script/' + script + '/regex.mjs').default;
+    // Now from /[a-z]/ get "a-z". Scripts with letters outside the BMP (Arabic, Latin) add them as
+    // alternatives, /[…]|\uD803[…]/; the trimmer's character class works on UTF-16 units, so only the
+    // BMP class is kept. Inside the class, the alternatives would break the trimmer's regex.
+    var match = charRegex.toString().match(/^\/\[((?:\\.|[^\\\]])*)\](\|.*)?\/$/);
+    if (!match) {
+        throw new Error('Unexpected regex structure for ' + script + ': ' + charRegex);
     }
-    return regexString.slice(2, -2);
+    return match[1];
 }
 
 function accentFoldFunction(locale) {
     return [
         '',
         '        lunr.' + locale + '.accentFold = function(token) {',
-        '            if (!token || typeof token.clone !== "function") {',
+        '            if (!token) {',
         '                return token;',
         '            }',
         '',
@@ -95,17 +102,9 @@ function accentFoldTokenFunction(locale) {
         '                return token;',
         '            }',
         '',
-        '            if (typeof token.update === "function") {',
-        '                return token.update(function(term) {',
-        '                    return lunr.' + locale + '.accentFoldTerm(term);',
-        '                });',
-        '            }',
-        '',
-        '            if (typeof token === "string") {',
-        '                return lunr.' + locale + '.accentFoldTerm(token);',
-        '            }',
-        '',
-        '            return token;',
+        '            return token.update(function(term) {',
+        '                return lunr.' + locale + '.accentFoldTerm(term);',
+        '            });',
         '        };',
         '',
         '        lunr.Pipeline.registerFunction(lunr.' + locale + '.accentFold, "accentFold-' + locale + '");'
@@ -159,18 +158,6 @@ var list = [
         stopwords: stopwordsRepoFolder + 'nl.csv',
         wordCharacters: wordCharacters('Latin')
     }, {
-        /*
-        Kept here to prevent breaking changes.
-        The correct code for Dutch is NL.
-        Please do not use "du" anymore, start using "nl".
-        I will remove "du" next time I'll build a major, backward incompatible package
-        */
-        locale: 'du',
-        file: 'DutchStemmer.js',
-        stopwords: stopwordsRepoFolder + 'nl.csv',
-        wordCharacters: wordCharacters('Latin'),
-        warningMessage: '[Lunr Languages] Please use the "nl" instead of the "du". The "nl" code is the standard code for Dutch language, and "du" will be removed in the next major versions.'
-    }, {
         locale: 'fi',
         file: 'FinnishStemmer.js',
         stopwords: stopwordsRepoFolder + 'fn.csv',
@@ -200,8 +187,6 @@ var list = [
         wordCharacters: wordCharacters('Latin')
     }, {
         locale: 'ja'
-    }, {
-        locale: 'jp'
     }, {
         locale: 'kn'
     }, {
@@ -309,13 +294,10 @@ for (var i = 0; i < list.length; i++) {
         f = f.replace(/\{\{locale\}\}/g, list[i].locale);
         f = f.replace(/\{\{stemmerFunction\}\}/g, data.substring(data.indexOf('function')));
         f = f.replace(/\{\{stopWords\}\}/g, stopWords.split(',').sort().join(' '));
-        f = f.replace(/\{\{stopWordsLength\}\}/g, stopWords.split(',').length + 1);
         f = f.replace(/\{\{languageName\}\}/g, list[i].file.replace(/Stemmer\.js/g, ''));
         f = f.replace(/\{\{wordCharacters\}\}/g, list[i].wordCharacters);
         f = f.replace(/\{\{pipelineBeforeStemmer\}\}/g, list[i].defaultAccentFolding ? '\n                lunr.' + list[i].locale + '.accentFold,' : '');
         f = f.replace(/\{\{languageExtras\}\}/g, languageExtras.join('\n'));
-
-        f = f.replace(/\{\{consoleWarning\}\}/g, list[i].warningMessage ? '\n\nconsole.warn(' + JSON.stringify(list[i].warningMessage) + ');' : '');
     } else {
         // beautify andminify languages not generated from the template.
         f = fs.readFileSync('lunr.' + list[i].locale + '.js', 'utf8');

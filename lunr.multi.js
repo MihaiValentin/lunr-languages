@@ -41,7 +41,6 @@
             var pipeline = [];
             var searchPipeline = [];
             var tokenizers = [];
-            var isLunr2 = lunr.version[0] == "2";
             var defaultTokenizer = lunr.tokenizer;
             for (var i = 0; i < languages.length; ++i) {
                 if (languages[i] == 'en') {
@@ -92,10 +91,6 @@
 
                     return tokens;
                 };
-
-                if (lunr.tokenizer.registerFunction) {
-                    lunr.tokenizer.registerFunction(multiTokenizer, 'lunr-multi-tokenizer-' + nameSuffix);
-                }
             }
 
             return function() {
@@ -104,25 +99,12 @@
                 this.pipeline.add.apply(this.pipeline, pipeline);
 
                 if (multiTokenizer) {
-                    if (isLunr2) {
-                        this.tokenizer = multiTokenizer;
-                    } else {
-                        if (lunr.tokenizer) {
-                            lunr.tokenizer = multiTokenizer;
-                        }
-                        if (this.tokenizerFn) {
-                            this.tokenizerFn = multiTokenizer;
-                        }
-                    }
+                    this.tokenizer = multiTokenizer;
                 }
 
-                // for lunr version 2
-                // this is necessary so that every searched word is also stemmed before
-                // in lunr <= 1 this is not needed, as it is done using the normal pipeline
-                if (this.searchPipeline) {
-                    this.searchPipeline.reset();
-                    this.searchPipeline.add.apply(this.searchPipeline, searchPipeline);
-                }
+                // every searched word is also stemmed
+                this.searchPipeline.reset();
+                this.searchPipeline.add.apply(this.searchPipeline, searchPipeline);
             };
         }
     }

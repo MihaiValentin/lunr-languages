@@ -62,21 +62,10 @@
       );
 
       // change the tokenizer for japanese one
-      // if (isLunr2) { // for lunr version 2.0.0
-      //   this.tokenizer = lunr.ta.tokenizer;
-      // } else {
-      //   if (lunr.tokenizer) { // for lunr version 0.6.0
-      //     lunr.tokenizer = lunr.ta.tokenizer;
-      //   }
-      //   if (this.tokenizerFn) { // for lunr version 0.7.0 -> 1.0.0
-      //     this.tokenizerFn = lunr.ta.tokenizer;
-      //   }
-      // }
+      // this.tokenizer = lunr.ta.tokenizer;
 
-      if (this.searchPipeline) {
-        this.searchPipeline.reset();
-        this.searchPipeline.add(lunr.ta.stemmer)
-      }
+      this.searchPipeline.reset();
+      this.searchPipeline.add(lunr.ta.stemmer)
     };
 
     /* lunr trimmer function */
@@ -92,15 +81,9 @@
     lunr.ta.stemmer = (function() {
 
       return function(word) {
-        // for lunr version 2
-        if (typeof word.update === "function") {
-          return word.update(function(word) {
-            return word;
-          })
-        } else { // for lunr version <= 1
+        return word.update(function(word) {
           return word;
-        }
-
+        })
       }
     })();
 
@@ -109,11 +92,13 @@
     lunr.ta.tokenizer = function(obj) {
       if (!arguments.length || obj == null || obj == undefined) return []
       if (Array.isArray(obj)) return obj.map(function(t) {
-        return isLunr2 ? new lunr.Token(t.toLowerCase()) : t.toLowerCase()
+        return new lunr.Token(t.toLowerCase())
       });
 
       var str = obj.toString().toLowerCase().replace(/^\s+/, '');
-      return segmenter.cut(str).split('|');
+      return segmenter.cut(str).split('|').map(function(t) {
+        return new lunr.Token(t)
+      });
     }
 
     lunr.Pipeline.registerFunction(lunr.ta.stemmer, 'stemmer-ta');

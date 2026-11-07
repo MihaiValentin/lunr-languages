@@ -9,6 +9,7 @@
     "min/lunr.*.min.js",
     "tinyseg.js",
     "wordcut.js",
+    "licenses",
     "types"
   ],
   "type": "commonjs",
@@ -41,7 +42,17 @@
       ]
     }
   },
-  "engine": "node 0.10.1",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "peerDependencies": {
+    "lunr": "^2.3.5"
+  },
+  "peerDependenciesMeta": {
+    "lunr": {
+      "optional": true
+    }
+  },
   "exports": {
     "./package.json": "./package.json",
     "./lunr.*.js": {
@@ -96,15 +107,22 @@
   },
   "scripts": {
     "build": "node build/build.js",
-    "test": "node --test test/*Test.js"
+    "build-wordcut": "node build/build-wordcut.js",
+    "test": "node --test test/tests/*Test.js",
+    "test:current": "node --test test/tests/*Test.js"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/MihaiValentin/lunr-languages"
   },
   "devDependencies": {
-    "js-beautify": "^1.5.1",
-    "uglify-js": "^2.4.15",
-    "unicode-8.0.0": "^0.1.5"
+    "@unicode/unicode-18.0.0": "^2.1.0",
+    "acorn": "^8.19.0",
+    "js-beautify": "^2.0.3",
+    "lunr": "2.3.9",
+    "lunr-2.3.5": "npm:lunr@2.3.5",
+    "typescript": "^7.0.2",
+    "uglify-js": "^3.19.3",
+    "wordcut": "0.9.1"
   }
 }

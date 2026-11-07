@@ -64,13 +64,9 @@
         lunr.he.stemmer
       );
 
-      // for lunr version 2
-      // this is necessary so that every searched word is also stemmed before
-      // in lunr <= 1 this is not needed, as it is done using the normal pipeline
-      if (this.searchPipeline) {
-        this.searchPipeline.reset();
-        this.searchPipeline.add(lunr.he.stemmer)
-      }
+      // every searched word is also stemmed
+      this.searchPipeline.reset();
+      this.searchPipeline.add(lunr.he.stemmer)
     };
 
     /* lunr trimmer function */
@@ -119,19 +115,11 @@
 
       /* and return a function that stems a word for the current locale */
       return function(token) {
-        // for lunr version 2
-        if (typeof token.update === "function") {
-          return token.update(function(word) {
-            self.setCurrent(word);
-            self.stem();
-            return self.getCurrent();
-          })
-        } else { // for lunr version <= 1
-          self.setCurrent(token);
+        return token.update(function(word) {
+          self.setCurrent(word);
           self.stem();
           return self.getCurrent();
-        }
-
+        })
       }
     })();
 

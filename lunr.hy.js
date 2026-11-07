@@ -81,15 +81,9 @@
     lunr.hy.stemmer = (function() {
 
       return function(word) {
-        // for lunr version 2
-        if (typeof word.update === "function") {
-          return word.update(function(word) {
-            return word;
-          })
-        } else { // for lunr version <= 1
+        return word.update(function(word) {
           return word;
-        }
-
+        })
       }
     })();
     lunr.Pipeline.registerFunction(lunr.hy.stemmer, 'stemmer-hy');

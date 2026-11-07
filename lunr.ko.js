@@ -59,24 +59,6 @@
         lunr.ko.trimmer,
         lunr.ko.stopWordFilter
       );
-
-      // change the tokenizer for japanese one
-      // if (isLunr2) { // for lunr version 2.0.0
-      //   this.tokenizer = lunr.ko.tokenizer;
-      // } else {
-      //   if (lunr.tokenizer) { // for lunr version 0.6.0
-      //     lunr.tokenizer = lunr.ko.tokenizer;
-      //   }
-      //   if (this.tokenizerFn) { // for lunr version 0.7.0 -> 1.0.0
-      //     this.tokenizerFn = lunr.ko.tokenizer;
-      //   }
-      // }
-      /*
-       if (this.searchPipeline) {
-         this.searchPipeline.reset();
-         this.searchPipeline.add(lunr.ko.stemmer)
-       }
-       */
     };
 
     /* lunr trimmer function */
@@ -97,15 +79,9 @@
     lunr.ko.stemmer = (function() {
 
       return function(word) {
-        // for lunr version 2
-        if (typeof word.update === "function") {
-          return word.update(function(word) {
-            return word;
-          })
-        } else { // for lunr version <= 1
+        return word.update(function(word) {
           return word;
-        }
-
+        })
       }
     })();
     lunr.Pipeline.registerFunction(lunr.ko.stemmer, 'stemmer-ko');
